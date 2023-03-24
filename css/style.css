@@ -299,9 +299,18 @@ p {
 
 .rodape {
     position: fixed;
+    display: inline-flex;
     top: 95%;
     left: 50%;
     transform: translate(-50%, -50%);
+}
+
+.rodape h3 {
+    color: #000000;
+    font-family: 'Righteous', cursive;
+    font-size: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
 }
 
 .rodape a {
@@ -315,10 +324,11 @@ p {
     justify-content: center;
     align-items: center;
     transition: 0.2s;
-    font-size: 20px;
+    font-size: 30px;
 }
 
 .rodape a:hover {
+    width: 180px;
     background-color: #808080;
     color: #000000;
 }
@@ -328,7 +338,15 @@ p {
 }
 
 .rodape a:hover > i {
-    transform: scale(1.6) rotate(360deg);
+    transform: scale(0) rotate(360deg);
+}
+
+.rodape :hover h3 {
+    font-size: 0.7em !important;
+    text-align: center;
+    margin-right: 18px;
+    transition: 0.1s;
+    transition-delay: 0.1s;
 }
 
 @media (max-width: 1030px) {
@@ -364,7 +382,7 @@ p {
 }
 
 @media (max-width: 800px) {
-
+    
     .body-hobbies {
         font-size: 100%;
         height: 100%;
