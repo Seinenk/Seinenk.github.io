@@ -1,0 +1,168 @@
+---
+import Icon from './Icon.astro';
+import Monogram from './Monogram.astro';
+import { links, profile } from '../data/profile';
+
+const year = new Date().getFullYear();
+
+const pages = [
+  { href: '/', label: 'Início' },
+  { href: '/#sobre', label: 'Sobre' },
+  { href: '/#trajetoria', label: 'Trajetória' },
+  { href: '/projetos', label: 'Projetos' },
+  { href: '/hobbies', label: 'Hobbies' },
+];
+
+const groups = [
+  { title: 'Redes', items: [links.github, links.instagram] },
+  { title: 'Acadêmico', items: [links.lattes, links.orcid] },
+];
+---
+
+<footer class="site-footer band-inverse">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <Monogram size={48} class="footer-mark" />
+        <p class="display-sm footer-name">{profile.name}</p>
+        <p class="footer-role">{profile.headline}</p>
+        <p class="footer-place">
+          <Icon name="map-pin" size={16} />
+          {profile.location}
+        </p>
+      </div>
+
+      <nav aria-label="Rodapé" class="footer-col">
+        <p class="footer-title" id="footer-pages">Páginas</p>
+        <ul class="list-reset" aria-labelledby="footer-pages">
+          {
+            pages.map((p) => (
+              <li>
+                <a class="footer-link" href={p.href}>
+                  {p.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      {
+        groups.map((g) => (
+          <div class="footer-col">
+            <p class="footer-title">{g.title}</p>
+            <ul class="list-reset">
+              {g.items.map((l) => (
+                <li>
+                  <a class="footer-link" href={l.href} target="_blank" rel="noopener noreferrer">
+                    {l.label}
+                    <Icon name="arrow-up-right" size={14} class="icon-diagonal" />
+                    <span class="sr-only">(abre em nova aba)</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="footer-bottom">
+      <p>© {year} {profile.name}</p>
+      <p>Conteúdo baseado no Currículo Lattes, atualizado em {profile.cvUpdatedAt}.</p>
+      <a class="footer-link to-top" href="#conteudo">
+        Voltar ao topo
+        <Icon name="arrow-up" size={15} />
+      </a>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    --monogram-bg: var(--c-on-inverse);
+    --monogram-fg: var(--c-inverse);
+    padding-block: clamp(3.5rem, 2.5rem + 4vw, 5rem) 2rem;
+    font-size: var(--fs-body-sm);
+  }
+
+  .footer-grid {
+    display: grid;
+    gap: 2.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 8.5rem), 1fr));
+  }
+
+  .footer-brand {
+    grid-column: 1 / -1;
+    display: grid;
+    gap: 0.6rem;
+    max-width: 28rem;
+  }
+
+  @media (min-width: 56rem) {
+    .footer-grid {
+      grid-template-columns: 2fr repeat(3, 1fr);
+    }
+
+    .footer-brand {
+      grid-column: auto;
+    }
+  }
+
+  :global(.footer-mark) {
+    margin-bottom: 0.5rem;
+  }
+
+  .footer-name {
+    color: var(--c-on-inverse);
+  }
+
+  .footer-place {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .footer-title {
+    margin-bottom: 0.9rem;
+    color: var(--c-on-inverse);
+    font-size: var(--fs-caption-upper);
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .footer-col ul {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .footer-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 2rem;
+    color: var(--c-on-inverse-soft);
+    text-decoration: none;
+    transition: color 0.25s ease;
+  }
+
+  .footer-link:hover {
+    color: var(--c-on-inverse);
+    text-decoration: underline;
+  }
+
+  .footer-bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 2rem;
+    margin-top: 3.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--c-inverse-hairline);
+  }
+
+  .to-top {
+    margin-inline-start: auto;
+  }
+</style>

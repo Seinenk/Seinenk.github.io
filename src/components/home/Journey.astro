@@ -1,0 +1,202 @@
+---
+import Icon from '../Icon.astro';
+import SectionHead from '../SectionHead.astro';
+import CodeWindow from './CodeWindow.astro';
+import { experience } from '../../data/profile';
+---
+
+<section id="trajetoria" class="section band-inverse journey" aria-labelledby="trajetoria-title" data-ambient>
+  <div class="journey-glow" aria-hidden="true"></div>
+  <div class="container">
+    <SectionHead
+      kicker="02 — Trajetória"
+      title="Onde tenho *atuado*"
+      text="Do governo do estado ao ecossistema de startups do Piauí, passando pela pesquisa aplicada no IPEA e no IFPI."
+      id="trajetoria-title"
+    />
+
+    <div class="journey-grid">
+      <ol class="list-reset timeline" data-reveal="fade">
+        {
+          experience.map((item, i) => (
+            <li class="timeline-item" data-reveal style={`--i:${i}`}>
+              <span class:list={['timeline-dot', { 'is-current': item.current }]} aria-hidden="true" />
+              <p class="timeline-period">
+                {item.period}
+              </p>
+              <h3 class="display-sm timeline-role">{item.role}</h3>
+              <p class="timeline-org">
+                <Icon name="briefcase" size={16} />
+                {item.org}
+              </p>
+              <p class="timeline-detail">{item.detail}</p>
+              <ul class="chip-list" aria-label="Detalhes do vínculo">
+                {item.tags.map((tag) => (
+                  <li class="chip">{tag}</li>
+                ))}
+              </ul>
+            </li>
+          ))
+        }
+      </ol>
+
+      <div class="journey-aside">
+        <CodeWindow />
+        <div class="community" data-reveal style="--i:2">
+          <Icon name="users" size={22} />
+          <div>
+            <p class="title-md">Comunidade</p>
+            <p>Representa a comunidade de startups Guaribas Valley. Em 2025, expôs o projeto BeeCerrado no Web Summit Lisboa.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .journey {
+    overflow: clip;
+    isolation: isolate;
+  }
+
+  .journey-glow {
+    position: absolute;
+    z-index: -1;
+    top: -20%;
+    right: -10%;
+    width: 60vmax;
+    height: 60vmax;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgb(var(--c-glow-b-rgb) / 0.22), transparent);
+    pointer-events: none;
+  }
+
+  :global(:root[data-motion='full']) .journey-glow {
+    animation: drift 22s ease-in-out infinite;
+  }
+
+  .journey-grid {
+    display: grid;
+    gap: 3rem;
+  }
+
+  @media (min-width: 62rem) {
+    .journey-grid {
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+      gap: clamp(3rem, 2rem + 4vw, 5.5rem);
+    }
+
+    .journey-aside {
+      position: sticky;
+      top: calc(var(--nav-h) + 2rem);
+      align-self: start;
+    }
+  }
+
+  /* ---------- linha do tempo ---------- */
+  .timeline {
+    position: relative;
+    display: grid;
+    gap: 2.75rem;
+    padding-inline-start: 2.25rem;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    left: 0.4rem;
+    width: 1px;
+    background: linear-gradient(var(--c-inverse-accent), var(--c-inverse-hairline));
+    transform-origin: top;
+  }
+
+  :global(:root[data-motion='full']) .timeline::before {
+    transform: scaleY(0);
+    transition: transform 1.8s var(--ease-out) 0.2s;
+  }
+
+  :global(:root[data-motion='full']) .timeline:global(.is-visible)::before {
+    transform: none;
+  }
+
+  .timeline-item {
+    position: relative;
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .timeline-dot {
+    position: absolute;
+    top: 0.3rem;
+    left: -2.25rem;
+    width: 0.85rem;
+    height: 0.85rem;
+    border: 2px solid var(--c-inverse-accent);
+    border-radius: 50%;
+    background: var(--c-inverse);
+  }
+
+  .timeline-dot.is-current {
+    background: var(--c-inverse-accent);
+  }
+
+  :global(:root[data-motion='full']) .timeline-dot.is-current {
+    animation: pulse 2.4s ease-out infinite;
+  }
+
+  .timeline-period {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--c-inverse-accent);
+    font-size: var(--fs-caption-upper);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .timeline-org {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--c-on-inverse);
+    font-weight: 500;
+  }
+
+  .timeline-detail {
+    max-width: 36rem;
+  }
+
+  .timeline-item .chip-list {
+    margin-top: 0.35rem;
+  }
+
+  /* ---------- lateral ---------- */
+  .journey-aside {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .community {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    padding: 1.4rem 1.5rem;
+    border: 1px solid var(--c-inverse-hairline);
+    border-radius: var(--radius-lg);
+    background: var(--c-inverse-elevated);
+  }
+
+  .community > :global(.icon) {
+    flex: none;
+    margin-top: 0.15rem;
+    color: var(--c-inverse-accent);
+  }
+
+  .community .title-md {
+    margin-bottom: 0.25rem;
+  }
+</style>

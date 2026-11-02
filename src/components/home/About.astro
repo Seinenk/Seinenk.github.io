@@ -1,0 +1,115 @@
+---
+import Icon from '../Icon.astro';
+import SectionHead from '../SectionHead.astro';
+import { experience, languages, profile } from '../../data/profile';
+import type { IconName } from '../icons';
+
+const facts: { icon: IconName; term: string; value: string }[] = [
+  { icon: 'graduation-cap', term: 'Formação', value: 'Tecnólogo em Análise e Desenvolvimento de Sistemas (IFPI, 2026)' },
+  { icon: 'cpu', term: 'Especialização', value: 'Residência Tecnológica em Sistemas Embarcados (IFPI, 2025–2026)' },
+  { icon: 'briefcase', term: 'Atuação', value: `${experience[0].role} na ${experience[0].org}` },
+  { icon: 'layers', term: 'Área', value: profile.area },
+  { icon: 'languages', term: 'Idiomas', value: languages.map((l) => l.name).join(', ') },
+];
+---
+
+<section id="sobre" class="section about" aria-labelledby="sobre-title">
+  <div class="container about-grid">
+    <div class="about-head">
+      <SectionHead kicker="01 — Sobre" title="Do código à *comunidade*" id="sobre-title" />
+    </div>
+
+    <div class="about-body">
+      <div class="about-text">
+        {
+          profile.about.map((paragraph, i) => (
+            <p class:list={[{ 'body-lg': i === 0 }]} data-reveal style={`--i:${i}`}>
+              {paragraph}
+            </p>
+          ))
+        }
+      </div>
+
+      <dl class="facts">
+        {
+          facts.map((f, i) => (
+            <div class="fact" data-reveal style={`--i:${i}`}>
+              <dt>
+                <Icon name={f.icon} size={18} />
+                {f.term}
+              </dt>
+              <dd>{f.value}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </div>
+</section>
+
+<style>
+  .about-grid {
+    display: grid;
+    gap: 1rem;
+  }
+
+  @media (min-width: 62rem) {
+    .about-grid {
+      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+      gap: clamp(3rem, 2rem + 4vw, 6rem);
+    }
+
+    .about-head {
+      position: sticky;
+      top: calc(var(--nav-h) + 2.5rem);
+      align-self: start;
+    }
+  }
+
+  .about-body {
+    display: grid;
+    gap: clamp(2.5rem, 2rem + 2vw, 3.5rem);
+  }
+
+  .about-text {
+    display: grid;
+    gap: 1.25rem;
+    max-width: 42rem;
+  }
+
+  .about-text p:not(.body-lg) {
+    font-size: var(--fs-body-md);
+  }
+
+  .facts {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  }
+
+  .fact {
+    display: grid;
+    gap: 0.4rem;
+    padding: 1.1rem 1.25rem;
+    border: 1px solid var(--c-hairline);
+    border-radius: var(--radius-lg);
+    background: var(--c-surface-raised);
+  }
+
+  .fact dt {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--c-accent-strong);
+    font-size: var(--fs-caption-upper);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .fact dd {
+    color: var(--c-ink);
+    font-weight: 500;
+    line-height: 1.45;
+  }
+</style>

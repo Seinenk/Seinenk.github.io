@@ -1,0 +1,63 @@
+---
+import { stats } from '../../data/profile';
+---
+
+<section class="stats band-card" aria-labelledby="numeros-title">
+  <div class="container">
+    <h2 id="numeros-title" class="sr-only">Números do currículo</h2>
+    <ul class="list-reset stats-grid">
+      {
+        stats.map((s, i) => (
+          <li class="stat" data-reveal style={`--i:${i}`}>
+            <p class="display-xl stat-value">
+              <span class="sr-only">
+                {s.value}
+                {s.suffix}
+              </span>
+              <span aria-hidden="true">
+                <span data-count={s.value}>{s.value}</span>
+                {s.suffix && <em>{s.suffix}</em>}
+              </span>
+            </p>
+            <p class="stat-label">{s.label}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .stats {
+    padding-block: clamp(3rem, 2rem + 4vw, 4.5rem);
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+    gap: 2rem 1.5rem;
+  }
+
+  .stat {
+    display: grid;
+    align-content: start;
+    gap: 0.6rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--c-hairline);
+  }
+
+  .stat-value {
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+
+  .stat-value em {
+    font-style: italic;
+    color: var(--c-accent);
+  }
+
+  .stat-label {
+    max-width: 16rem;
+    color: var(--c-muted);
+    font-size: var(--fs-body-sm);
+  }
+</style>

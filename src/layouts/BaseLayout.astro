@@ -1,0 +1,121 @@
+---
+import { Font } from 'astro:assets';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { DEFAULT_PALETTE, buildThemeCss, defaultPalette, palettes, themeColors } from '../themes';
+import { links, profile } from '../data/profile';
+import '../styles/tokens.css';
+import '../styles/base.css';
+import '../styles/components.css';
+import '../styles/motion.css';
+
+export type NavKey = 'inicio' | 'projetos' | 'hobbies' | 'erro';
+
+interface Props {
+  title: string;
+  description: string;
+  current?: NavKey;
+}
+
+const { title, description, current = 'inicio' } = Astro.props;
+const site = Astro.site ?? new URL('https://seinenk.github.io');
+const path = Astro.url.pathname.replace(/index\.html$/, '').replace(/\.html$/, '');
+const canonical = new URL(path, site).href;
+const ogImage = new URL('/og-image.jpg', site).href;
+const themeCss = buildThemeCss();
+const boot = {
+  ids: palettes.map((p) => p.id),
+  fallback: DEFAULT_PALETTE,
+  colors: themeColors,
+};
+
+const person = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: profile.name,
+  alternateName: profile.shortName,
+  jobTitle: profile.headline,
+  url: site.href,
+  image: new URL('/og-image.jpg', site).href,
+  alumniOf: { '@type': 'CollegeOrUniversity', name: 'Instituto Federal do Piauí' },
+  worksFor: { '@type': 'Organization', name: 'Investe Piauí' },
+  sameAs: [links.github.href, links.instagram.href, links.lattes.href, links.orcid.href],
+};
+---
+
+<!doctype html>
+<html lang="pt-BR" data-palette={DEFAULT_PALETTE}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content={defaultPalette.light.canvas} media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content={defaultPalette.dark.canvas} media="(prefers-color-scheme: dark)" />
+
+    <script is:inline define:vars={{ boot }}>
+      // Aplica paleta, modo e preferência de movimento antes de pintar a página.
+      var root = document.documentElement;
+      var read = function (key) {
+        try {
+          return localStorage.getItem(key);
+        } catch (e) {
+          return null;
+        }
+      };
+      var prefers = function (query) {
+        return !!(window.matchMedia && window.matchMedia(query).matches);
+      };
+      var palette = read('cm-palette');
+      root.dataset.palette = boot.ids.indexOf(palette) > -1 ? palette : boot.fallback;
+      var mode = read('cm-mode');
+      root.dataset.mode = mode === 'light' || mode === 'dark' ? mode : prefers('(prefers-color-scheme: dark)') ? 'dark' : 'light';
+      var motion = read('cm-motion');
+      root.dataset.motion = motion === 'reduce' || motion === 'full' ? motion : prefers('(prefers-reduced-motion: reduce)') ? 'reduce' : 'full';
+      var color = boot.colors[root.dataset.palette][root.dataset.mode];
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (meta) {
+        meta.setAttribute('content', color);
+        meta.removeAttribute('media');
+      });
+      window.__themeColors = boot.colors;
+    </script>
+    <style is:inline set:html={themeCss}></style>
+
+    <Font cssVariable="--font-sans" preload />
+    <Font cssVariable="--font-display" preload={[{ style: 'normal' }]} />
+    <Font cssVariable="--font-mono" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="sitemap" href="/sitemap.xml" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:site_name" content={profile.shortName} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`Retrato de ${profile.shortName} ao lado do nome e da área de atuação`} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(person)} />
+  </head>
+  <body>
+    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+    <div class="scroll-progress" aria-hidden="true"></div>
+    <Header current={current} />
+    <main id="conteudo" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+    <script>
+      import '../scripts/site';
+    </script>
+  </body>
+</html>

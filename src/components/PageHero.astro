@@ -1,0 +1,48 @@
+---
+import SectionHead from './SectionHead.astro';
+
+interface Props {
+  kicker: string;
+  title: string;
+  lead: string;
+}
+
+const { kicker, title, lead } = Astro.props;
+---
+
+<section class="page-hero" aria-labelledby="page-title" data-ambient>
+  <div class="page-hero-aura" aria-hidden="true"></div>
+  <div class="container">
+    <SectionHead kicker={kicker} title={title} text={lead} id="page-title" level="h1" size="xl" class="page-hero-head" />
+    <slot />
+  </div>
+</section>
+
+<style>
+  .page-hero {
+    position: relative;
+    overflow: clip;
+    isolation: isolate;
+    padding-block: clamp(3rem, 2rem + 5vw, 6.5rem) clamp(2.5rem, 2rem + 3vw, 4.5rem);
+  }
+
+  .page-hero :global(.page-hero-head) {
+    max-width: 56rem;
+    margin-bottom: 0;
+  }
+
+  .page-hero-aura {
+    position: absolute;
+    z-index: -1;
+    top: -30vmax;
+    right: -18vmax;
+    width: 60vmax;
+    height: 60vmax;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgb(var(--c-glow-a-rgb) / 0.5), transparent);
+  }
+
+  :global(:root[data-motion='full']) .page-hero-aura {
+    animation: drift 20s ease-in-out infinite;
+  }
+</style>

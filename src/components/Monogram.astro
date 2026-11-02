@@ -1,0 +1,40 @@
+---
+import { monogramHexagon, monogramLetters } from './icons';
+
+interface Props {
+  size?: number;
+  class?: string;
+  /** Texto para leitores de tela. Sem ele, o monograma é decorativo. */
+  title?: string;
+}
+
+const { size = 40, class: className, title } = Astro.props;
+---
+
+<svg
+  class:list={['monogram', className]}
+  viewBox="0 0 64 64"
+  width={size}
+  height={size}
+  role={title ? 'img' : undefined}
+  aria-label={title}
+  aria-hidden={title ? undefined : 'true'}
+  focusable="false"
+>
+  <path class="monogram-hex" d={monogramHexagon}></path>
+  <path class="monogram-letters" d={monogramLetters}></path>
+</svg>
+
+<style>
+  .monogram {
+    flex: none;
+  }
+  .monogram-hex {
+    fill: var(--monogram-bg, var(--c-ink));
+    transition: fill 0.4s ease;
+  }
+  .monogram-letters {
+    fill: var(--monogram-fg, var(--c-canvas));
+    transition: fill 0.4s ease;
+  }
+</style>

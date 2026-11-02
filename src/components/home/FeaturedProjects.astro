@@ -1,0 +1,55 @@
+---
+import Icon from '../Icon.astro';
+import ProjectCard from '../ProjectCard.astro';
+import SectionHead from '../SectionHead.astro';
+import { projects } from '../../data/profile';
+
+const featured = projects.filter((p) => p.featured);
+---
+
+<section id="projetos" class="section band-soft" aria-labelledby="projetos-title">
+  <div class="container">
+    <div class="projects-head">
+      <SectionHead
+        kicker="04 — Projetos"
+        title="Projetos em *destaque*"
+        text="Pesquisa, extensão e desenvolvimento: de uma plataforma SaaS para pequenos negócios a um sistema de IoT para abelhas sem ferrão."
+        id="projetos-title"
+      />
+      <a class="btn btn-secondary projects-all" href="/projetos" data-reveal>
+        Todos os projetos
+        <Icon name="arrow-right" size={18} class="icon-trail" />
+      </a>
+    </div>
+
+    <ul class="list-reset projects-grid">
+      {
+        featured.map((project, i) => (
+          <li data-reveal style={`--i:${i % 3}`}>
+            <ProjectCard project={project} />
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .projects-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0 2rem;
+  }
+
+  .projects-all {
+    margin-bottom: clamp(2.5rem, 2rem + 2.4vw, 4.5rem);
+  }
+
+  .projects-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+  }
+</style>

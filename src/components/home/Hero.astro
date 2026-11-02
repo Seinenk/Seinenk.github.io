@@ -1,0 +1,501 @@
+---
+import { Picture } from 'astro:assets';
+import Icon from '../Icon.astro';
+import Monogram from '../Monogram.astro';
+import portrait from '../../assets/images/carlos-retrato.jpg';
+import { links, profile } from '../../data/profile';
+
+const ring = 'UX/UI · Front-end · Inovação · Piauí · ';
+const social = [
+  { ...links.github, icon: 'github' as const },
+  { ...links.instagram, icon: 'instagram' as const },
+  { ...links.orcid, icon: 'orcid' as const },
+];
+const chips = [
+  { icon: 'graduation-cap' as const, text: 'ADS · IFPI', place: 'a' },
+  { icon: 'briefcase' as const, text: 'Investe Piauí', place: 'b' },
+  { icon: 'presentation' as const, text: 'Web Summit Lisboa 2025', place: 'c' },
+];
+---
+
+<section class="hero" aria-labelledby="hero-title" data-tilt-area data-ambient>
+  <div class="hero-backdrop" aria-hidden="true">
+    <span class="aura aura-a"></span>
+    <span class="aura aura-b"></span>
+    <svg class="honeycomb" width="100%" height="100%">
+      <defs>
+        <pattern id="honeycomb" width="56" height="100" patternUnits="userSpaceOnUse" patternTransform="scale(1.15)">
+          <path d="M28 66 0 50V16L28 0l28 16v34L28 66v34" fill="none" stroke="currentColor" stroke-width="1"></path>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#honeycomb)"></rect>
+    </svg>
+  </div>
+
+  <div class="container hero-grid">
+    <div class="hero-copy">
+      <p class="kicker hero-enter" style="--d:0">Portfólio · {profile.location}</p>
+
+      <h1 id="hero-title" class="display-xl hero-title">
+        <span class="hero-line"><span style="--l:0">{profile.firstName}</span></span>{' '}
+        <span class="hero-line"><span style="--l:1"><em>{profile.middleName}</em></span></span>{' '}
+        <span class="hero-line hero-line-sm"><span style="--l:2">{profile.lastNames}</span></span>
+      </h1>
+
+      <p class="hero-role hero-enter" style="--d:520" data-typewriter data-words={JSON.stringify(profile.roles)}>
+        <span class="sr-only">{profile.roles.join(', ')}.</span>
+        <span aria-hidden="true">
+          <span data-typewriter-text>{profile.roles[0]}</span><span class="caret"></span>
+        </span>
+      </p>
+
+      <p class="body-lg hero-lead hero-enter" style="--d:620">{profile.lead}</p>
+
+      <div class="hero-actions hero-enter" style="--d:720">
+        <a class="btn btn-primary" href="#projetos">
+          Ver projetos
+          <Icon name="arrow-right" size={18} class="icon-trail" />
+        </a>
+        <a class="btn btn-secondary" href={links.lattes.href} target="_blank" rel="noopener noreferrer">
+          Currículo Lattes
+          <Icon name="arrow-up-right" size={18} class="icon-diagonal" />
+          <span class="sr-only">(abre em nova aba)</span>
+        </a>
+      </div>
+
+      <ul class="list-reset hero-social hero-enter" style="--d:820" aria-label="Perfis">
+        {
+          social.map((s) => (
+            <li>
+              <a class="icon-btn" href={s.href} target="_blank" rel="noopener noreferrer" title={s.label}>
+                <Icon name={s.icon} size={18} />
+                <span class="sr-only">{s.label} (abre em nova aba)</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div class="hero-visual">
+      <figure class="portrait" data-tilt>
+        <div class="portrait-stage">
+        <div class="portrait-frame">
+          <Picture
+            src={portrait}
+            alt="Retrato em preto e branco de Carlos Michael, de terno e camisa escuros, olhando para o lado."
+            widths={[360, 480, 640, 800, 960, 1200]}
+            sizes="(min-width: 64rem) 30rem, (min-width: 48rem) 42vw, 88vw"
+            formats={['webp']}
+            fallbackFormat="jpg"
+            quality={60}
+            loading="eager"
+            fetchpriority="high"
+            class="portrait-img"
+          />
+        </div>
+
+        <div class="portrait-badge" aria-hidden="true">
+          <svg class="ring" viewBox="0 0 120 120">
+            <defs>
+              <path id="ring-path" d="M60 60m-46 0a46 46 0 1 1 92 0a46 46 0 1 1-92 0"></path>
+            </defs>
+            <text><textPath href="#ring-path" textLength="288">{ring}</textPath></text>
+          </svg>
+          <Monogram size={46} class="badge-mark" />
+        </div>
+        </div>
+
+        <ul class="list-reset portrait-chips" aria-label="Destaques">
+          {
+            chips.map((c, i) => (
+              <li class={`chip-float chip-${c.place}`} style={`--c:${i}`}>
+                <Icon name={c.icon} size={16} />
+                {c.text}
+              </li>
+            ))
+          }
+        </ul>
+      </figure>
+    </div>
+  </div>
+
+  <a class="scroll-cue" href="#sobre">
+    <span>Role para conhecer</span>
+    <span class="scroll-cue-line" aria-hidden="true"></span>
+  </a>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    isolation: isolate;
+    overflow: clip;
+    padding-block: clamp(2.5rem, 1.5rem + 4vw, 5rem) clamp(4rem, 3rem + 4vw, 6rem);
+  }
+
+  @media (min-width: 48rem) and (min-height: 40rem) {
+    .hero {
+      min-height: min(calc(100svh - var(--nav-h)), 62rem);
+      display: grid;
+      align-items: center;
+    }
+  }
+
+  /* ---------- fundo vivo ---------- */
+  .hero-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  .aura {
+    position: absolute;
+    width: 52vmax;
+    height: 52vmax;
+    border-radius: 50%;
+    will-change: transform;
+  }
+
+  .aura-a {
+    top: -18vmax;
+    right: -14vmax;
+    background: radial-gradient(closest-side, rgb(var(--c-glow-a-rgb) / 0.55), transparent);
+  }
+
+  .aura-b {
+    bottom: -26vmax;
+    left: -20vmax;
+    background: radial-gradient(closest-side, rgb(var(--c-glow-b-rgb) / 0.22), transparent);
+  }
+
+  :global(:root[data-motion='full']) .aura-a {
+    animation: drift 18s ease-in-out infinite;
+  }
+
+  :global(:root[data-motion='full']) .aura-b {
+    animation: drift 24s ease-in-out infinite reverse;
+  }
+
+  .honeycomb {
+    position: absolute;
+    inset: 0;
+    color: var(--c-hairline);
+    opacity: 0.7;
+    -webkit-mask-image: radial-gradient(ellipse 55% 60% at 72% 45%, #000 10%, transparent 70%);
+    mask-image: radial-gradient(ellipse 55% 60% at 72% 45%, #000 10%, transparent 70%);
+  }
+
+  /* ---------- grade ---------- */
+  .hero-grid {
+    display: grid;
+    gap: clamp(2.5rem, 2rem + 3vw, 4rem);
+    align-items: center;
+  }
+
+  @media (min-width: 48rem) {
+    .hero-grid {
+      grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+    }
+  }
+
+  .hero-copy {
+    display: grid;
+    justify-items: start;
+    gap: 1.4rem;
+  }
+
+  .hero-title {
+    display: grid;
+    margin-top: 0.25rem;
+  }
+
+  .hero-line {
+    display: block;
+    overflow: clip;
+    padding: 0.14em 0.12em 0.08em;
+    margin: -0.14em -0.12em -0.08em;
+  }
+
+  .hero-line > span {
+    display: inline-block;
+  }
+
+  .hero-line-sm {
+    margin-top: 0.4rem;
+    font-size: var(--fs-display-sm);
+    letter-spacing: -0.01em;
+    color: var(--c-muted);
+  }
+
+  .hero-role {
+    display: flex;
+    align-items: center;
+    min-height: 1.6em;
+    font-family: var(--font-display);
+    font-size: var(--fs-display-sm);
+    font-style: italic;
+    color: var(--c-accent-strong);
+  }
+
+  .caret {
+    display: inline-block;
+    width: 2px;
+    height: 1.05em;
+    margin-inline-start: 0.2rem;
+    background: currentColor;
+    vertical-align: middle;
+  }
+
+  :global(:root[data-motion='full']) .caret {
+    animation: blink 1.05s steps(1) infinite;
+  }
+
+  .hero-lead {
+    max-width: 34rem;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.4rem;
+  }
+
+  .hero-social {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  /* ---------- retrato ---------- */
+  .hero-visual {
+    display: grid;
+    justify-items: center;
+  }
+
+  .portrait {
+    position: relative;
+    width: min(100%, 30rem);
+    margin: 0;
+    transform: perspective(1400px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+    transition: transform 0.8s var(--ease-out);
+    transform-style: preserve-3d;
+  }
+
+  .portrait-stage {
+    position: relative;
+    transform-style: preserve-3d;
+  }
+
+  .portrait-frame {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-xl);
+    background: var(--c-inverse);
+    box-shadow: var(--shadow-lg);
+    aspect-ratio: 1508 / 2000;
+  }
+
+  .portrait-frame::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
+    background: linear-gradient(180deg, transparent 55%, rgb(var(--c-glow-b-rgb) / 0.22));
+    mix-blend-mode: soft-light;
+    pointer-events: none;
+  }
+
+  .portrait-frame :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .portrait-badge {
+    position: absolute;
+    left: clamp(-2.75rem, -4vw, -1rem);
+    bottom: clamp(1.5rem, 4vw, 3rem);
+    width: clamp(6rem, 5rem + 2.5vw, 7.5rem);
+    height: clamp(6rem, 5rem + 2.5vw, 7.5rem);
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--c-canvas);
+    box-shadow: var(--shadow-md);
+    transform: translateZ(40px);
+  }
+
+  .ring {
+    position: absolute;
+    inset: 0.35rem;
+    fill: var(--c-ink);
+    font-family: var(--font-sans);
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  :global(:root[data-motion='full']) .ring {
+    animation: spin 26s linear infinite;
+  }
+
+  .portrait-chips {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+  }
+
+  .chip-float {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.5rem 0.85rem;
+    border: 1px solid var(--c-hairline);
+    border-radius: var(--radius-pill);
+    background: rgb(var(--c-canvas-rgb) / 0.94);
+    color: var(--c-ink);
+    font-size: var(--fs-caption);
+    font-weight: 500;
+    box-shadow: var(--shadow-sm);
+    white-space: nowrap;
+  }
+
+  .chip-float :global(.icon) {
+    color: var(--c-accent-strong);
+  }
+
+  @media (min-width: 48rem) {
+    .portrait-chips {
+      display: block;
+      margin: 0;
+    }
+
+    .chip-float {
+      position: absolute;
+      transform: translateZ(60px);
+    }
+
+    .chip-a {
+      top: 7%;
+      right: -0.75rem;
+    }
+
+    .chip-b {
+      top: 38%;
+      left: -2.25rem;
+    }
+
+    .chip-c {
+      bottom: 7%;
+      right: -0.75rem;
+    }
+
+    :global(:root[data-motion='full']) .chip-float {
+      animation:
+        fade-up 0.9s var(--ease-out) both,
+        float 6s ease-in-out infinite;
+      animation-delay:
+        calc(1000ms + var(--c) * 140ms),
+        calc(1900ms + var(--c) * 700ms);
+    }
+  }
+
+  /* ---------- seta para rolar ---------- */
+  .scroll-cue {
+    position: absolute;
+    left: 50%;
+    bottom: 1.25rem;
+    translate: -50% 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--c-muted);
+    font-size: var(--fs-caption);
+    text-decoration: none;
+  }
+
+  .scroll-cue-line {
+    position: relative;
+    width: 1px;
+    height: 2.75rem;
+    overflow: hidden;
+    background: var(--c-hairline);
+  }
+
+  .scroll-cue-line::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--c-ink);
+    transform: translateY(-100%);
+  }
+
+  :global(:root[data-motion='full']) .scroll-cue-line::after {
+    animation: scroll-cue 2.4s var(--ease-in-out) infinite;
+  }
+
+  @media (min-width: 48rem) and (min-height: 46rem) {
+    .scroll-cue {
+      display: flex;
+    }
+  }
+
+  /* ---------- entrada da página ---------- */
+  :global(:root[data-motion='full']) .hero-enter {
+    animation: fade-up 1s var(--ease-out) both;
+    animation-delay: calc(var(--d) * 1ms + 80ms);
+  }
+
+  :global(:root[data-motion='full']) .hero-line > span {
+    animation: rise 1.15s var(--ease-out) both;
+    animation-delay: calc(var(--l) * 110ms + 150ms);
+  }
+
+  :global(:root[data-motion='full']) .portrait-stage {
+    animation: portrait-in 1.3s var(--ease-out) both 0.1s;
+  }
+
+  @keyframes portrait-in {
+    from {
+      transform: translate3d(0, 2rem, 0) scale(0.97);
+    }
+    to {
+      transform: none;
+    }
+  }
+
+  :global(:root[data-motion='full']) .portrait-frame :global(img) {
+    animation: settle 2.4s var(--ease-out) both 0.1s;
+  }
+
+  :global(:root[data-motion='full']) .portrait-badge {
+    animation: fade-up 1s var(--ease-out) both 0.9s;
+  }
+
+  /* celulares deitados: retrato menor ao lado do texto */
+  @media (orientation: landscape) and (max-height: 32rem) {
+    .hero-grid {
+      grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.7fr);
+    }
+
+    .portrait {
+      width: min(100%, 15rem);
+    }
+
+    .portrait-badge {
+      width: 5.5rem;
+      height: 5.5rem;
+    }
+
+    .portrait-chips {
+      display: none;
+    }
+  }
+</style>

@@ -1,0 +1,325 @@
+---
+import Icon from '../Icon.astro';
+import SectionHead from '../SectionHead.astro';
+import { award, events, organizedEvents, publication, technicalProductions } from '../../data/profile';
+
+const years = [...new Set(events.map((e) => e.year))].sort((a, b) => b - a);
+---
+
+<section id="conquistas" class="section" aria-labelledby="conquistas-title">
+  <div class="container">
+    <SectionHead
+      kicker="05 — Conquistas"
+      title="Prêmio, publicação e *palcos*"
+      text={`Um pitch premiado, um artigo publicado e ${events.length} participações em eventos, feiras e exposições, do Piauí a Lisboa.`}
+      id="conquistas-title"
+    />
+
+    <div class="highlights">
+      <article class="award" data-reveal="scale" data-ambient>
+        <Icon name="award" size={30} class="award-icon" />
+        <p class="kicker">Prêmio · {award.year}</p>
+        <h3 class="display-md">{award.title}</h3>
+        <p class="award-event">{award.event}</p>
+        <p class="award-org">{award.org}</p>
+        <svg class="award-hexes" viewBox="0 0 200 200" aria-hidden="true">
+          <path d="M100 10 177.9 55v90L100 190 22.1 145V55Z" />
+          <path d="M100 40 151.96 70v60L100 160 48.04 130V70Z" />
+        </svg>
+      </article>
+
+      <article class="card card-canvas card-lift pub" data-reveal style="--i:1" data-spotlight>
+        <p class="kicker">Publicação · {publication.year}</p>
+        <h3 class="display-sm pub-title">“{publication.title}”</h3>
+        <p class="pub-venue">
+          <Icon name="book-open" size={17} />
+          <span><em>{publication.venue}</em>, {publication.details}</span>
+        </p>
+        <p class="caption">{publication.kind}</p>
+        <div class="pub-divider" aria-hidden="true"></div>
+        <p class="kicker">Produção técnica</p>
+        <ul class="list-reset pub-list">
+          {
+            technicalProductions.map((t) => (
+              <li>
+                <span class="pub-item-title">{t.title}</span>
+                <span class="caption">
+                  {t.kind} · {t.year}
+                </span>
+              </li>
+            ))
+          }
+        </ul>
+      </article>
+    </div>
+
+    <div class="events">
+      <div class="events-intro" data-reveal>
+        <h3 class="display-sm">Eventos e apresentações</h3>
+        <p>Exposições, oficinas e seminários registrados no Lattes. Também organizou {organizedEvents.length} eventos:</p>
+        <ul class="list-reset organized">
+          {
+            organizedEvents.map((e) => (
+              <li>
+                <Icon name="sparkles" size={16} />
+                <span>
+                  {e.title} <span class="caption">· {e.year}</span>
+                </span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <div class="years">
+        {
+          years.map((year) => (
+            <section class="year" aria-labelledby={`ano-${year}`}>
+              <h4 id={`ano-${year}`} class="year-label" data-reveal="fade">
+                {year}
+              </h4>
+              <ul class="list-reset year-list">
+                {events
+                  .filter((e) => e.year === year)
+                  .map((e, i) => (
+                    <li class:list={['event', { 'is-highlight': e.highlight }]} data-reveal style={`--i:${i}`}>
+                      <span class="event-title" lang={e.lang}>
+                        {e.title}
+                      </span>
+                      <span class="event-meta">
+                        <span class="badge badge-outline">{e.kind}</span>
+                        {e.note && <span class="event-note">{e.note}</span>}
+                      </span>
+                    </li>
+                  ))}
+              </ul>
+            </section>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .highlights {
+    display: grid;
+    gap: 1rem;
+  }
+
+  @media (min-width: 56rem) {
+    .highlights {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    }
+  }
+
+  /* cartão de destaque na cor primária (callout do design system) */
+  .award {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    display: grid;
+    align-content: start;
+    gap: 0.75rem;
+    padding: clamp(2rem, 1.5rem + 2vw, 3rem);
+    border-radius: var(--radius-lg);
+    background: var(--c-primary);
+    color: var(--c-on-primary);
+  }
+
+  .award :global(.award-icon) {
+    margin-bottom: 0.5rem;
+  }
+
+  .award .kicker,
+  .award h3 {
+    color: var(--c-on-primary);
+  }
+
+  .award-event {
+    font-size: var(--fs-title-md);
+    font-weight: 500;
+  }
+
+  .award-org {
+    opacity: 0.92;
+  }
+
+  .award-hexes {
+    position: absolute;
+    z-index: -1;
+    right: -3.5rem;
+    bottom: -4rem;
+    width: 16rem;
+    fill: none;
+    stroke: var(--c-on-primary);
+    stroke-width: 1;
+    opacity: 0.22;
+  }
+
+  :global(:root[data-motion='full']) .award-hexes {
+    animation: spin 60s linear infinite;
+  }
+
+  .pub {
+    display: grid;
+    align-content: start;
+    gap: 0.75rem;
+  }
+
+  .pub-title {
+    font-style: italic;
+  }
+
+  .pub-venue {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--c-ink);
+    font-weight: 500;
+  }
+
+  .pub-divider {
+    height: 1px;
+    margin-block: 0.5rem;
+    background: var(--c-hairline);
+  }
+
+  .pub-list {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .pub-list li {
+    display: grid;
+    gap: 0.1rem;
+  }
+
+  .pub-item-title {
+    color: var(--c-ink);
+    font-weight: 500;
+  }
+
+  /* ---------- eventos por ano ---------- */
+  .events {
+    display: grid;
+    gap: 2.5rem;
+    margin-top: clamp(3.5rem, 3rem + 2vw, 5rem);
+  }
+
+  @media (min-width: 62rem) {
+    .events {
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+      gap: clamp(3rem, 2rem + 4vw, 5.5rem);
+    }
+
+    .events-intro {
+      position: sticky;
+      top: calc(var(--nav-h) + 2rem);
+      align-self: start;
+    }
+  }
+
+  .events-intro {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .events-intro p {
+    color: var(--c-muted);
+  }
+
+  .organized {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .organized li {
+    display: flex;
+    gap: 0.6rem;
+    color: var(--c-ink);
+  }
+
+  .organized :global(.icon) {
+    flex: none;
+    margin-top: 0.2rem;
+    color: var(--c-accent-strong);
+  }
+
+  .years {
+    display: grid;
+    gap: 2rem;
+  }
+
+  .year {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  @media (min-width: 40rem) {
+    .year {
+      grid-template-columns: 5.5rem minmax(0, 1fr);
+      gap: 1.5rem;
+    }
+  }
+
+  .year-label {
+    font-family: var(--font-display);
+    font-size: var(--fs-display-sm);
+    font-style: italic;
+    line-height: 1.2;
+    color: var(--c-accent);
+  }
+
+  @media (min-width: 40rem) {
+    .year-label {
+      position: sticky;
+      top: calc(var(--nav-h) + 1.5rem);
+      align-self: start;
+    }
+  }
+
+  .year-list {
+    border-top: 1px solid var(--c-hairline);
+  }
+
+  .event {
+    display: grid;
+    gap: 0.5rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--c-hairline);
+  }
+
+  .event-title {
+    color: var(--c-ink);
+    font-weight: 500;
+  }
+
+  .event-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+  }
+
+  .event-note {
+    color: var(--c-accent-strong);
+    font-size: var(--fs-caption);
+    font-weight: 600;
+  }
+
+  .event.is-highlight {
+    position: relative;
+    padding-inline: 1rem;
+    border-radius: var(--radius-md);
+    border-bottom-color: transparent;
+    background: var(--c-surface-card);
+  }
+
+  .event.is-highlight .event-title {
+    font-family: var(--font-display);
+    font-size: var(--fs-display-sm);
+    font-weight: 500;
+    font-style: italic;
+  }
+</style>

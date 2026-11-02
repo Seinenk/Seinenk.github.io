@@ -1,0 +1,49 @@
+---
+interface Props {
+  kicker: string;
+  /** Palavras entre *asteriscos* ficam em itálico, na cor de destaque. */
+  title: string;
+  id: string;
+  text?: string;
+  level?: 'h1' | 'h2';
+  size?: 'xl' | 'lg' | 'md';
+  class?: string;
+}
+
+const { kicker, title, id, text, level = 'h2', size = 'lg', class: className } = Astro.props;
+const Tag = level;
+
+// Divide o título em palavras para a animação, guardando quais estão em itálico.
+let italic = false;
+const words = title.split(/\s+/).map((raw) => {
+  const opens = raw.startsWith('*');
+  const closes = raw.endsWith('*') || raw.endsWith('*?') || raw.endsWith('*.');
+  if (opens) italic = true;
+  const word = { text: raw.replaceAll('*', ''), em: italic };
+  if (closes) italic = false;
+  return word;
+});
+---
+
+<header class:list={['section-head', className]}>
+  <p class="kicker" data-reveal="fade">{kicker}</p>
+  <Tag id={id} class:list={[`display-${size}`, 'split-words']} data-reveal>
+    {
+      words.map((w, i) => (
+        <>
+          <span class="word">
+            <span style={`--w:${i}`}>{w.em ? <em>{w.text}</em> : w.text}</span>
+          </span>
+          {i < words.length - 1 ? ' ' : ''}
+        </>
+      ))
+    }
+  </Tag>
+  {
+    text && (
+      <p data-reveal style="--i:2">
+        {text}
+      </p>
+    )
+  }
+</header>

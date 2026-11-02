@@ -1,0 +1,162 @@
+---
+// Janela de código do design system ("code-window-card"): um resumo do perfil em TypeScript.
+type Token = [kind: 'c' | 'k' | 'v' | 's' | 'p', text: string];
+
+const lines: Token[][] = [
+  [['c', '// carlos.ts']],
+  [['k', 'const'], ['p', ' '], ['v', 'carlos'], ['p', ' = {']],
+  [['p', '  '], ['v', 'nome'], ['p', ': '], ['s', "'Carlos Michael da Silva Sousa'"], ['p', ',']],
+  [['p', '  '], ['v', 'formacao'], ['p', ': '], ['s', "'ADS · IFPI'"], ['p', ',']],
+  [['p', '  '], ['v', 'atuacao'], ['p', ': ['], ['s', "'Investe Piauí'"], ['p', ', '], ['s', "'Vale do Mel'"], ['p', '],']],
+  [['p', '  '], ['v', 'foco'], ['p', ': ['], ['s', "'front-end'"], ['p', ', '], ['s', "'UX/UI'"], ['p', ', '], ['s', "'IoT'"], ['p', '],']],
+  [['p', '  '], ['v', 'pesquisa'], ['p', ': '], ['s', "'inovação e empreendedorismo'"], ['p', ',']],
+  [['p', '  '], ['v', 'idiomas'], ['p', ': ['], ['s', "'pt'"], ['p', ', '], ['s', "'en'"], ['p', ', '], ['s', "'es'"], ['p', '],']],
+  [['p', '};']],
+  [],
+  [['k', 'export default'], ['p', ' '], ['v', 'carlos'], ['p', ';']],
+];
+---
+
+<figure class="code-window" data-reveal="scale">
+  <div class="code-chrome" aria-hidden="true">
+    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    <span class="code-file">carlos.ts</span>
+  </div>
+  <pre class="code-body" tabindex="0" role="region" aria-label="Resumo do perfil escrito em código"><code>{
+    lines.map((line, i) => (
+      <span class="code-line" style={`--l:${i}`}><span class="ln" aria-hidden="true">{String(i + 1).padStart(2, ' ')}</span>{line.map(([kind, text]) => <span class={`t-${kind}`}>{text}</span>)}{i === lines.length - 1 && <span class="code-caret" aria-hidden="true" />}{'\n'}</span>
+    ))
+  }</code></pre>
+  <figcaption class="sr-only">Cartão em formato de código com um resumo do perfil.</figcaption>
+</figure>
+
+<style>
+  .code-window {
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid var(--c-inverse-hairline);
+    border-radius: var(--radius-lg);
+    background: var(--c-inverse-soft);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .code-chrome {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.85rem 1rem;
+    background: var(--c-inverse-elevated);
+    border-bottom: 1px solid var(--c-inverse-hairline);
+  }
+
+  .dot {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    background: var(--c-code-punct);
+    opacity: 0.55;
+  }
+
+  .dot:first-child {
+    background: var(--c-code-string);
+    opacity: 1;
+  }
+
+  .code-file {
+    margin-inline-start: 0.6rem;
+    color: var(--c-on-inverse-soft);
+    font-family: var(--font-mono);
+    font-size: var(--fs-caption);
+  }
+
+  .code-body {
+    margin: 0;
+    padding: 1.25rem 1.25rem 1.5rem 0.75rem;
+    overflow-x: auto;
+    color: var(--c-code-punct);
+    font-family: var(--font-mono);
+    font-size: var(--fs-code);
+    line-height: 1.75;
+    tab-size: 2;
+  }
+
+  .code-line {
+    display: block;
+    white-space: pre;
+  }
+
+  @media (max-width: 30rem) {
+    .code-body {
+      font-size: 0.75rem;
+      padding-inline-end: 0.75rem;
+    }
+
+    .ln {
+      width: 1.75rem;
+      padding-inline-end: 0.6rem;
+    }
+  }
+
+  .ln {
+    display: inline-block;
+    width: 2.25rem;
+    padding-inline-end: 1rem;
+    color: var(--c-code-comment);
+    text-align: right;
+    user-select: none;
+  }
+
+  .t-c {
+    color: var(--c-code-comment);
+    font-style: italic;
+  }
+
+  .t-k {
+    color: var(--c-code-string);
+  }
+
+  .t-v {
+    color: var(--c-code-key);
+  }
+
+  .t-s {
+    color: var(--c-code-string);
+  }
+
+  .t-p {
+    color: var(--c-code-punct);
+  }
+
+  .code-caret {
+    display: inline-block;
+    width: 0.55em;
+    height: 1.15em;
+    margin-inline-start: 0.15em;
+    vertical-align: text-bottom;
+    background: var(--c-code-key);
+  }
+
+  :global(:root[data-motion='full']) .code-caret {
+    animation: blink 1.1s steps(1) infinite;
+  }
+
+  /* as linhas aparecem uma a uma quando a janela entra na tela */
+  :global(:root[data-motion='full']) .code-window .code-line {
+    opacity: 0;
+    transform: translateX(-8px);
+    transition:
+      opacity 0.5s ease,
+      transform 0.6s var(--ease-out);
+    transition-delay: calc(var(--l) * 110ms + 350ms);
+    animation: reveal-failsafe 0.01s linear 4s forwards;
+  }
+
+  :global(:root[data-motion='full'].reveal-ready) .code-window .code-line {
+    animation: none;
+  }
+
+  :global(:root[data-motion='full']) .code-window:global(.is-visible) .code-line {
+    opacity: 1;
+    transform: none;
+  }
+</style>

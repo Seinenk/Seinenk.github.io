@@ -1,45 +1,31 @@
 ---
-import LegacyLayout from '../layouts/LegacyLayout.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/home/Hero.astro';
+import Marquee from '../components/home/Marquee.astro';
+import About from '../components/home/About.astro';
+import Stats from '../components/home/Stats.astro';
+import Journey from '../components/home/Journey.astro';
+import Education from '../components/home/Education.astro';
+import FeaturedProjects from '../components/home/FeaturedProjects.astro';
+import Achievements from '../components/home/Achievements.astro';
+import Skills from '../components/home/Skills.astro';
+import Contact from '../components/home/Contact.astro';
+import { profile } from '../data/profile';
 ---
-<LegacyLayout title="Home" description="Uma página de apresentação de Carlos Michael com foto e uma descrição própria e de suas habilidades." bodyClass="body-index">
 
-    <main>
-        <section class="section-normal">
-            <div class="parte-escrita">
-                <div class="meu-nome">
-                    <div class="titulo-1">
-                        <h1 class="car">Car</h1>
-                        <h1 class="mic">Mic</h1>
-                    </div>
-                    <div class="titulo-2">
-                        <h1 class="los">los</h1>
-                        <h1 class="hael">hael</h1>
-                    </div>
-                </div>
-                <h2 class="subtitulo">Atualmente estudante do curso de análise e desenvolvimento de sistemas do Instituto Federal de Educação, Ciência e Tecnologia do Piauí campus Picos (IFPI)</h2>
-            </div>
-            <img class="imagem" src="images/foto-própria.webp" alt="Imagem principal">
-        </section>
-
-        <section class="section-especial">
-            <h2 class="conteudo-secundario-titulo">Habilidades:</h2>
-            <div class="conteudo-secundario-icones">
-                <div class="html">
-                    <i class="fa-brands fa-html5"></i>
-                </div>
-                <div class="css3">
-                    <i class="fa-brands fa-css3-alt"></i>
-                </div>
-                <div class="python">
-                    <i class="fa-brands fa-python"></i>
-                </div>
-                <div class="java">
-                    <i class="fa-brands fa-java"></i>
-                </div>
-                <div class="steam">
-                    <i class="fa-brands fa-steam"></i>
-                </div>
-            </div>
-        </section>
-    </main>
-</LegacyLayout>
+<BaseLayout
+  title={`${profile.name} · Front-end, UX/UI e inovação`}
+  description="Portfólio de Carlos Michael da Silva Sousa, desenvolvedor front-end e designer de UX/UI formado pelo IFPI. Trajetória, formação, projetos, prêmios e eventos."
+  current="inicio"
+>
+  <Hero />
+  <Marquee />
+  <About />
+  <Stats />
+  <Journey />
+  <Education />
+  <FeaturedProjects />
+  <Achievements />
+  <Skills />
+  <Contact />
+</BaseLayout>

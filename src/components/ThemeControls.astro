@@ -1,0 +1,192 @@
+---
+import Icon from './Icon.astro';
+import { palettes } from '../themes';
+
+// O seletor de paletas só aparece quando existir mais de uma paleta em src/themes/palettes.
+const multiple = palettes.length > 1;
+---
+
+<div class="theme-controls">
+  {
+    multiple && (
+      <>
+        <button
+          class="icon-btn"
+          type="button"
+          popovertarget="palette-menu"
+          aria-label="Escolher paleta de cores"
+          title="Paleta de cores"
+        >
+          <Icon name="palette" size={19} />
+        </button>
+        <div id="palette-menu" class="palette-menu" popover>
+          <fieldset>
+            <legend class="caption">Paleta de cores</legend>
+            {palettes.map((p) => (
+              <label class="palette-option">
+                <input type="radio" name="palette" value={p.id} data-palette-option />
+                <span class="swatches" aria-hidden="true">
+                  {p.swatches.map((c) => (
+                    <span style={`background:${c}`} />
+                  ))}
+                </span>
+                <span class="palette-name">
+                  {p.name}
+                  <span class="sr-only">: {p.description}</span>
+                </span>
+              </label>
+            ))}
+          </fieldset>
+        </div>
+      </>
+    )
+  }
+
+  <button
+    class="icon-btn motion-toggle"
+    type="button"
+    aria-pressed="false"
+    title="Pausar animações"
+    data-motion-toggle
+  >
+    <span class="sr-only">Pausar animações</span>
+    <Icon name="pause" size={17} class="motion-icon motion-pause" />
+    <Icon name="play" size={17} class="motion-icon motion-play" />
+  </button>
+
+  <button
+    class="icon-btn theme-toggle"
+    type="button"
+    aria-pressed="false"
+    title="Tema escuro"
+    data-theme-toggle
+  >
+    <span class="sr-only">Tema escuro</span>
+    <span class="theme-icons" aria-hidden="true">
+      <Icon name="sun" size={19} class="theme-icon theme-sun" />
+      <Icon name="moon" size={18} class="theme-icon theme-moon" />
+    </span>
+  </button>
+</div>
+
+<style>
+  .theme-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  @media (max-width: 26rem) {
+    .theme-controls {
+      gap: 0.35rem;
+    }
+  }
+
+  /* pausa e play */
+  .motion-toggle :global(.motion-play) {
+    display: none;
+  }
+
+  :global(:root[data-motion='reduce']) .motion-toggle :global(.motion-pause) {
+    display: none;
+  }
+
+  :global(:root[data-motion='reduce']) .motion-toggle :global(.motion-play) {
+    display: block;
+  }
+
+  /* sol e lua se alternando */
+  .theme-icons {
+    display: grid;
+    place-items: center;
+  }
+
+  .theme-icons > :global(.theme-icon) {
+    grid-area: 1 / 1;
+    transition:
+      transform 0.6s var(--ease-spring),
+      opacity 0.3s ease;
+  }
+
+  .theme-icons > :global(.theme-moon) {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.4);
+  }
+
+  :global(:root[data-mode='dark']) .theme-icons > :global(.theme-sun) {
+    opacity: 0;
+    transform: rotate(90deg) scale(0.4);
+  }
+
+  :global(:root[data-mode='dark']) .theme-icons > :global(.theme-moon) {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* seletor de paletas */
+  .palette-menu {
+    inset: auto;
+    position-area: bottom span-left;
+    margin: 0.5rem 0 0;
+    padding: 0.75rem;
+    border: 1px solid var(--c-hairline);
+    border-radius: var(--radius-lg);
+    background: var(--c-surface-raised);
+    color: var(--c-body);
+    box-shadow: var(--shadow-lg);
+    min-width: 15rem;
+  }
+
+  .palette-menu fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .palette-menu legend {
+    padding: 0 0.5rem 0.5rem;
+  }
+
+  .palette-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.55rem 0.6rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+  }
+
+  .palette-option:hover,
+  .palette-option:has(:checked) {
+    background: var(--c-surface-card);
+  }
+
+  .palette-option input {
+    accent-color: var(--c-primary);
+    margin: 0;
+  }
+
+  .swatches {
+    display: flex;
+  }
+
+  .swatches span {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    border: 1px solid var(--c-hairline);
+    margin-inline-start: -0.3rem;
+  }
+
+  .swatches span:first-child {
+    margin-inline-start: 0;
+  }
+
+  .palette-name {
+    font-size: var(--fs-body-sm);
+    font-weight: 500;
+    color: var(--c-ink);
+  }
+</style>

@@ -1,53 +1,180 @@
 ---
-import LegacyLayout from '../layouts/LegacyLayout.astro';
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import PageHero from '../components/PageHero.astro';
+import type { IconName } from '../components/icons';
+import { links } from '../data/profile';
+import pandaJogar from '../assets/images/hobbies/panda-jogar.webp';
+import pandaAssistir from '../assets/images/hobbies/panda-assistir.webp';
+import pandaDormir from '../assets/images/hobbies/panda-dormir.webp';
+
+// Textos escritos por Carlos na primeira versão do site.
+const hobbies: {
+  id: string;
+  title: [string, string];
+  icon: IconName;
+  subtitle: string;
+  text: string;
+  image: ImageMetadata;
+  alt: string;
+  link?: { label: string; href: string };
+}[] = [
+  {
+    id: 'jogar',
+    title: ['Jog', 'ar'],
+    icon: 'gamepad-2',
+    subtitle: 'É meu hobby preferido',
+    text: 'Tenho um gosto bem amplo quando se trata de jogos, então basta eu pegar um bom jogo nas mãos que consigo me divertir por horas!',
+    image: pandaJogar,
+    alt: 'Ilustração de um panda sorridente segurando um controle de videogame em frente à TV.',
+    link: { label: 'Jogue comigo na Steam', href: links.steam.href },
+  },
+  {
+    id: 'assistir',
+    title: ['Assi', 'stir'],
+    icon: 'clapperboard',
+    subtitle: 'Filmes, séries, animes e desenhos animados',
+    text: 'Gosto de assistir qualquer coisa que me entretenha, desde desenhos animados a séries, basta que me agrade.',
+    image: pandaAssistir,
+    alt: 'Ilustração de um panda sentado no chão da sala, assistindo à TV com um controle ao lado.',
+  },
+  {
+    id: 'dormir',
+    title: ['Dorm', 'ir'],
+    icon: 'bed',
+    subtitle: 'Em qualquer horário do dia',
+    text: 'Principalmente depois de entrar na faculdade, minhas horas de sono foram reduzidas, mas ainda é uma das coisas que mais gosto de fazer.',
+    image: pandaDormir,
+    alt: 'Ilustração de um panda dormindo sobre uma almofada redonda.',
+  },
+];
 ---
-<LegacyLayout title="Hobbies" description="Amostra básica dos hobbies de Carlos Michael com uma leve descrição escrita pelo ponto de vista dele." bodyClass="body-hobbies">
 
-    <main>
-        <section class="section-normal">
-            <div>
-                <img class="imagem" src="images/panda-jogar.webp" alt="imagem do primeiro hobbie">
-            </div>
-            <div class="parte-escrita">
-                <div class="titulo">
-                    <h1 class="titulo-1">Jog</h1>
-                    <h1 class="titulo-2">ar</h1>
-                </div>
-                <h2 class="subtitulo">É meu hobbie preferido</h2>
-                <p class="texto">Tenho um gosto bem amplo quando se trata de jogos, então basta eu pegar um bom jogo nas mãos que consigo me divertir por horas!</p>
-                <div class="codigo">
-                    <h2>Jogue comigo:</h2>
-                    <a href="https://steamcommunity.com/profiles/76561198320042614/" aria-label="visualize o perfil de Carlos Michael e o adicione para jogarem juntos!"><i class="fa-solid fa-user-plus"></i></a>
-                </div>
-            </div>
-        </section>
+<BaseLayout
+  title="Hobbies · Carlos Michael da Silva Sousa"
+  description="Os hobbies de Carlos Michael fora do código: jogar, assistir filmes, séries e animes, e dormir, contados por ele mesmo."
+  current="hobbies"
+>
+  <PageHero
+    kicker="Hobbies"
+    title="Fora do *código*"
+    lead="O que eu gosto de fazer quando a tela não é de trabalho: jogar, assistir e, claro, dormir."
+  />
 
-        <section class="section-normal">
-            <div class="parte-escrita">
-                <div class="titulo-assistir">
-                    <h1 class="titulo-1">Assi</h1>
-                    <h1 class="titulo-2">stir</h1>
-                </div>
-                <h2 class="subtitulo">Filmes, séries, animes e desenhos animados</h2>
-                <p class="texto">Gosto de assistir qualquer coisa que me entretenha, desde desenhos animados a séries, basta que me agrade.</p>
+  <div class="hobbies">
+    {
+      hobbies.map((h, i) => (
+        <section class:list={['section', 'hobby', { 'band-soft': i % 2 === 0, 'is-flipped': i % 2 === 1 }]} aria-labelledby={`hobby-${h.id}`}>
+          <div class="container hobby-grid">
+            <div class="hobby-media" data-reveal={i % 2 === 1 ? 'right' : 'left'} data-ambient>
+              <Image
+                src={h.image}
+                alt={h.alt}
+                widths={[320, 468]}
+                sizes="(min-width: 48rem) 28rem, 80vw"
+                format="webp"
+                loading={i === 0 ? 'eager' : 'lazy'}
+                decoding="async"
+                class="hobby-img"
+              />
+              <span class="hobby-number" aria-hidden="true">
+                0{i + 1}
+              </span>
             </div>
-            <div>
-                <img class="imagem" src="images/panda-assistir.webp" alt="imagem do segundo hobbie">
+            <div class="hobby-text">
+              <p class="kicker" data-reveal="fade">
+                <Icon name={h.icon} size={16} />
+                Hobby {i + 1} de {hobbies.length}
+              </p>
+              <h2 id={`hobby-${h.id}`} class="display-xl hobby-title" data-reveal>
+                {h.title[0]}<em>{h.title[1]}</em>
+              </h2>
+              <p class="display-sm hobby-subtitle" data-reveal style="--i:1">
+                {h.subtitle}
+              </p>
+              <p class="body-lg" data-reveal style="--i:2">
+                {h.text}
+              </p>
+              {h.link && (
+                <a class="btn btn-primary" href={h.link.href} target="_blank" rel="noopener noreferrer" data-reveal style="--i:3">
+                  <Icon name="user-plus" size={18} />
+                  {h.link.label}
+                  <span class="sr-only">(abre em nova aba)</span>
+                </a>
+              )}
             </div>
+          </div>
         </section>
+      ))
+    }
+  </div>
+</BaseLayout>
 
-        <section class="section-normal">
-            <div class="imagem-panda">
-                <img class="imagem" src="images/panda-dormir.webp" alt="imagem do terceiro hobbie">
-            </div>
-            <div class="parte-escrita">
-                <div class="titulo">
-                    <h1 class="titulo-1">Dorm</h1>
-                    <h1 class="titulo-2">ir</h1>
-                </div>
-                <h2 class="subtitulo">Em qualquer horário do dia</h2>
-                <p class="texto">Principalmente depois de entrar na faculdade, minhas horas de sono foram reduzidas, mas ainda é uma das coisas que mais gosto de fazer.</p>
-            </div>
-        </section>
-    </main>
-</LegacyLayout>
+<style>
+  .hobby-grid {
+    display: grid;
+    gap: clamp(2rem, 1.5rem + 3vw, 5rem);
+    align-items: center;
+  }
+
+  @media (min-width: 48rem) {
+    .hobby-grid {
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    }
+
+    .is-flipped .hobby-media {
+      order: 2;
+    }
+  }
+
+  .hobby-media {
+    position: relative;
+    justify-self: center;
+    width: min(100%, 28rem);
+  }
+
+  .hobby-media :global(.hobby-img) {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+  }
+
+  :global(:root[data-motion='full']) .hobby-media :global(.hobby-img) {
+    animation: float 7s ease-in-out infinite;
+  }
+
+  .hobby-number {
+    position: absolute;
+    top: -2.5rem;
+    right: -0.5rem;
+    font-family: var(--font-display);
+    font-size: clamp(5rem, 3rem + 8vw, 9rem);
+    font-style: italic;
+    line-height: 1;
+    color: var(--c-accent);
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  .hobby-text {
+    display: grid;
+    justify-items: start;
+    gap: 1.1rem;
+    max-width: 36rem;
+  }
+
+  .hobby-title {
+    letter-spacing: -0.03em;
+  }
+
+  .hobby-title em {
+    margin-left: -0.04em;
+  }
+
+  .hobby-subtitle {
+    color: var(--c-muted);
+  }
+</style>

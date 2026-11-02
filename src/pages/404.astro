@@ -1,0 +1,34 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import PageHero from '../components/PageHero.astro';
+---
+
+<BaseLayout
+  title="Página não encontrada · Carlos Michael"
+  description="Esta página não existe ou mudou de endereço."
+  current="erro"
+>
+  <PageHero
+    kicker="Erro 404"
+    title="Esta página se *perdeu*"
+    lead="O endereço pode ter mudado ou nunca ter existido. Que tal voltar ao início ou ver os projetos?"
+  >
+    <div class="actions" data-reveal style="--i:3">
+      <a class="btn btn-primary" href="/">
+        Voltar ao início
+        <Icon name="arrow-right" size={18} class="icon-trail" />
+      </a>
+      <a class="btn btn-secondary" href="/projetos">Ver projetos</a>
+    </div>
+  </PageHero>
+</BaseLayout>
+
+<style>
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 2.5rem;
+  }
+</style>

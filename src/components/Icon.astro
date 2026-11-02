@@ -1,0 +1,39 @@
+---
+import { icons, type IconName } from './icons';
+
+interface Props {
+  name: IconName;
+  size?: number;
+  /** Texto para leitores de tela. Sem ele, o ícone é tratado como decorativo. */
+  label?: string;
+  class?: string;
+  strokeWidth?: number;
+}
+
+const { name, size = 20, label, class: className, strokeWidth = 1.75 } = Astro.props;
+const icon = icons[name];
+const paint =
+  icon.kind === 'stroke'
+    ? ({
+        fill: 'none',
+        stroke: 'currentColor',
+        'stroke-width': strokeWidth,
+        'stroke-linecap': 'round',
+        'stroke-linejoin': 'round',
+      } as const)
+    : ({ fill: 'currentColor' } as const);
+---
+
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+  width={size}
+  height={size}
+  class:list={['icon', className]}
+  {...paint}
+  role={label ? 'img' : undefined}
+  aria-label={label}
+  aria-hidden={label ? undefined : 'true'}
+  focusable="false"
+  set:html={icon.body}
+/>

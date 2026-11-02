@@ -1,0 +1,69 @@
+---
+import { marquee } from '../../data/profile';
+
+// Faixa decorativa: as mesmas competências aparecem, legíveis, na seção Competências.
+const items = [...marquee, ...marquee];
+---
+
+<div class="marquee band-soft" aria-hidden="true" data-ambient>
+  <div class="marquee-track">
+    {
+      items.map((item, i) => (
+        <>
+          <span class:list={['marquee-item', { 'is-em': i % 2 === 1 }]}>{item}</span>
+          <svg class="marquee-sep" viewBox="0 0 64 64" width="14" height="14">
+            <path d="M32 3.5 56.68 17.75v28.5L32 60.5 7.32 46.25v-28.5Z" />
+          </svg>
+        </>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  .marquee {
+    overflow: hidden;
+    padding-block: 1.6rem;
+    border-block: 1px solid var(--c-hairline);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+
+  .marquee-track {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    width: max-content;
+    padding-inline-start: 2rem;
+  }
+
+  :global(:root[data-motion='full']) .marquee-track {
+    animation: marquee 60s linear infinite;
+  }
+
+  @media (hover: hover) {
+    .marquee:hover .marquee-track {
+      animation-play-state: paused;
+    }
+  }
+
+  .marquee-item {
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.5rem);
+    line-height: 1;
+    letter-spacing: -0.015em;
+    color: var(--c-ink);
+    white-space: nowrap;
+  }
+
+  .marquee-item.is-em {
+    font-style: italic;
+    color: var(--c-accent);
+  }
+
+  .marquee-sep {
+    flex: none;
+    fill: var(--c-accent);
+    opacity: 0.7;
+  }
+</style>

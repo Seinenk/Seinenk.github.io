@@ -1,41 +1,204 @@
 ---
-import LegacyLayout from '../layouts/LegacyLayout.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import PageHero from '../components/PageHero.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { links, projects, type ProjectType } from '../data/profile';
+import layoutSimples from '../assets/images/projetos/layout-simples.webp';
+import portfolio2023 from '../assets/images/projetos/portfolio-2023.webp';
+
+const filterKey: Record<ProjectType, string> = {
+  Desenvolvimento: 'desenvolvimento',
+  Extensão: 'extensao',
+  Pesquisa: 'pesquisa',
+  'Produção técnica': 'producao',
+  Web: 'web',
+};
+
+const filterLabel: Record<ProjectType, string> = {
+  Desenvolvimento: 'Desenvolvimento',
+  Extensão: 'Extensão',
+  Pesquisa: 'Pesquisa',
+  'Produção técnica': 'Produção técnica',
+  Web: 'Primeiros passos',
+};
+
+const types = (Object.keys(filterKey) as ProjectType[]).filter((t) => projects.some((p) => p.type === t));
+
+const images: Record<string, { src: ImageMetadata; alt: string }> = {
+  'layout-simples': {
+    src: layoutSimples,
+    alt: 'Captura de tela do projeto Layout Simples: cabeçalho roxo com menu, três cartões coloridos chamados Missão, Visão e Valores, e rodapé cinza.',
+  },
+  'portfolio-2023': {
+    src: portfolio2023,
+    alt: 'Captura de tela da primeira versão deste portfólio, com fundo escuro, o nome Carlos Michael e ícones de habilidades.',
+  },
+};
 ---
-<LegacyLayout title="Projetos" description="Acesso rápido aos projetos produzidos por carlos Michael com disposição de imagem." bodyClass="body-projetos">
 
-    <main>
-        <section class="section-normal">
-            <div>
-                <img class="imagem-projetos" src="images/primeiro-projeto.webp" alt="imagem da primeira atividade">
-            </div>
-            <div class="parte-escrita">
-                <div class="titulo-separado">
-                    <h1 class="titulo-1">Layout</h1>
-                    <h1 class="titulo-2">Simples</h1>
-                </div>
-                <h2 class="subtitulo">Primeira atividade de Web</h2>
-                <p class="texto">Atividade de iniciação dos alunos em html e css, onde o objetivo era copiar o layout passado pelo professor.</p>
-                <div class="codigo">
-                    <a href="https://github.com/Seinenk/Web-1/tree/master/Web-1" aria-label="Veja o código do primeiro projeto de Carlos Michael envolvendo html e css."><i class="fa-solid fa-code"></i></a>
-                </div>
-            </div>
-        </section>
+<BaseLayout
+  title="Projetos · Carlos Michael da Silva Sousa"
+  description="Projetos de Carlos Michael: Bee Sense (IoT para abelhas sem ferrão), Agende Aí (SaaS), Fábrica de Software do IFPI, Dino Runner, INCLUA e pesquisa sobre testes com pytest."
+  current="projetos"
+>
+  <PageHero
+    kicker="Projetos"
+    title="Do protótipo ao *produto*"
+    lead="Pesquisa, extensão e desenvolvimento registrados no Currículo Lattes, mais as atividades de Web que deram início a este portfólio."
+  >
+    <ul class="list-reset type-summary" aria-label="Projetos por tipo">
+      {
+        types.map((t, i) => (
+          <li data-reveal style={`--i:${i + 2}`}>
+            <span class="type-count">{projects.filter((p) => p.type === t).length}</span>
+            <span class="type-name">{filterLabel[t]}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </PageHero>
 
-        <section class="section-normal">
-            <div class="parte-escrita">
-                <div class="titulo-portfolio">
-                    <h1 class="titulo-1">Port</h1>
-                    <h1 class="titulo-2">fólio</h1>
-                </div>
-                <h2 class="subtitulo">Segunda atividade de Web</h2>
-                <p class="texto">Atividade de fixação dos alunos em html e css, onde o objetivo é criar uma página de portifólio dando foco ao design.</p>
-                <div class="codigo">
-                    <a href="https://github.com/Seinenk/Seinenk.github.io" aria-label="Veja o código do segundo projeto de Carlos Michael envolvendo html e css."><i class="fa-solid fa-code"></i></a>
-                </div>
-            </div>
-            <div>
-                <img class="imagem-projetos" src="images/segundo-projeto.webp" alt="imagem da segunda atividade">
-            </div>
-        </section>
-    </main>
-</LegacyLayout>
+  <section class="section band-soft projects-section" aria-labelledby="lista-title">
+    <div class="container">
+      <h2 id="lista-title" class="sr-only">Lista de projetos</h2>
+      <div class="filters" role="group" aria-label="Filtrar projetos por tipo" data-filters hidden>
+        <button class="filter" type="button" aria-pressed="true" data-filter="todos">
+          Todos <span class="filter-count">{projects.length}</span>
+        </button>
+        {
+          types.map((t) => (
+            <button class="filter" type="button" aria-pressed="false" data-filter={filterKey[t]}>
+              {filterLabel[t]} <span class="filter-count">{projects.filter((p) => p.type === t).length}</span>
+            </button>
+          ))
+        }
+      </div>
+      <p class="sr-only" aria-live="polite" data-filter-status></p>
+
+      <ul class="list-reset projects-grid">
+        {
+          projects.map((project, i) => (
+            <li data-project-type={filterKey[project.type]} data-reveal style={`--i:${i % 3}`}>
+              <ProjectCard project={project} image={images[project.slug]} headingLevel="h3" />
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="section more" aria-labelledby="mais-title">
+    <div class="container more-inner" data-reveal>
+      <Icon name="github" size={40} />
+      <h2 id="mais-title" class="display-md">Mais código no <em>GitHub</em></h2>
+      <p>Repositórios de sistemas embarcados, IoT, FreeRTOS e as atividades da faculdade.</p>
+      <a class="btn btn-primary" href={links.github.href} target="_blank" rel="noopener noreferrer">
+        Ver perfil {links.github.handle}
+        <Icon name="arrow-up-right" size={18} class="icon-diagonal" />
+        <span class="sr-only">(abre em nova aba)</span>
+      </a>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .type-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2.5rem;
+    margin-top: 2.5rem;
+  }
+
+  .type-summary li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+  }
+
+  .type-count {
+    font-family: var(--font-display);
+    font-size: var(--fs-display-md);
+    font-style: italic;
+    line-height: 1;
+    color: var(--c-accent);
+  }
+
+  .type-name {
+    color: var(--c-muted);
+    font-weight: 500;
+  }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .filters[hidden] {
+    display: none;
+  }
+
+  /* abas do design system (category-tab) */
+  .filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--c-hairline);
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--c-muted);
+    font-size: var(--fs-nav);
+    font-weight: 500;
+    transition:
+      background-color 0.25s ease,
+      color 0.25s ease,
+      border-color 0.25s ease;
+  }
+
+  .filter:hover {
+    color: var(--c-ink);
+    border-color: var(--c-outline);
+  }
+
+  .filter[aria-pressed='true'] {
+    background: var(--c-ink);
+    border-color: var(--c-ink);
+    color: var(--c-canvas);
+  }
+
+  .filter-count {
+    font-size: var(--fs-caption);
+    opacity: 0.8;
+  }
+
+  .projects-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+  }
+
+  .projects-grid li[hidden] {
+    display: none;
+  }
+
+  .more-inner {
+    display: grid;
+    justify-items: center;
+    gap: 1rem;
+    max-width: 38rem;
+    text-align: center;
+    color: var(--c-ink);
+  }
+
+  .more-inner p {
+    color: var(--c-muted);
+  }
+
+  .more-inner .btn {
+    margin-top: 0.5rem;
+  }
+</style>

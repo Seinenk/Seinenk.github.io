@@ -1,0 +1,321 @@
+/* ---------- botões ---------- */
+.btn {
+  --btn-bg: transparent;
+  --btn-fg: var(--c-ink);
+  --btn-border: transparent;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 2.875rem;
+  padding: 0.8rem 1.35rem;
+  border: 1px solid var(--btn-border);
+  border-radius: var(--radius-md);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  font-size: var(--fs-button);
+  font-weight: 500;
+  line-height: 1.1;
+  text-decoration: none;
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.4s var(--ease-out),
+    transform 0.4s var(--ease-out);
+}
+
+.btn .icon {
+  flex: none;
+  transition: transform 0.45s var(--ease-out);
+}
+
+.btn:active {
+  transform: translateY(1px) scale(0.985);
+}
+
+.btn-primary {
+  --btn-bg: var(--c-primary);
+  --btn-fg: var(--c-on-primary);
+}
+
+.btn-primary:is(:hover, :focus-visible) {
+  --btn-bg: var(--c-primary-active);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+  --btn-bg: transparent;
+  --btn-border: var(--c-outline);
+}
+
+.btn-secondary:is(:hover, :focus-visible) {
+  --btn-bg: var(--c-surface-card);
+}
+
+.btn-on-inverse {
+  --btn-bg: var(--c-inverse-elevated);
+  --btn-fg: var(--c-on-inverse);
+  --btn-border: var(--c-inverse-hairline);
+}
+
+.btn-on-inverse:is(:hover, :focus-visible) {
+  --btn-border: var(--c-on-inverse-soft);
+}
+
+.btn-on-primary {
+  --btn-bg: var(--c-on-primary);
+  --btn-fg: var(--c-primary);
+}
+
+.btn-on-primary:is(:hover, :focus-visible) {
+  box-shadow: var(--shadow-md);
+}
+
+.btn-ghost-on-primary {
+  --btn-fg: var(--c-on-primary);
+  --btn-border: var(--c-on-primary);
+}
+
+/* brilho que atravessa os botões principais */
+:root[data-motion='full'] :is(.btn-primary, .btn-on-primary)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.22) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform 0.9s var(--ease-out);
+}
+
+:root[data-motion='full'] :is(.btn-primary, .btn-on-primary):hover::after {
+  transform: translateX(120%);
+}
+
+@media (hover: hover) {
+  .btn:hover .icon-trail {
+    transform: translateX(4px);
+  }
+
+  .btn:hover .icon-diagonal {
+    transform: translate(2px, -2px);
+  }
+}
+
+.icon-btn {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: none;
+  border: 1px solid var(--c-hairline);
+  border-radius: var(--radius-pill);
+  background: var(--c-canvas);
+  color: var(--c-ink);
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    transform 0.4s var(--ease-out);
+}
+
+.icon-btn:hover {
+  background: var(--c-surface-card);
+  border-color: var(--c-outline);
+}
+
+.icon-btn:active {
+  transform: scale(0.94);
+}
+
+/* ---------- selos e etiquetas ---------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--radius-pill);
+  background: var(--c-surface-card);
+  color: var(--c-ink);
+  font-size: var(--fs-caption);
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.badge-accent {
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+  font-size: var(--fs-caption-upper);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.badge-outline {
+  background: transparent;
+  border: 1px solid var(--c-hairline);
+  color: var(--c-muted);
+}
+
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.chip {
+  display: inline-block;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--c-hairline);
+  border-radius: var(--radius-pill);
+  background: var(--c-canvas);
+  color: var(--c-body);
+  font-size: var(--fs-caption);
+  line-height: 1.35;
+}
+
+.band-inverse .chip {
+  border-color: var(--c-inverse-hairline);
+  background: transparent;
+  color: var(--c-on-inverse-soft);
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--fs-caption);
+  font-weight: 500;
+  color: var(--c-muted);
+}
+
+.status-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--c-accent);
+}
+
+.status[data-live] .status-dot {
+  background: var(--c-accent-strong);
+}
+
+:root[data-motion='full'] .status[data-live] .status-dot {
+  animation: pulse 2.2s ease-out infinite;
+}
+
+/* ---------- cartões ---------- */
+.card {
+  position: relative;
+  border: 1px solid var(--c-hairline-soft);
+  border-radius: var(--radius-lg);
+  background: var(--c-surface-card);
+  padding: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+  transition:
+    transform 0.5s var(--ease-out),
+    box-shadow 0.5s var(--ease-out),
+    border-color 0.3s ease,
+    background-color 0.4s ease;
+}
+
+.card-canvas {
+  background: var(--c-canvas);
+  border-color: var(--c-hairline);
+}
+
+/* luz que segue o ponteiro */
+[data-spotlight] {
+  --mx: 50%;
+  --my: 50%;
+}
+
+[data-spotlight]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    28rem circle at var(--mx) var(--my),
+    rgb(var(--c-accent-rgb) / 0.16),
+    transparent 62%
+  );
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  [data-spotlight]:hover::before {
+    opacity: 1;
+  }
+
+  .card-lift:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--c-hairline);
+  }
+}
+
+/* ---------- links ---------- */
+.text-link {
+  color: var(--c-accent-strong);
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: rgb(var(--c-accent-rgb) / 0.5);
+  transition: text-decoration-color 0.25s ease;
+}
+
+.text-link:hover {
+  text-decoration-color: currentColor;
+}
+
+.link-arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding-block: 0.35rem;
+  color: var(--c-ink);
+  font-weight: 500;
+  text-decoration: none;
+  background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+  transition: background-size 0.45s var(--ease-out);
+}
+
+.link-arrow:hover,
+.link-arrow:focus-visible {
+  background-size: 100% 1px;
+}
+
+.link-arrow .icon {
+  transition: transform 0.45s var(--ease-out);
+}
+
+.link-arrow:hover .icon-trail {
+  transform: translateX(4px);
+}
+
+.link-arrow:hover .icon-diagonal {
+  transform: translate(2px, -2px);
+}
+
+.band-inverse .link-arrow {
+  color: var(--c-on-inverse);
+}
+
+/* ---------- títulos com palavras animadas ---------- */
+.split-words .word {
+  display: inline-block;
+  overflow: clip;
+  padding: 0.16em 0.08em 0.1em;
+  margin: -0.16em -0.08em -0.1em;
+  vertical-align: top;
+}
+
+.split-words .word > span {
+  display: inline-block;
+}
