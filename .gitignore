@@ -1,0 +1,10 @@
+# dependências
+node_modules/
+
+# saída do build e cache do Astro
+dist/
+.astro/
+
+# sistema e logs
+.DS_Store
+npm-debug.log*
