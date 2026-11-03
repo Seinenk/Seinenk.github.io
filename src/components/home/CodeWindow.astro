@@ -334,7 +334,7 @@ const scenes: { id: string; label: string; short: string; icon: IconName }[] = [
         <div class="sl-slide sl-c">
           <span class="sl-head pop" style={`--t:${T.showC + 150}ms`}>Atuação</span>
           <span class="sl-card pop" style={`--t:${T.card1}ms;--x:8`}><small>Assessor técnico</small>Investe Piauí</span>
-          <span class="sl-card drag" style={`--t:${T.drag2}ms;--x:${CARD2.x};--dx:${CARD2.dx}cqw;--dy:${CARD2.dy}cqh;--dur:${T.drop2 - T.drag2}ms`}><small>Conselheiro fiscal</small>Vale do Mel</span>
+          <span class="sl-card drag" style={`--t:${T.drag2}ms;--x:${CARD2.x};--dx:${CARD2.dx}cqw;--dy:${CARD2.dy}cqh;--dur:${T.drop2 - T.drag2}ms`}><small>Diretor de tecnologia</small>Vale do Mel</span>
         </div>
         <div class="sl-slide sl-b">
           <span class="sl-head pop" style={`--t:${T.showB + 150}ms`}>Foco</span>
@@ -867,6 +867,12 @@ const scenes: { id: string; label: string; short: string; icon: IconName }[] = [
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
+  }
+
+  /* "Diretor de tecnologia" cabe numa linha do cartão do slide */
+  .sl-card small {
+    font-size: 2.1cqw;
+    letter-spacing: 0.08em;
   }
 
   .dz-tags {

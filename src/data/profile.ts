@@ -1,6 +1,7 @@
 /**
  * Conteúdo do portfólio. A fonte é o Currículo Lattes de Carlos Michael
- * (http://lattes.cnpq.br/7665168854776714), atualizado em 07/10/2026.
+ * (http://lattes.cnpq.br/7665168854776714), atualizado em 07/10/2026, mais a
+ * promoção a diretor de tecnologia do Vale do Mel, informada por ele em 11/2026.
  * Para atualizar o site, edite este arquivo: as páginas leem tudo daqui.
  */
 
@@ -23,7 +24,7 @@ export const profile = {
     'Graduado em Análise e Desenvolvimento de Sistemas pelo Instituto Federal do Piauí, hoje sou assessor técnico na Investe Piauí e pesquiso inovação e empreendedorismo.',
   about: [
     'Sou Carlos Michael da Silva Sousa, desenvolvedor front-end e designer de UX/UI. Toda a minha formação foi no Instituto Federal do Piauí (IFPI): o curso técnico em Informática, a graduação em Análise e Desenvolvimento de Sistemas, concluída em 2026, e a Residência Tecnológica em Sistemas Embarcados.',
-    'Hoje sou assessor técnico na Investe Piauí, o braço de desenvolvimento do governo do estado, e integro a diretoria do ecossistema de inovação Vale do Mel como conselheiro fiscal. Também represento a comunidade de startups Guaribas Valley.',
+    'Hoje sou assessor técnico na Investe Piauí, o braço de desenvolvimento do governo do estado, e diretor de tecnologia do ecossistema de inovação Vale do Mel, onde antes atuei como conselheiro fiscal. Também represento a comunidade de startups Guaribas Valley.',
     'Minha experiência está na Ciência da Computação, com ênfase em engenharia de software e gestão de processos, e minhas pesquisas tratam de inovação e empreendedorismo. Os projetos vão de uma plataforma de gestão para pequenos negócios do setor alimentício ao monitoramento de abelhas sem ferrão com Internet das Coisas.',
   ],
   area: 'Ciências Exatas e da Terra · Ciência da Computação · Engenharia de Software',
@@ -65,11 +66,20 @@ export const experience: Experience[] = [
     tags: ['Colaborador', '44 h semanais'],
   },
   {
-    period: '2025 — atual',
+    period: '2026 — atual',
     current: true,
+    role: 'Diretor de tecnologia',
+    org: 'Ecossistema de Inovação Vale do Mel',
+    detail:
+      'Promovido a diretor de tecnologia na diretoria do ecossistema de inovação Vale do Mel (PI), cargo que ocupa atualmente.',
+    tags: ['Diretoria', 'Tecnologia'],
+  },
+  {
+    period: '2025 — 2026',
     role: 'Conselheiro fiscal',
     org: 'Ecossistema de Inovação Vale do Mel',
-    detail: 'Integra, de forma voluntária, a diretoria do ecossistema de inovação Vale do Mel (PI).',
+    detail:
+      'Integrou, de forma voluntária, a diretoria do ecossistema de inovação Vale do Mel (PI) até setembro de 2026, quando foi promovido.',
     tags: ['Voluntário', 'Inovação'],
   },
   {
@@ -411,7 +421,7 @@ export const languages = [
 export const stats = [
   { value: events.length, suffix: '', label: 'eventos, feiras e exposições' },
   { value: projects.filter((p) => p.type !== 'Web' && p.type !== 'Produção técnica').length, suffix: '', label: 'projetos de pesquisa, extensão e desenvolvimento' },
-  { value: experience.length, suffix: '', label: 'instituições em que atuo ou atuei' },
+  { value: new Set(experience.map((e) => e.org)).size, suffix: '', label: 'instituições em que atuo ou atuei' },
   { value: 1, suffix: 'º', label: 'lugar em pitch na Mostra Semiárido Digital' },
 ];
 
