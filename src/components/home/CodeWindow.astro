@@ -1,7 +1,38 @@
 ---
-// Janela de código do design system ("code-window-card"): um resumo do perfil em TypeScript.
-type Token = [kind: 'c' | 'k' | 'v' | 's' | 'p', text: string];
+import Icon from '../Icon.astro';
+import type { IconName } from '../icons';
+import { profile } from '../../data/profile';
 
+/*
+ * Cartão "carlos.ts" (code-window-card do design system), agora um pequeno estúdio:
+ * o mesmo resumo do perfil aparece sendo programado, montado num quadro de design,
+ * escrito num documento e organizado em slides. A barra com os três pontos não muda.
+ *
+ * Toda a coreografia é CSS. Os tempos e o caminho do cursor são calculados aqui, no
+ * build; o script do site só troca as cenas, reinicia as animações e pausa quando o
+ * cartão sai da tela, quando o ponteiro está em cima ou quando as animações são pausadas.
+ */
+
+type Token = [kind: 'c' | 'k' | 'v' | 's' | 'p', text: string];
+type Point = [ms: number, x: number, y: number];
+type Stop = [ms: number, declarations: string];
+
+const pct = (ms: number, total: number) => `${((ms / total) * 100).toFixed(3)}%`;
+const keyframes = (name: string, total: number, stops: Stop[]) =>
+  `@keyframes ${name}{${stops.map(([ms, decl]) => `${pct(ms, total)}{${decl}}`).join('')}}`;
+// Cursor pressionado (arrastando ou clicando) durante cada intervalo.
+const presses = (ranges: [number, number][], total: number): Stop[] => [
+  [0, 'scale:1'],
+  ...ranges.flatMap(([a, b]): Stop[] => [
+    [a - 60, 'scale:1'],
+    [a, 'scale:.86'],
+    [b, 'scale:.86'],
+    [b + 80, 'scale:1'],
+  ]),
+  [total, 'scale:1'],
+];
+
+/* ---------- 1. código: cada linha é digitada no seu tempo ---------- */
 const lines: Token[][] = [
   [['c', '// carlos.ts']],
   [['k', 'const'], ['p', ' '], ['v', 'carlos'], ['p', ' = {']],
@@ -15,23 +46,336 @@ const lines: Token[][] = [
   [],
   [['k', 'export default'], ['p', ' '], ['v', 'carlos'], ['p', ';']],
 ];
+
+const CODE = { start: 300, char: 24, pause: 110, hold: 2600 };
+let codeClock = CODE.start;
+const codeLines = lines.map((tokens) => {
+  const n = tokens.reduce((sum, [, text]) => sum + [...text].length, 0);
+  const d = codeClock;
+  codeClock += n * CODE.char + CODE.pause;
+  return { tokens, n, d };
+});
+const codeEnd = codeClock - CODE.pause;
+const codeMs = codeClock + CODE.hold;
+
+/* ---------- 2. design: cada camada é arrastada para o lugar no quadro ---------- */
+// Posições em % do quadro: (x, y) é o canto do elemento, (dx, dy) de onde ele vem
+// arrastado e (gx, gy) o ponto em que o cursor o segura.
+const DESIGN = { start: 550, step: 1150, hold: 1900 };
+const designEls = (
+  [
+    { key: 'foto', layer: 'Foto', icon: 'circle', x: 7, y: 10, dx: -16, dy: 22, gx: 9, gy: 12 },
+    { key: 'nome', layer: 'Nome', icon: 'type', x: 31, y: 11, dx: 18, dy: -14, gx: 12, gy: 5 },
+    { key: 'sub', layer: 'Formação', icon: 'type', x: 31, y: 32, dx: 16, dy: 16, gx: 6, gy: 2.5 },
+    { key: 'cards', layer: 'Atuação', icon: 'square', x: 7, y: 48, dx: -10, dy: 22, gx: 18, gy: 8 },
+    { key: 'tags', layer: 'Foco', icon: 'square', x: 7, y: 73, dx: 20, dy: 12, gx: 9, gy: 4 },
+  ] as { key: string; layer: string; icon: IconName; x: number; y: number; dx: number; dy: number; gx: number; gy: number }[]
+).map((el, i) => ({ ...el, t: DESIGN.start + i * DESIGN.step }));
+const designMs = DESIGN.start + designEls.length * DESIGN.step + DESIGN.hold;
+
+const designPath: Point[] = [[0, 80, 112]];
+for (const el of designEls) {
+  const from: [number, number] = [el.x + el.dx + el.gx, el.y + el.dy + el.gy];
+  const to: [number, number] = [el.x + el.gx, el.y + el.gy];
+  designPath.push([el.t - 60, ...from], [el.t + 120, ...from], [el.t + 700, ...to], [el.t + 820, ...to]);
+}
+designPath.push([designMs - 1000, 88, 95], [designMs, 88, 95]);
+
+/* ---------- 3. documento: o texto é escrito linha a linha ---------- */
+const DOC = { start: 450, char: 26, pause: 230, hold: 2100 };
+const docSource = [
+  { kind: 'title', text: profile.name },
+  { kind: 'sub', text: 'Tecnólogo em ADS · IFPI' },
+  { kind: 'li', text: 'Atuação: Investe Piauí e Vale do Mel' },
+  { kind: 'li', text: 'Foco: front-end, UX/UI e IoT' },
+  { kind: 'li', text: 'Pesquisa: inovação e empreendedorismo' },
+  { kind: 'li', text: 'Idiomas: português, inglês e espanhol' },
+];
+let docClock = DOC.start;
+const docLines = docSource.map((line) => {
+  const n = [...line.text].length;
+  const d = docClock;
+  docClock += n * DOC.char + DOC.pause;
+  return { ...line, n, d };
+});
+const docEnd = docClock - DOC.pause;
+const docMs = docClock + DOC.hold;
+const docTitle = docLines[0];
+const docSub = docLines[1];
+const docItems = docLines.slice(2);
+
+/* ---------- 4. slides: reorganiza a apresentação e monta os slides ---------- */
+// Medidas em cqw da área dos slides (largura de referência).
+const SL = { x: 27, y: 4, w: 68 };
+const SL_H = (SL.w * 9) / 16;
+const TH = { x: 4.5, y: 4, w: 17, gap: 2.6 };
+const TH_H = (TH.w * 9) / 16;
+const STEP = TH_H + TH.gap;
+const thumbAt = (row: number): [number, number] => [TH.x + TH.w * 0.55, TH.y + row * STEP + TH_H * 0.55];
+const slideAt = (sx: number, sy: number): [number, number] => [SL.x + (sx / 100) * SL.w, SL.y + (sy / 100) * SL_H];
+
+const SLIDES_MS = 8800;
+const T = { grab: 1150, drop: 1950, clickC: 2250, showC: 2400, card1: 2750, drag2: 3150, drop2: 3750, clickB: 5000, showB: 5150, chips: 5450, line: 6050 };
+const CARD2 = { x: 52, y: 46, dx: 14, dy: 22 }; // em % do slide
+const card2To = slideAt(CARD2.x + 6, CARD2.y + 8);
+const card2From: [number, number] = [card2To[0] + (CARD2.dx / 100) * SL.w, card2To[1] + (CARD2.dy / 100) * SL_H];
+
+const slidesPath: Point[] = [
+  [0, 84, 44],
+  [450, 84, 44],
+  [T.grab - 80, ...thumbAt(2)],
+  [T.grab + 120, ...thumbAt(2)],
+  [T.drop, ...thumbAt(1)],
+  [T.clickC + 160, ...thumbAt(1)],
+  [T.drag2 - 60, ...card2From],
+  [T.drag2 + 120, ...card2From],
+  [T.drop2, ...card2To],
+  [T.drop2 + 250, ...card2To],
+  [T.clickB - 160, ...thumbAt(2)],
+  [T.clickB + 160, ...thumbAt(2)],
+  [T.line + 400, ...slideAt(72, 82)],
+  [SLIDES_MS - 900, 84, 44],
+  [SLIDES_MS, 84, 44],
+];
+
+const ring = (on: boolean) => `outline-color:${on ? 'var(--c-inverse-accent)' : 'transparent'}`;
+const fadeWindow = (from: number, to: number | null): Stop[] => {
+  const stops: Stop[] = [[0, `opacity:${from === 0 ? 1 : 0}`]];
+  if (from > 0) stops.push([from, 'opacity:0'], [from + 300, 'opacity:1']);
+  if (to !== null) stops.push([to, 'opacity:1'], [to + 300, 'opacity:0'], [SLIDES_MS, 'opacity:0']);
+  else stops.push([SLIDES_MS, 'opacity:1']);
+  return stops;
+};
+
+const generatedCss = [
+  keyframes('studio-design-cursor', designMs, designPath.map(([ms, x, y]) => [ms, `left:${x}%;top:${y}%`])),
+  keyframes('studio-design-press', designMs, presses(designEls.map((el) => [el.t + 120, el.t + 700]), designMs)),
+  keyframes(
+    'studio-slides-cursor',
+    SLIDES_MS,
+    slidesPath.map(([ms, x, y]) => [ms, `left:${x.toFixed(2)}cqw;top:calc(var(--oy) + ${y.toFixed(2)}cqw)`]),
+  ),
+  keyframes(
+    'studio-slides-press',
+    SLIDES_MS,
+    presses([[T.grab, T.drop], [T.clickC, T.clickC + 160], [T.drag2 + 60, T.drop2], [T.clickB, T.clickB + 160]], SLIDES_MS),
+  ),
+  keyframes('studio-thumb-a', SLIDES_MS, [[0, ring(true)], [T.clickC, ring(true)], [T.clickC + 120, ring(false)], [SLIDES_MS, ring(false)]]),
+  keyframes('studio-thumb-b', SLIDES_MS, [
+    [0, `translate:0 0;${ring(false)}`],
+    [T.grab + 300, `translate:0 0;${ring(false)}`],
+    [T.drop, `translate:0 ${STEP}cqw;${ring(false)}`],
+    [T.clickB, `translate:0 ${STEP}cqw;${ring(false)}`],
+    [T.clickB + 120, `translate:0 ${STEP}cqw;${ring(true)}`],
+    [SLIDES_MS, `translate:0 ${STEP}cqw;${ring(true)}`],
+  ]),
+  keyframes('studio-thumb-c', SLIDES_MS, [
+    [0, `translate:0 0;${ring(false)}`],
+    [T.grab + 120, `translate:0 0;${ring(false)}`],
+    [T.drop, `translate:0 -${STEP}cqw;${ring(false)}`],
+    [T.clickC, `translate:0 -${STEP}cqw;${ring(false)}`],
+    [T.clickC + 120, `translate:0 -${STEP}cqw;${ring(true)}`],
+    [T.clickB, `translate:0 -${STEP}cqw;${ring(true)}`],
+    [T.clickB + 120, `translate:0 -${STEP}cqw;${ring(false)}`],
+    [SLIDES_MS, `translate:0 -${STEP}cqw;${ring(false)}`],
+  ]),
+  keyframes('studio-slide-a', SLIDES_MS, fadeWindow(0, T.showC)),
+  keyframes('studio-slide-c', SLIDES_MS, fadeWindow(T.showC, T.showB)),
+  keyframes('studio-slide-b', SLIDES_MS, fadeWindow(T.showB, null)),
+  keyframes('studio-count-1', SLIDES_MS, [[0, 'opacity:1'], [T.clickC, 'opacity:1'], [T.clickC + 1, 'opacity:0'], [SLIDES_MS, 'opacity:0']]),
+  keyframes('studio-count-2', SLIDES_MS, [[0, 'opacity:0'], [T.clickC, 'opacity:0'], [T.clickC + 1, 'opacity:1'], [T.clickB, 'opacity:1'], [T.clickB + 1, 'opacity:0'], [SLIDES_MS, 'opacity:0']]),
+  keyframes('studio-count-3', SLIDES_MS, [[0, 'opacity:0'], [T.clickB, 'opacity:0'], [T.clickB + 1, 'opacity:1'], [SLIDES_MS, 'opacity:1']]),
+].join('');
+
+const scenes: { id: string; label: string; short: string; icon: IconName }[] = [
+  { id: 'codigo', label: 'código', short: 'Código', icon: 'code-xml' },
+  { id: 'design', label: 'quadro de design', short: 'Design', icon: 'pen-tool' },
+  { id: 'docs', label: 'documento de texto', short: 'Docs', icon: 'file-text' },
+  { id: 'slides', label: 'apresentação de slides', short: 'Slides', icon: 'presentation' },
+];
 ---
 
-<figure class="code-window" data-reveal="scale">
+<style is:inline set:html={generatedCss}></style>
+
+<figure class="studio" data-reveal="scale" data-studio>
   <div class="code-chrome" aria-hidden="true">
     <span class="dot"></span><span class="dot"></span><span class="dot"></span>
     <span class="code-file">carlos.ts</span>
   </div>
-  <pre class="code-body" tabindex="0" role="region" aria-label="Resumo do perfil escrito em código"><code>{
-    lines.map((line, i) => (
-      <span class="code-line" style={`--l:${i}`}><span class="ln" aria-hidden="true">{String(i + 1).padStart(2, ' ')}</span>{line.map(([kind, text]) => <span class={`t-${kind}`}>{text}</span>)}{i === lines.length - 1 && <span class="code-caret" aria-hidden="true" />}{'\n'}</span>
-    ))
-  }</code></pre>
-  <figcaption class="sr-only">Cartão em formato de código com um resumo do perfil.</figcaption>
+
+  <div class="studio-stage" aria-hidden="true">
+    <!-- 1. código -->
+    <div class="scene scene-code is-active" data-scene="codigo" data-duration={codeMs} style={`--code-end:${codeEnd}ms`}>
+      <pre class="code-body"><code>{
+        codeLines.map(({ tokens, n, d }, i) => (
+          <span class="code-line" style={`--n:${n};--d:${d}ms`}><span class="ln">{String(i + 1).padStart(2, ' ')}</span>{n > 0 && <span class="type">{tokens.map(([kind, text]) => <span class={`t-${kind}`}>{text}</span>)}</span>}{i === codeLines.length - 1 && <span class="code-caret" />}{'\n'}</span>
+        ))
+      }</code></pre>
+    </div>
+
+    <!-- 2. quadro de design -->
+    <div class="scene scene-design" data-scene="design" data-duration={designMs} style={`--design-ms:${designMs}ms`}>
+      <div class="sc-bar">
+        <span class="tool is-on"><Icon name="mouse-pointer-2" size={14} /></span>
+        <span class="tool"><Icon name="hash" size={14} /></span>
+        <span class="tool"><Icon name="square" size={14} /></span>
+        <span class="tool"><Icon name="type" size={14} /></span>
+        <span class="tool"><Icon name="pen-tool" size={14} /></span>
+        <span class="sc-bar-title">Perfil</span>
+        <span class="sc-bar-meta">100%</span>
+      </div>
+      <div class="dz-body">
+        <ul class="dz-layers">
+          <li class="is-frame"><Icon name="hash" size={12} />Perfil</li>
+          {
+            designEls.map((el) => (
+              <li style={`--t:${el.t}ms`}>
+                <Icon name={el.icon} size={12} />
+                {el.layer}
+              </li>
+            ))
+          }
+        </ul>
+        <div class="dz-canvas">
+          <div class="dz-frame">
+            <span class="dz-frame-label">Perfil · 1440</span>
+            {
+              designEls.map((el) => {
+                const style = `--x:${el.x};--y:${el.y};--dx:${el.dx};--dy:${el.dy};--t:${el.t}ms`;
+                if (el.key === 'foto') return <span class="dz-el dz-photo" style={style}><span>CM</span></span>;
+                if (el.key === 'nome') return <span class="dz-el dz-name" style={style}>Carlos Michael<br />da Silva Sousa</span>;
+                if (el.key === 'sub') return <span class="dz-el dz-sub" style={style}>ADS · IFPI</span>;
+                if (el.key === 'cards')
+                  return (
+                    <span class="dz-el dz-cards" style={style}>
+                      <span><small>Atuação</small>Investe Piauí</span>
+                      <span><small>Atuação</small>Vale do Mel</span>
+                    </span>
+                  );
+                return (
+                  <span class="dz-el dz-tags" style={style}>
+                    <span>front-end</span><span>UX/UI</span><span>IoT</span>
+                  </span>
+                );
+              })
+            }
+            <span class="cursor dz-cursor">
+              <svg class="cursor-arrow" viewBox="0 0 24 24" width="18" height="18"><path d="M4.5 2.5 19 11.2l-6.6 1.6L9.3 19.5Z"></path></svg>
+              <span class="cursor-name">Carlos</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. documento -->
+    <div
+      class="scene scene-docs"
+      data-scene="docs"
+      data-duration={docMs}
+      style={`--doc-sub:${docSub.d}ms;--doc-list:${docItems[0].d}ms;--doc-end:${docEnd}ms`}
+    >
+      <div class="sc-bar dc-ribbon">
+        <span class="dc-select">
+          <span class="dc-style"><span class="dc-style-a">Título</span><span class="dc-style-b">Normal</span></span>
+          <Icon name="chevron-down" size={12} />
+        </span>
+        <span class="dc-field dc-hide-sm">Inter</span>
+        <span class="dc-field">11</span>
+        <span class="sc-sep"></span>
+        <span class="tool"><Icon name="bold" size={13} /></span>
+        <span class="tool"><Icon name="italic" size={13} /></span>
+        <span class="tool dc-hide-sm"><Icon name="underline" size={13} /></span>
+        <span class="sc-sep dc-hide-sm"></span>
+        <span class="tool"><Icon name="align-left" size={13} /></span>
+        <span class="tool dc-hide-sm"><Icon name="align-center" size={13} /></span>
+        <span class="tool dc-list"><Icon name="list" size={13} /></span>
+        <span class="sc-bar-pill">Compartilhar</span>
+      </div>
+      <div class="dc-desk">
+        <div class="dc-page">
+          <p class="dc-title"><span class="type" style={`--n:${docTitle.n};--d:${docTitle.d}ms`}>{docTitle.text}</span></p>
+          <p class="dc-sub"><span class="type" style={`--n:${docSub.n};--d:${docSub.d}ms`}>{docSub.text}</span></p>
+          <ul class="dc-list-items">
+            {
+              docItems.map((item, i) => (
+                <li class:list={[{ 'is-last': i === docItems.length - 1 }]} style={`--n:${item.n};--d:${item.d}ms`}>
+                  <span class="type">{item.text}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. slides -->
+    <div class="scene scene-slides" data-scene="slides" data-duration={SLIDES_MS} style={`--slides-ms:${SLIDES_MS}ms`}>
+      <div class="sc-bar">
+        <span class="tool"><Icon name="plus" size={14} /></span>
+        <span class="sc-bar-title sl-count">
+          <span class="sl-count-1">Slide 1 de 3</span><span class="sl-count-2">Slide 2 de 3</span><span class="sl-count-3">Slide 3 de 3</span>
+        </span>
+        <span class="sc-bar-pill"><Icon name="play" size={11} />Apresentar</span>
+      </div>
+      <div class="sl-body" style={`--step:${STEP}cqw`}>
+        <span class="sl-rail"></span>
+        {[0, 1, 2].map((row) => <span class="sl-num" style={`--row:${row}`}>{row + 1}</span>)}
+        <span class="sl-thumb th-a" style="--row:0"><i class="mini mini-title"></i><i class="mini mini-sub"></i></span>
+        <span class="sl-thumb th-b" style="--row:1"><i class="mini mini-head"></i><i class="mini mini-chip c1"></i><i class="mini mini-chip c2"></i><i class="mini mini-chip c3"></i><i class="mini mini-line"></i></span>
+        <span class="sl-thumb th-c" style="--row:2"><i class="mini mini-head"></i><i class="mini mini-box b1"></i><i class="mini mini-box b2"></i></span>
+
+        <div class="sl-slide sl-a">
+          <span class="sl-kicker">Portfólio</span>
+          <span class="sl-title">Carlos Michael</span>
+          <span class="sl-rule"></span>
+          <span class="sl-sub">da Silva Sousa · ADS · IFPI</span>
+        </div>
+        <div class="sl-slide sl-c">
+          <span class="sl-head pop" style={`--t:${T.showC + 150}ms`}>Atuação</span>
+          <span class="sl-card pop" style={`--t:${T.card1}ms;--x:8`}><small>Assessor técnico</small>Investe Piauí</span>
+          <span class="sl-card drag" style={`--t:${T.drag2}ms;--x:${CARD2.x};--dx:${CARD2.dx}cqw;--dy:${CARD2.dy}cqh;--dur:${T.drop2 - T.drag2}ms`}><small>Conselheiro fiscal</small>Vale do Mel</span>
+        </div>
+        <div class="sl-slide sl-b">
+          <span class="sl-head pop" style={`--t:${T.showB + 150}ms`}>Foco</span>
+          <span class="sl-chips">
+            {['front-end', 'UX/UI', 'IoT'].map((chip, i) => <span class="pop" style={`--t:${T.chips + i * 150}ms`}>{chip}</span>)}
+          </span>
+          <span class="sl-line pop" style={`--t:${T.line}ms`}>Pesquisa: inovação e empreendedorismo</span>
+        </div>
+
+        <span class="cursor sl-cursor">
+          <svg class="cursor-arrow" viewBox="0 0 24 24" width="18" height="18"><path d="M4.5 2.5 19 11.2l-6.6 1.6L9.3 19.5Z"></path></svg>
+          <span class="cursor-name">Carlos</span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="studio-tabs" role="group" aria-label="Mostrar o cartão como" data-studio-tabs hidden>
+    {
+      scenes.map((scene, i) => (
+        <button class="studio-tab" type="button" aria-pressed={i === 0 ? 'true' : 'false'} data-scene-tab={i} data-label={scene.label}>
+          <Icon name={scene.icon} size={14} />
+          {scene.short}
+          <span class="tab-progress" aria-hidden="true" />
+        </button>
+      ))
+    }
+  </div>
+  <p class="sr-only" aria-live="polite" data-studio-status></p>
+  <figcaption class="sr-only">
+    Cartão animado com o resumo do perfil: {profile.name}; formação em Análise e Desenvolvimento de Sistemas
+    no IFPI; atuação na Investe Piauí e no Ecossistema Vale do Mel; foco em front-end, UX/UI e Internet das
+    Coisas; pesquisa em inovação e empreendedorismo; idiomas português, inglês e espanhol. O cartão alterna
+    entre quatro visões do mesmo conteúdo: código, quadro de design, documento de texto e slides.
+  </figcaption>
 </figure>
 
 <style>
-  .code-window {
+  /* ---------- janela ---------- */
+  .studio {
+    container-type: inline-size;
     margin: 0;
     overflow: hidden;
     border: 1px solid var(--c-inverse-hairline);
@@ -69,15 +413,176 @@ const lines: Token[][] = [
     font-size: var(--fs-caption);
   }
 
+  .studio-stage {
+    position: relative;
+    height: 17.75rem;
+    overflow: hidden;
+  }
+
+  @container (min-width: 28rem) {
+    .studio-stage {
+      height: 20rem;
+    }
+  }
+
+  /* ---------- troca de cenas ---------- */
+  .scene {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.985);
+    transition:
+      opacity 0.5s ease,
+      transform 0.7s var(--ease-out),
+      visibility 0s linear 0.5s;
+  }
+
+  .scene.is-active {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition:
+      opacity 0.5s ease 0.12s,
+      transform 0.7s var(--ease-out) 0.12s,
+      visibility 0s;
+  }
+
+  .studio:global(.is-held) .studio-stage *,
+  .studio:global(.is-held) .studio-stage *::before,
+  .studio:global(.is-held) .studio-stage *::after {
+    animation-play-state: paused !important;
+  }
+
+  /* barra de ferramentas das cenas */
+  .sc-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    height: 2.15rem;
+    padding: 0 0.55rem;
+    background: var(--c-inverse-elevated);
+    border-bottom: 1px solid var(--c-inverse-hairline);
+    color: var(--c-on-inverse-soft);
+    font-size: 0.7rem;
+    white-space: nowrap;
+  }
+
+  .tool {
+    display: inline-grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    flex: none;
+    border-radius: var(--radius-sm);
+  }
+
+  .tool.is-on {
+    background: var(--c-inverse-accent);
+    color: var(--c-inverse);
+  }
+
+  .sc-bar-title {
+    margin-inline: auto;
+    color: var(--c-on-inverse);
+    font-weight: 500;
+  }
+
+  .sc-bar-meta {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .sc-bar-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-inline-start: auto;
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--radius-pill);
+    background: var(--c-inverse-accent);
+    color: var(--c-inverse);
+    font-weight: 600;
+  }
+
+  .sc-sep {
+    width: 1px;
+    height: 1rem;
+    margin-inline: 0.2rem;
+    background: var(--c-inverse-hairline);
+  }
+
+  /* cursor com nome, como num editor colaborativo */
+  .cursor {
+    position: absolute;
+    z-index: 5;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+  }
+
+  .cursor-arrow {
+    position: absolute;
+    max-width: none;
+    left: -3.4px;
+    top: -1.9px;
+    fill: var(--c-inverse-accent);
+    stroke: var(--c-inverse);
+    stroke-width: 1.4;
+    stroke-linejoin: round;
+    transform-origin: 3.4px 1.9px;
+    filter: drop-shadow(0 2px 3px rgb(0 0 0 / 0.35));
+  }
+
+  .cursor-name {
+    position: absolute;
+    left: 12px;
+    top: 15px;
+    padding: 0.1rem 0.45rem;
+    border-radius: var(--radius-pill);
+    background: var(--c-inverse-accent);
+    color: var(--c-inverse);
+    font-size: 0.62rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* entrada genérica de elementos */
+  @keyframes studio-pop {
+    from {
+      opacity: 0;
+      translate: 0 0.6rem;
+      scale: 0.96;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+      scale: 1;
+    }
+  }
+
+  @keyframes studio-show {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  /* ---------- 1. código ---------- */
   .code-body {
+    height: 100%;
     margin: 0;
-    padding: 1.25rem 1.25rem 1.5rem 0.75rem;
-    overflow-x: auto;
+    padding: 1.1rem 0.9rem 1.2rem 0.5rem;
+    overflow: hidden;
     color: var(--c-code-punct);
     font-family: var(--font-mono);
-    font-size: var(--fs-code);
+    font-size: clamp(9px, calc((100cqw - 3.6rem) / 27), 14px);
     line-height: 1.75;
-    tab-size: 2;
+  }
+
+  .code-body code {
+    font: inherit;
   }
 
   .code-line {
@@ -85,25 +590,19 @@ const lines: Token[][] = [
     white-space: pre;
   }
 
-  @media (max-width: 30rem) {
-    .code-body {
-      font-size: 0.75rem;
-      padding-inline-end: 0.75rem;
-    }
-
-    .ln {
-      width: 1.75rem;
-      padding-inline-end: 0.6rem;
-    }
-  }
-
   .ln {
     display: inline-block;
-    width: 2.25rem;
-    padding-inline-end: 1rem;
+    width: 2.3em;
+    padding-inline-end: 0.9em;
     color: var(--c-code-comment);
     text-align: right;
-    user-select: none;
+  }
+
+  .type {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    white-space: pre;
   }
 
   .t-c {
@@ -111,16 +610,13 @@ const lines: Token[][] = [
     font-style: italic;
   }
 
-  .t-k {
+  .t-k,
+  .t-s {
     color: var(--c-code-string);
   }
 
   .t-v {
     color: var(--c-code-key);
-  }
-
-  .t-s {
-    color: var(--c-code-string);
   }
 
   .t-p {
@@ -136,27 +632,812 @@ const lines: Token[][] = [
     background: var(--c-code-key);
   }
 
-  :global(:root[data-motion='full']) .code-caret {
-    animation: blink 1.1s steps(1) infinite;
-  }
-
-  /* as linhas aparecem uma a uma quando a janela entra na tela */
-  :global(:root[data-motion='full']) .code-window .code-line {
+  .scene-code:global(.is-playing) .ln {
     opacity: 0;
-    transform: translateX(-8px);
-    transition:
-      opacity 0.5s ease,
-      transform 0.6s var(--ease-out);
-    transition-delay: calc(var(--l) * 110ms + 350ms);
-    animation: reveal-failsafe 0.01s linear 4s forwards;
+    animation: studio-show 1ms linear var(--d) forwards;
   }
 
-  :global(:root[data-motion='full'].reveal-ready) .code-window .code-line {
-    animation: none;
+  .scene-code:global(.is-playing) .type {
+    width: 0;
+    animation: code-type calc(var(--n) * 24ms) steps(var(--n), jump-start) var(--d) forwards;
   }
 
-  :global(:root[data-motion='full']) .code-window:global(.is-visible) .code-line {
-    opacity: 1;
-    transform: none;
+  .scene-code:global(.is-playing) .code-caret {
+    opacity: 0;
+    animation:
+      studio-show 1ms linear var(--code-end) forwards,
+      blink 1.1s steps(1) var(--code-end) infinite;
+  }
+
+  @keyframes code-type {
+    from {
+      width: 0;
+      box-shadow: inset -2px 0 var(--c-code-key);
+    }
+    99% {
+      box-shadow: inset -2px 0 var(--c-code-key);
+    }
+    to {
+      width: calc(var(--n) * 1ch);
+      box-shadow: none;
+    }
+  }
+
+  /* ---------- 2. quadro de design ---------- */
+  .scene-design {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .dz-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .dz-layers {
+    display: none;
+    margin: 0;
+    padding: 0.5rem 0.35rem;
+    list-style: none;
+    background: var(--c-inverse);
+    border-right: 1px solid var(--c-inverse-hairline);
+    color: var(--c-on-inverse-soft);
+    font-size: 0.68rem;
+  }
+
+  @container (min-width: 28rem) {
+    .dz-body {
+      grid-template-columns: 8.5rem minmax(0, 1fr);
+    }
+
+    .dz-layers {
+      display: block;
+    }
+  }
+
+  .dz-layers li {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.5rem 0.3rem 1.2rem;
+    border-radius: var(--radius-xs);
+  }
+
+  .dz-layers li.is-frame {
+    padding-inline-start: 0.5rem;
+    color: var(--c-on-inverse);
+    font-weight: 600;
+  }
+
+  .scene-design:global(.is-playing) .dz-layers li:not(.is-frame) {
+    animation: dz-layer 1150ms linear var(--t);
+  }
+
+  @keyframes dz-layer {
+    0%,
+    85% {
+      background: rgb(var(--c-glow-b-rgb) / 0.35);
+      color: var(--c-on-inverse);
+    }
+    100% {
+      background: transparent;
+    }
+  }
+
+  .dz-canvas {
+    container-type: size;
+    position: relative;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    background-color: var(--c-inverse-soft);
+    background-image: radial-gradient(var(--c-inverse-hairline) 1px, transparent 1.2px);
+    background-size: 14px 14px;
+  }
+
+  .dz-frame {
+    container-type: size;
+    position: relative;
+    width: min(86cqw, calc(72cqh * 4 / 3));
+    aspect-ratio: 4 / 3;
+    margin-top: 5cqh;
+    background: var(--c-paper);
+    color: var(--c-on-paper);
+    box-shadow: 0 14px 30px -14px rgb(0 0 0 / 0.7);
+  }
+
+  .dz-frame-label {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    padding-bottom: 0.3rem;
+    color: var(--c-on-inverse-soft);
+    font-size: 0.62rem;
+    white-space: nowrap;
+  }
+
+  .dz-el {
+    position: absolute;
+    left: calc(var(--x) * 1%);
+    top: calc(var(--y) * 1%);
+    line-height: 1.15;
+  }
+
+  /* caixa de seleção com alças nos cantos */
+  .dz-el::after {
+    content: '';
+    position: absolute;
+    inset: -1.4cqw;
+    border: 1px solid var(--c-paper-accent);
+    background:
+      linear-gradient(var(--c-paper-accent), var(--c-paper-accent)) top left / 5px 5px no-repeat,
+      linear-gradient(var(--c-paper-accent), var(--c-paper-accent)) top right / 5px 5px no-repeat,
+      linear-gradient(var(--c-paper-accent), var(--c-paper-accent)) bottom left / 5px 5px no-repeat,
+      linear-gradient(var(--c-paper-accent), var(--c-paper-accent)) bottom right / 5px 5px no-repeat;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .scene-design:global(.is-playing) .dz-el {
+    animation: dz-place 700ms var(--ease-in-out) var(--t) both;
+  }
+
+  .scene-design:global(.is-playing) .dz-el::after {
+    animation: dz-select 1150ms linear var(--t) both;
+  }
+
+  @keyframes dz-place {
+    0% {
+      opacity: 0;
+      translate: calc(var(--dx) * 1cqw) calc(var(--dy) * 1cqh);
+      scale: 0.9;
+    }
+    17% {
+      opacity: 1;
+      translate: calc(var(--dx) * 1cqw) calc(var(--dy) * 1cqh);
+      scale: 1;
+    }
+    100% {
+      opacity: 1;
+      translate: 0 0;
+      scale: 1;
+    }
+  }
+
+  @keyframes dz-select {
+    0%,
+    85% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  .dz-photo {
+    display: grid;
+    place-items: center;
+    width: 19cqw;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: linear-gradient(145deg, var(--c-paper-muted), var(--c-on-paper));
+    color: var(--c-paper);
+    font-family: var(--font-display);
+    font-size: 6.5cqw;
+  }
+
+  .dz-name {
+    font-family: var(--font-display);
+    font-size: 6.4cqw;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+  }
+
+  .dz-sub {
+    color: var(--c-paper-muted);
+    font-size: 3.5cqw;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  .dz-cards {
+    display: flex;
+    gap: 3cqw;
+    width: 86cqw;
+  }
+
+  .dz-cards > span {
+    flex: 1;
+    display: grid;
+    gap: 0.6cqw;
+    padding: 2.4cqw 2.8cqw;
+    border-radius: 1.6cqw;
+    background: var(--c-paper-soft);
+    font-size: 3.6cqw;
+    font-weight: 500;
+  }
+
+  .dz-cards small,
+  .sl-card small {
+    color: var(--c-paper-accent);
+    font-size: 2.3cqw;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .dz-tags {
+    display: flex;
+    gap: 1.8cqw;
+  }
+
+  .dz-tags span {
+    padding: 1.2cqw 2.4cqw;
+    border: 1px solid var(--c-paper-muted);
+    border-radius: var(--radius-pill);
+    font-size: 3.1cqw;
+    white-space: nowrap;
+  }
+
+  .dz-cursor {
+    left: 88%;
+    top: 95%;
+  }
+
+  .scene-design:global(.is-playing) .dz-cursor {
+    animation: studio-design-cursor var(--design-ms) cubic-bezier(0.45, 0, 0.25, 1) both;
+  }
+
+  .scene-design:global(.is-playing) .dz-cursor .cursor-arrow {
+    animation: studio-design-press var(--design-ms) linear both;
+  }
+
+  /* ---------- 3. documento ---------- */
+  .scene-docs {
+    container-type: inline-size;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .dc-select {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.15rem 0.4rem;
+    border: 1px solid var(--c-inverse-hairline);
+    border-radius: var(--radius-xs);
+    color: var(--c-on-inverse);
+  }
+
+  .dc-style {
+    display: inline-grid;
+  }
+
+  .dc-style > span {
+    grid-area: 1 / 1;
+  }
+
+  .dc-style-a {
+    opacity: 0;
+  }
+
+  .dc-field {
+    padding: 0.15rem 0.4rem;
+    border: 1px solid var(--c-inverse-hairline);
+    border-radius: var(--radius-xs);
+  }
+
+  .dc-list {
+    background: rgb(var(--c-glow-b-rgb) / 0.4);
+    color: var(--c-on-inverse);
+  }
+
+  @container (max-width: 26rem) {
+    .dc-hide-sm {
+      display: none;
+    }
+  }
+
+  .scene-docs:global(.is-playing) .dc-style-a {
+    animation: studio-show 1ms linear var(--doc-sub) reverse both;
+  }
+
+  .scene-docs:global(.is-playing) .dc-style-b {
+    animation: studio-show 1ms linear var(--doc-sub) both;
+  }
+
+  .scene-docs:global(.is-playing) .dc-list {
+    animation: dc-on 200ms linear var(--doc-list) both;
+  }
+
+  @keyframes dc-on {
+    from {
+      background: transparent;
+      color: var(--c-on-inverse-soft);
+    }
+  }
+
+  .dc-desk {
+    overflow: hidden;
+    padding-top: 0.9rem;
+    background: var(--c-inverse-soft);
+  }
+
+  .dc-page {
+    container-type: inline-size;
+    width: 84%;
+    min-height: 130%;
+    margin-inline: auto;
+    padding: 6.5cqw 8cqw;
+    background: var(--c-paper);
+    color: var(--c-on-paper);
+    box-shadow: 0 10px 26px -12px rgb(0 0 0 / 0.7);
+  }
+
+  .dc-title {
+    margin-bottom: 0.15em;
+    font-family: var(--font-display);
+    font-size: 7.2cqw;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+  }
+
+  .dc-sub {
+    margin-bottom: 1.3em;
+    color: var(--c-paper-muted);
+    font-size: 3.6cqw;
+  }
+
+  .dc-list-items {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 3.6cqw;
+    line-height: 1.8;
+  }
+
+  .dc-list-items li {
+    position: relative;
+    padding-inline-start: 1.1em;
+  }
+
+  .dc-list-items li::before {
+    content: '';
+    position: absolute;
+    left: 0.2em;
+    top: 0.8em;
+    width: 0.32em;
+    height: 0.32em;
+    border-radius: 50%;
+    background: var(--c-paper-accent);
+  }
+
+  .scene-docs .type {
+    white-space: nowrap;
+    vertical-align: bottom;
+  }
+
+  .scene-docs:global(.is-playing) .type {
+    max-width: 0;
+    animation: doc-type calc(var(--n) * 26ms) steps(var(--n), jump-start) var(--d) forwards;
+  }
+
+  .scene-docs:global(.is-playing) .dc-list-items li::before {
+    opacity: 0;
+    animation: studio-show 1ms linear var(--d) forwards;
+  }
+
+  .scene-docs:global(.is-playing) .is-last .type {
+    animation:
+      doc-type calc(var(--n) * 26ms) steps(var(--n), jump-start) var(--d) forwards,
+      doc-caret 1.05s steps(1) var(--doc-end) infinite;
+  }
+
+  @keyframes doc-type {
+    from {
+      max-width: 0;
+      box-shadow: inset -1.5px 0 var(--c-on-paper);
+    }
+    99% {
+      box-shadow: inset -1.5px 0 var(--c-on-paper);
+    }
+    to {
+      max-width: calc(var(--n) * 0.75em);
+      box-shadow: none;
+    }
+  }
+
+  @keyframes doc-caret {
+    0% {
+      box-shadow: inset -1.5px 0 var(--c-on-paper);
+    }
+    50% {
+      box-shadow: none;
+    }
+  }
+
+  /* ---------- 4. slides ---------- */
+  .scene-slides {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .sl-count {
+    display: inline-grid;
+  }
+
+  .sl-count > span {
+    grid-area: 1 / 1;
+  }
+
+  .sl-count-1,
+  .sl-count-2 {
+    opacity: 0;
+  }
+
+  .scene-slides:global(.is-playing) .sl-count-1 {
+    animation: studio-count-1 var(--slides-ms) linear both;
+  }
+
+  .scene-slides:global(.is-playing) .sl-count-2 {
+    animation: studio-count-2 var(--slides-ms) linear both;
+  }
+
+  .scene-slides:global(.is-playing) .sl-count-3 {
+    animation: studio-count-3 var(--slides-ms) linear both;
+  }
+
+  .sl-body {
+    /* centraliza miniaturas e slide na altura disponível */
+    --oy: max(0px, calc((100cqh - 46cqw) / 2));
+    container-type: size;
+    position: relative;
+    overflow: hidden;
+    background: var(--c-inverse-soft);
+  }
+
+  .sl-rail {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 23.5cqw;
+    background: var(--c-inverse);
+    border-right: 1px solid var(--c-inverse-hairline);
+  }
+
+  .sl-num {
+    position: absolute;
+    left: 1.3cqw;
+    top: calc(var(--oy) + 4cqw + var(--row) * var(--step));
+    color: var(--c-on-inverse-soft);
+    font-size: max(9px, 2.2cqw);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .sl-thumb {
+    position: absolute;
+    left: 4.5cqw;
+    top: calc(var(--oy) + 4cqw + var(--row) * var(--step));
+    width: 17cqw;
+    aspect-ratio: 16 / 9;
+    border-radius: 0.8cqw;
+    background: var(--c-paper);
+    outline: 0.5cqw solid transparent;
+    outline-offset: 0.4cqw;
+  }
+
+  /* estado final: Atuação passou para o 2º lugar e o slide 3 está selecionado */
+  .th-b {
+    translate: 0 var(--step);
+    outline-color: var(--c-inverse-accent);
+  }
+
+  .th-c {
+    translate: 0 calc(-1 * var(--step));
+  }
+
+  .scene-slides:global(.is-playing) .th-a {
+    animation: studio-thumb-a var(--slides-ms) linear both;
+  }
+
+  .scene-slides:global(.is-playing) .th-b {
+    animation: studio-thumb-b var(--slides-ms) var(--ease-in-out) both;
+  }
+
+  .scene-slides:global(.is-playing) .th-c {
+    z-index: 2;
+    animation: studio-thumb-c var(--slides-ms) var(--ease-in-out) both;
+  }
+
+  .mini {
+    position: absolute;
+    border-radius: 2px;
+    background: var(--c-on-paper);
+    opacity: 0.22;
+  }
+
+  .mini-title {
+    left: 25%;
+    top: 36%;
+    width: 50%;
+    height: 13%;
+    opacity: 0.6;
+  }
+
+  .mini-sub {
+    left: 33%;
+    top: 58%;
+    width: 34%;
+    height: 7%;
+  }
+
+  .mini-head {
+    left: 9%;
+    top: 14%;
+    width: 30%;
+    height: 11%;
+    opacity: 0.55;
+  }
+
+  .mini-chip {
+    top: 44%;
+    width: 17%;
+    height: 12%;
+    border-radius: 999px;
+  }
+
+  .c1 {
+    left: 9%;
+  }
+
+  .c2 {
+    left: 29%;
+  }
+
+  .c3 {
+    left: 49%;
+  }
+
+  .mini-line {
+    left: 9%;
+    top: 70%;
+    width: 60%;
+    height: 7%;
+  }
+
+  .mini-box {
+    top: 44%;
+    width: 38%;
+    height: 34%;
+  }
+
+  .b1 {
+    left: 9%;
+  }
+
+  .b2 {
+    left: 53%;
+  }
+
+  .sl-slide {
+    container-type: size;
+    position: absolute;
+    left: 27cqw;
+    top: calc(var(--oy) + 4cqw);
+    width: 68cqw;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 0.8cqw;
+    background: var(--c-paper);
+    color: var(--c-on-paper);
+    box-shadow: 0 14px 30px -14px rgb(0 0 0 / 0.7);
+  }
+
+  .sl-a,
+  .sl-c {
+    opacity: 0;
+  }
+
+  .scene-slides:global(.is-playing) .sl-a {
+    animation: studio-slide-a var(--slides-ms) linear both;
+  }
+
+  .scene-slides:global(.is-playing) .sl-c {
+    animation: studio-slide-c var(--slides-ms) linear both;
+  }
+
+  .scene-slides:global(.is-playing) .sl-b {
+    animation: studio-slide-b var(--slides-ms) linear both;
+  }
+
+  .sl-a {
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 2.4cqw;
+    text-align: center;
+  }
+
+  .sl-kicker {
+    color: var(--c-paper-accent);
+    font-size: 2.8cqw;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .sl-title {
+    font-family: var(--font-display);
+    font-size: 10cqw;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .sl-rule {
+    width: 12cqw;
+    height: 2px;
+    background: var(--c-paper-accent);
+  }
+
+  .sl-sub {
+    color: var(--c-paper-muted);
+    font-size: 3.6cqw;
+  }
+
+  .sl-head {
+    position: absolute;
+    left: 8%;
+    top: 12%;
+    font-family: var(--font-display);
+    font-size: 7cqw;
+    line-height: 1;
+  }
+
+  .sl-card {
+    position: absolute;
+    left: calc(var(--x) * 1%);
+    top: 46%;
+    display: grid;
+    align-content: center;
+    gap: 1.2cqw;
+    width: 40%;
+    height: 34%;
+    padding: 0 3cqw;
+    border-radius: 1.6cqw;
+    background: var(--c-paper-soft);
+    font-size: 4cqw;
+    font-weight: 500;
+  }
+
+  .sl-chips {
+    position: absolute;
+    left: 8%;
+    top: 42%;
+    display: flex;
+    gap: 2cqw;
+  }
+
+  .sl-chips span {
+    padding: 1.4cqw 3cqw;
+    border: 1px solid var(--c-paper-muted);
+    border-radius: var(--radius-pill);
+    font-size: 3.6cqw;
+    white-space: nowrap;
+  }
+
+  .sl-line {
+    position: absolute;
+    left: 8%;
+    top: 70%;
+    color: var(--c-paper-muted);
+    font-size: 3.6cqw;
+    white-space: nowrap;
+  }
+
+  .scene-slides:global(.is-playing) .pop {
+    animation: studio-pop 450ms var(--ease-out) var(--t) both;
+  }
+
+  .scene-slides:global(.is-playing) .drag {
+    animation: sl-drag var(--dur) var(--ease-in-out) var(--t) both;
+  }
+
+  @keyframes sl-drag {
+    0% {
+      opacity: 0;
+      translate: var(--dx) var(--dy);
+      scale: 0.92;
+    }
+    20% {
+      opacity: 1;
+      translate: var(--dx) var(--dy);
+      scale: 1;
+    }
+    100% {
+      opacity: 1;
+      translate: 0 0;
+      scale: 1;
+    }
+  }
+
+  .sl-cursor {
+    left: 84cqw;
+    top: calc(var(--oy) + 44cqw);
+  }
+
+  .scene-slides:global(.is-playing) .sl-cursor {
+    animation: studio-slides-cursor var(--slides-ms) cubic-bezier(0.45, 0, 0.25, 1) both;
+  }
+
+  .scene-slides:global(.is-playing) .sl-cursor .cursor-arrow {
+    animation: studio-slides-press var(--slides-ms) linear both;
+  }
+
+  /* ---------- abas: escolher a visão ---------- */
+  .studio-tabs {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    border-top: 1px solid var(--c-inverse-hairline);
+    background: var(--c-inverse-elevated);
+  }
+
+  .studio-tabs[hidden] {
+    display: none;
+  }
+
+  .studio-tab {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    min-height: 2.6rem;
+    padding: 0 0.4rem;
+    border: 0;
+    background: transparent;
+    color: var(--c-on-inverse-soft);
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: color 0.25s ease, background-color 0.25s ease;
+  }
+
+  .studio-tab:hover {
+    color: var(--c-on-inverse);
+  }
+
+  .studio-tab[aria-pressed='true'] {
+    color: var(--c-on-inverse);
+    background: rgb(255 255 255 / 0.04);
+  }
+
+  .studio-tab:focus-visible {
+    outline-offset: -3px;
+  }
+
+  .tab-progress {
+    position: absolute;
+    left: 0.6rem;
+    right: 0.6rem;
+    bottom: 0;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--c-inverse-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  .studio-tab[aria-pressed='true'] .tab-progress {
+    transform: scaleX(1);
+  }
+
+  :global(:root[data-motion='full']) .studio:global(.is-auto) .studio-tab[aria-pressed='true'] .tab-progress {
+    animation: grow-x var(--scene-ms, 8s) linear both;
+  }
+
+  .studio:global(.is-waiting) .tab-progress,
+  .studio:global(.is-held) .tab-progress {
+    animation-play-state: paused !important;
   }
 </style>

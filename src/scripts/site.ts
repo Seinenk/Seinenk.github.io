@@ -299,6 +299,120 @@ document.querySelectorAll<HTMLElement>('[data-typewriter]').forEach((el) => {
   restart(motionOn());
 });
 
+/* ---------- cartão carlos.ts: código, design, documento e slides ---------- */
+document.querySelectorAll<HTMLElement>('[data-studio]').forEach((studio) => {
+  const scenes = Array.from(studio.querySelectorAll<HTMLElement>('[data-scene]'));
+  const tabs = Array.from(studio.querySelectorAll<HTMLButtonElement>('[data-scene-tab]'));
+  const tabGroup = studio.querySelector<HTMLElement>('[data-studio-tabs]');
+  const status = studio.querySelector<HTMLElement>('[data-studio-status]');
+  if (scenes.length < 2) return;
+  if (tabGroup) tabGroup.hidden = false;
+
+  let current = 0;
+  let auto = true; // troca sozinha até a pessoa escolher uma visão
+  let visible = false;
+  let waiting = false; // ponteiro em cima ou foco do teclado: não troca de cena
+  let timer = 0;
+  let remaining = 0;
+  let startedAt = 0;
+
+  const duration = (i: number) => Number(scenes[i].dataset.duration) || 8000;
+  const animating = () => motionOn() && visible && !document.hidden;
+
+  // Liga e desliga o relógio que passa para a próxima cena, guardando o tempo que falta.
+  const clock = () => {
+    studio.classList.toggle('is-held', motionOn() && !animating());
+    studio.classList.toggle('is-waiting', waiting);
+    studio.classList.toggle('is-auto', auto);
+    const advance = animating() && auto && !waiting;
+    if (advance && !startedAt) {
+      startedAt = performance.now();
+      timer = window.setTimeout(() => {
+        startedAt = 0;
+        show((current + 1) % scenes.length);
+      }, Math.max(0, remaining));
+    } else if (!advance && startedAt) {
+      window.clearTimeout(timer);
+      remaining -= performance.now() - startedAt;
+      startedAt = 0;
+    }
+  };
+
+  const play = (scene: HTMLElement) => {
+    scene.classList.remove('is-playing');
+    if (!motionOn()) return;
+    void scene.offsetWidth; // força o recomeço das animações da cena
+    scene.classList.add('is-playing');
+  };
+
+  function show(index: number, manual = false) {
+    const previous = scenes[current];
+    window.clearTimeout(timer);
+    startedAt = 0;
+    current = index;
+    remaining = duration(index);
+    scenes.forEach((scene, i) => scene.classList.toggle('is-active', i === index));
+    play(scenes[index]);
+    if (previous !== scenes[index]) {
+      // a cena anterior termina de sumir no estado final e só então volta ao início
+      window.setTimeout(() => {
+        if (!previous.classList.contains('is-active')) previous.classList.remove('is-playing');
+      }, 700);
+    }
+    tabs.forEach((tab, i) => tab.setAttribute('aria-pressed', String(i === index)));
+    studio.style.setProperty('--scene-ms', `${remaining}ms`);
+    if (manual) {
+      auto = false;
+      if (status) status.textContent = `Cartão mostrado como ${tabs[index]?.dataset.label ?? ''}.`;
+    }
+    clock();
+  }
+
+  tabs.forEach((tab, i) => tab.addEventListener('click', () => show(i, true)));
+  studio.addEventListener('pointerenter', (event) => {
+    if (event.pointerType !== 'mouse') return;
+    waiting = true;
+    clock();
+  });
+  studio.addEventListener('pointerleave', (event) => {
+    if (event.pointerType !== 'mouse') return;
+    waiting = false;
+    clock();
+  });
+  studio.addEventListener('focusin', (event) => {
+    if (!(event.target as Element).matches(':focus-visible')) return;
+    waiting = true;
+    clock();
+  });
+  studio.addEventListener('focusout', (event) => {
+    if (studio.contains(event.relatedTarget as Node | null)) return;
+    waiting = false;
+    clock();
+  });
+  document.addEventListener('visibilitychange', clock);
+  motionListeners.add((on) => {
+    if (on) {
+      show(current);
+    } else {
+      scenes.forEach((scene) => scene.classList.remove('is-playing'));
+      clock();
+    }
+  });
+
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(
+      ([entry]) => {
+        visible = entry.isIntersecting;
+        clock();
+      },
+      { threshold: 0.3 },
+    ).observe(studio);
+  } else {
+    visible = true;
+  }
+  show(0);
+});
+
 /* ---------- luz que segue o ponteiro e inclinação ---------- */
 if (finePointer.matches) {
   document.querySelectorAll<HTMLElement>('[data-spotlight]').forEach((card) => {

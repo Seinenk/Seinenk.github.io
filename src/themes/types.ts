@@ -43,6 +43,12 @@ export const TOKEN_KEYS = [
   'glowA', // brilhos decorativos
   'glowB',
   'shadow',
+  // papel: superfície clara dentro das maquetes escuras (quadro de design, página, slide)
+  'paper',
+  'paperSoft',
+  'onPaper',
+  'paperMuted',
+  'paperAccent',
   // janela de código (fica sobre inverseSoft)
   'codeKey',
   'codeString',

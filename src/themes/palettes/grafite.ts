@@ -12,6 +12,15 @@ const slate = '#393F4A';
 const sand = '#DCD2CC';
 const taupe = '#8A7875';
 
+// Papel das maquetes (sempre claro, porque fica dentro da faixa escura).
+const paper = {
+  paper: mix(white, sand, 0.08),
+  paperSoft: mix(white, sand, 0.4),
+  onPaper: ink,
+  paperMuted: mix(slate, taupe, 0.4),
+  paperAccent: mix(taupe, ink, 0.28),
+};
+
 // Tons de código, iguais nos dois modos (a janela de código é sempre escura).
 const code = {
   codeKey: mix(sand, white, 0.35),
@@ -57,6 +66,7 @@ export default definePalette({
     glowA: sand,
     glowB: taupe,
     shadow: ink,
+    ...paper,
     ...code,
   },
   dark: {
@@ -90,6 +100,7 @@ export default definePalette({
     glowA: slate,
     glowB: taupe,
     shadow: ink,
+    ...paper,
     ...code,
   },
 });
