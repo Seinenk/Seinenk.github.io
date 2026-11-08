@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
+import { projects, projectHref } from '../data/projects';
 
-const pages = ['/', '/projetos', '/hobbies'];
+const pages = ['/', '/projetos', ...projects.map((p) => projectHref(p.slug))];
 
 export const GET: APIRoute = ({ site }) => {
   const base = site ?? new URL('https://seinenk.github.io');

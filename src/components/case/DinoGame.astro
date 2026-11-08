@@ -1,0 +1,185 @@
+---
+import Icon from '../Icon.astro';
+
+/*
+ * O Dino Runner jogável no navegador, com as regras do código original
+ * (dino_runner.c): passos de 10 ms, inimigo nas linhas 2, 3 ou 4, 25 ms mais
+ * rápido a cada 5 s até 50 ms, pulo que dura 100 ms depois de soltar o botão.
+ * A lógica fica em src/scripts/projeto.ts.
+ */
+---
+
+<div class="dino" data-dino>
+  <div class="dino-device">
+    <div class="dino-matrix" role="img" aria-label="Matriz de LEDs do jogo" tabindex="0" data-dino-board>
+      {Array.from({ length: 25 }, (_, i) => <span class="dino-led" data-led={i} />)}
+    </div>
+    <div class="dino-side">
+      <div class="dino-oled" aria-hidden="true">
+        <span>Dino Runner</span>
+        <span>
+          Desviados: <b data-dino-score>0</b>
+        </span>
+      </div>
+      <div class="dino-buttons">
+        <button class="dino-btn" type="button" data-dino-jump aria-label="Pular">
+          <Icon name="arrow-up" size={20} />
+        </button>
+        <button class="dino-btn" type="button" data-dino-duck aria-label="Abaixar">
+          <Icon name="arrow-down" size={20} />
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="dino-controls">
+    <button class="btn btn-primary" type="button" data-dino-start>
+      <Icon name="play" size={17} />
+      <span data-dino-start-label>Jogar</span>
+    </button>
+    <p class="dino-hint">
+      <kbd>↑</kbd> ou <kbd>espaço</kbd> pula · <kbd>↓</kbd> abaixa. Linha de cima: fique em pé; do meio: abaixe; de baixo: pule.
+    </p>
+  </div>
+  <p class="sr-only" aria-live="polite" data-dino-status></p>
+</div>
+
+<style>
+  .dino {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .dino-device {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem 2rem;
+    padding: clamp(1.25rem, 1rem + 2vw, 2.25rem);
+    border-radius: var(--radius-xl);
+    background:
+      radial-gradient(80% 70% at 30% 20%, rgb(79 107 255 / 0.18), transparent 70%),
+      #12131b;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .dino-matrix {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: clamp(0.5rem, 0.4rem + 0.6vw, 0.8rem);
+    padding: clamp(0.9rem, 0.7rem + 1vw, 1.3rem);
+    border-radius: var(--radius-lg);
+    background: #1c1d27;
+  }
+
+  .dino-matrix:focus-visible {
+    outline: 2px solid #8fa2ff;
+    outline-offset: 4px;
+  }
+
+  .dino-led {
+    width: clamp(1.9rem, 1.4rem + 2.4vw, 2.9rem);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: #2b2d39;
+    transition:
+      background-color 60ms linear,
+      box-shadow 60ms linear;
+  }
+
+  .dino-led.is-dino {
+    background: #4f6bff;
+    box-shadow: 0 0 1.2rem 0.2rem rgb(79 107 255 / 0.55);
+  }
+
+  .dino-led.is-enemy {
+    background: #ff4b4b;
+    box-shadow: 0 0 1.2rem 0.2rem rgb(255 75 75 / 0.55);
+  }
+
+  .dino-led.is-hit {
+    background: #fff;
+    box-shadow: 0 0 1.6rem 0.4rem rgb(255 255 255 / 0.5);
+  }
+
+  .dino-side {
+    display: grid;
+    gap: 1rem;
+    justify-items: center;
+  }
+
+  .dino-oled {
+    display: grid;
+    gap: 0.25rem;
+    min-width: 11rem;
+    padding: 0.9rem 1rem;
+    border: 0.45rem solid #1c1d27;
+    border-radius: var(--radius-md);
+    background: #050508;
+    color: #dfe6ff;
+    font-family: var(--font-mono);
+    font-size: var(--fs-caption);
+    letter-spacing: 0.04em;
+  }
+
+  .dino-oled b {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .dino-buttons {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .dino-btn {
+    display: grid;
+    place-items: center;
+    width: 3.25rem;
+    height: 3.25rem;
+    border: 0;
+    border-radius: 50%;
+    background: #2b2d39;
+    color: #dfe6ff;
+    box-shadow: inset 0 -4px 0 rgb(0 0 0 / 0.35);
+    touch-action: none;
+    user-select: none;
+    transition: transform 0.12s ease;
+  }
+
+  .dino-btn:active,
+  .dino-btn.is-pressed {
+    transform: translateY(2px) scale(0.96);
+    box-shadow: inset 0 -1px 0 rgb(0 0 0 / 0.35);
+  }
+
+  .dino-btn:focus-visible {
+    outline: 2px solid #8fa2ff;
+    outline-offset: 3px;
+  }
+
+  .dino-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.25rem;
+  }
+
+  .dino-hint {
+    flex: 1 1 18rem;
+    color: var(--c-muted);
+    font-size: var(--fs-body-sm);
+  }
+
+  kbd {
+    display: inline-block;
+    padding: 0.05rem 0.4rem;
+    border: 1px solid var(--c-hairline);
+    border-bottom-width: 2px;
+    border-radius: var(--radius-sm);
+    background: var(--c-canvas);
+    color: var(--c-ink);
+    font-family: var(--font-mono);
+    font-size: var(--fs-caption);
+  }
+</style>

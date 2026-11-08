@@ -1,0 +1,345 @@
+---
+import { Image } from 'astro:assets';
+import Icon from '../Icon.astro';
+import type { Shot } from '../../data/projects/types';
+
+/*
+ * Galeria em faixa rolável (com encaixe), cada imagem dentro de uma moldura de
+ * celular, navegador ou quadrado. Um clique abre a imagem grande num <dialog>,
+ * com setas, Esc e foco devolvido ao fechar.
+ */
+interface Props {
+  shots: Shot[];
+  label: string;
+}
+
+const { shots, label } = Astro.props;
+const width = { phone: 300, browser: 640, square: 340 } as const;
+---
+
+<div class="gallery" data-gallery>
+  <ul class="gallery-track list-reset" aria-label={label} tabindex="0">
+    {
+      shots.map((shot, i) => (
+        <li class:list={['shot', `shot-${shot.frame}`]} data-reveal="scale" style={`--i:${i % 4}`}>
+          <figure>
+          <button class="shot-open" type="button" data-shot={i} aria-label={`Ampliar: ${shot.caption}`}>
+            <span class="shot-frame">
+              {shot.frame === 'browser' && (
+                <span class="shot-bar" aria-hidden="true">
+                  <span />
+                  <span />
+                  <span />
+                </span>
+              )}
+              <Image
+                src={shot.src}
+                alt={shot.alt}
+                widths={[width[shot.frame], width[shot.frame] * 2]}
+                sizes={`${width[shot.frame] / 16}rem`}
+                loading="lazy"
+                decoding="async"
+              />
+            </span>
+            <span class="shot-zoom" aria-hidden="true">
+              <Icon name="maximize-2" size={16} />
+            </span>
+          </button>
+          <figcaption>{shot.caption}</figcaption>
+          </figure>
+        </li>
+      ))
+    }
+  </ul>
+  <div class="gallery-nav" hidden data-gallery-nav>
+    <button class="icon-btn" type="button" data-gallery-prev aria-label="Imagens anteriores">
+      <Icon name="chevron-left" size={18} />
+    </button>
+    <button class="icon-btn" type="button" data-gallery-next aria-label="Próximas imagens">
+      <Icon name="chevron-right" size={18} />
+    </button>
+  </div>
+
+  <dialog class="lightbox" aria-label="Imagem ampliada" data-lightbox>
+    <div class="lightbox-inner">
+      {
+        shots.map((shot, i) => (
+          <figure class="lightbox-shot" data-lightbox-shot={i} hidden>
+            <Image src={shot.src} alt={shot.alt} widths={[640, 1200]} sizes="(min-width: 64rem) 60rem, 92vw" loading="lazy" />
+            <figcaption>
+              {shot.caption}
+              <span class="lightbox-count">
+                {i + 1} de {shots.length}
+              </span>
+            </figcaption>
+          </figure>
+        ))
+      }
+      <button class="icon-btn lightbox-close" type="button" data-lightbox-close aria-label="Fechar">
+        <Icon name="x" size={18} />
+      </button>
+      {
+        shots.length > 1 && (
+          <>
+            <button class="icon-btn lightbox-prev" type="button" data-lightbox-prev aria-label="Imagem anterior">
+              <Icon name="chevron-left" size={18} />
+            </button>
+            <button class="icon-btn lightbox-next" type="button" data-lightbox-next aria-label="Próxima imagem">
+              <Icon name="chevron-right" size={18} />
+            </button>
+          </>
+        )
+      }
+    </div>
+  </dialog>
+</div>
+
+<style>
+  .gallery {
+    position: relative;
+  }
+
+  .gallery-track {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem;
+    padding: 0.5rem 0.25rem 1.25rem;
+    margin-inline: -0.25rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 0.25rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--c-hairline) transparent;
+  }
+
+  .gallery-track:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 4px;
+    border-radius: var(--radius-md);
+  }
+
+  .shot {
+    flex: none;
+    margin: 0;
+    scroll-snap-align: start;
+  }
+
+  .shot-phone {
+    width: clamp(10rem, 9rem + 6vw, 13.5rem);
+  }
+
+  .shot-browser {
+    width: clamp(17rem, 14rem + 16vw, 30rem);
+  }
+
+  .shot-square {
+    width: clamp(10rem, 9rem + 6vw, 14rem);
+  }
+
+  .shot-open {
+    position: relative;
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: zoom-in;
+    border-radius: var(--radius-xl);
+  }
+
+  .shot-frame {
+    display: block;
+    overflow: hidden;
+    background: var(--c-surface-card);
+    box-shadow: var(--shadow-md);
+    transition:
+      transform 0.6s var(--ease-out),
+      box-shadow 0.6s var(--ease-out);
+  }
+
+  .shot-phone .shot-frame {
+    border: 6px solid #0b0b10;
+    border-radius: 1.6rem;
+  }
+
+  .shot-browser .shot-frame {
+    border: 1px solid var(--c-hairline);
+    border-radius: var(--radius-lg);
+  }
+
+  .shot-square .shot-frame {
+    border-radius: 22%;
+  }
+
+  .shot-bar {
+    display: flex;
+    gap: 0.3rem;
+    padding: 0.55rem 0.7rem;
+    border-bottom: 1px solid var(--c-hairline);
+    background: var(--c-canvas);
+  }
+
+  .shot-bar span {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--c-hairline);
+  }
+
+  .shot-frame :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .shot-zoom {
+    position: absolute;
+    right: 0.6rem;
+    bottom: 0.6rem;
+    display: grid;
+    place-items: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 50%;
+    background: var(--c-canvas);
+    color: var(--c-ink);
+    box-shadow: var(--shadow-sm);
+    opacity: 0;
+    transform: scale(0.8);
+    transition:
+      opacity 0.3s ease,
+      transform 0.4s var(--ease-spring);
+  }
+
+  .shot-open:hover .shot-frame,
+  .shot-open:focus-visible .shot-frame {
+    transform: translateY(-6px) rotate(-0.6deg);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .shot-open:hover .shot-zoom,
+  .shot-open:focus-visible .shot-zoom {
+    opacity: 1;
+    transform: none;
+  }
+
+  .shot figure {
+    margin: 0;
+  }
+
+  .shot figcaption {
+    margin-top: 0.8rem;
+    color: var(--c-muted);
+    font-size: var(--fs-caption);
+    line-height: 1.45;
+  }
+
+  .gallery-nav {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+
+  .gallery-nav[hidden] {
+    display: none;
+  }
+
+  /* ---------- caixa de luz ---------- */
+  .lightbox {
+    width: min(64rem, 100vw - 2rem);
+    max-width: none;
+    max-height: calc(100dvh - 2rem);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--c-on-inverse);
+    overflow: visible;
+  }
+
+  .lightbox::backdrop {
+    background: rgb(var(--c-shadow-rgb) / 0.82);
+    backdrop-filter: blur(6px);
+  }
+
+  .lightbox-inner {
+    position: relative;
+    display: grid;
+    justify-items: center;
+  }
+
+  .lightbox-shot {
+    margin: 0;
+    display: grid;
+    justify-items: center;
+    gap: 0.9rem;
+  }
+
+  .lightbox-shot[hidden] {
+    display: none;
+  }
+
+  .lightbox-shot :global(img) {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    max-height: calc(100dvh - 8rem);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .lightbox-shot figcaption {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.25rem 1rem;
+    color: #f3f1ea;
+    font-size: var(--fs-body-sm);
+    text-align: center;
+  }
+
+  .lightbox-count {
+    color: #b9b2b0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .lightbox-close {
+    position: absolute;
+    top: -0.5rem;
+    right: -0.5rem;
+  }
+
+  .lightbox-prev,
+  .lightbox-next {
+    position: absolute;
+    top: 45%;
+  }
+
+  .lightbox-prev {
+    left: 0;
+  }
+
+  .lightbox-next {
+    right: 0;
+  }
+
+  @media (min-width: 70rem) {
+    .lightbox-prev {
+      left: -3.75rem;
+    }
+
+    .lightbox-next {
+      right: -3.75rem;
+    }
+  }
+
+  :global(:root[data-motion='full']) .lightbox[open] .lightbox-shot:not([hidden]) {
+    animation: lightbox-in 0.45s var(--ease-out);
+  }
+
+  @keyframes lightbox-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+  }
+</style>

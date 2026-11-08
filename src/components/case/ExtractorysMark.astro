@@ -1,0 +1,99 @@
+---
+/*
+ * Logo do Extractorys redesenhada em SVG a partir da descrição do pintor do app
+ * (ExtractorysMarkPainter): tile só em contorno, aberto onde o núcleo passa; núcleo
+ * com o degradê da marca puxado pela diagonal; rastro e brilho de quatro pontas.
+ * Medidas no espaço normalizado de 100 unidades usado pelo app.
+ */
+interface Props {
+  class?: string;
+  /** Cor do contorno do tile (creme no escuro, tinta no claro). */
+  tile?: string;
+}
+
+const { class: className, tile = '#F3F1EA' } = Astro.props;
+const uid = Math.random().toString(36).slice(2, 8);
+---
+
+<svg class:list={['ex-mark', className]} viewBox="0 0 100 100" aria-hidden="true" style={`--ex-tile:${tile}`}>
+  <defs>
+    <linearGradient id={`exg-${uid}`} x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#D50048"></stop>
+      <stop offset="1" stop-color="#FF0000"></stop>
+    </linearGradient>
+    <mask id={`exm-${uid}`}>
+      <rect width="100" height="100" fill="#fff"></rect>
+      <rect class="ex-pull" x="38.8" y="15.2" width="46" height="46" rx="13" fill="#000"></rect>
+    </mask>
+  </defs>
+  <rect class="ex-tile" x="14" y="30" width="56" height="56" rx="14" fill="none" stroke-width="8.5" mask={`url(#exm-${uid})`}></rect>
+  <g class="ex-trail">
+    <path d="M29 71 37 63" stroke="#D50048" stroke-opacity=".55" stroke-width="7" stroke-linecap="round"></path>
+    <path d="M34 66 42 58" stroke="#FF4D6D" stroke-opacity=".45" stroke-width="7" stroke-linecap="round"></path>
+  </g>
+  <g class="ex-pull">
+    <rect x="44.8" y="21.2" width="34" height="34" rx="9" fill={`url(#exg-${uid})`} class="ex-core" stroke-width="3.2"></rect>
+  </g>
+  <path class="ex-spark" d="M85 8 87 15 94 17 87 19 85 26 83 19 76 17 83 15Z" fill="#F2C4F2"></path>
+</svg>
+
+<style>
+  .ex-mark {
+    overflow: visible;
+  }
+
+  .ex-tile,
+  .ex-core {
+    stroke: var(--ex-tile);
+  }
+
+  :global(:root[data-motion='full']) .ex-pull {
+    animation: ex-pull 3s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+  }
+
+  :global(:root[data-motion='full']) .ex-trail {
+    animation: ex-trail 3s ease-in-out infinite;
+  }
+
+  .ex-spark {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  :global(:root[data-motion='full']) .ex-spark {
+    animation: ex-spark 3s ease-in-out infinite;
+  }
+
+  @keyframes ex-pull {
+    0%,
+    100% {
+      transform: translate(-7px, 7px);
+    }
+    50% {
+      transform: translate(2px, -2px);
+    }
+  }
+
+  @keyframes ex-trail {
+    0%,
+    100% {
+      opacity: 0.25;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes ex-spark {
+    0%,
+    30%,
+    100% {
+      transform: scale(0.6) rotate(0deg);
+      opacity: 0.6;
+    }
+    55% {
+      transform: scale(1.15) rotate(45deg);
+      opacity: 1;
+    }
+  }
+</style>

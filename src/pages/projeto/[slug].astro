@@ -1,0 +1,1390 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../../components/Icon.astro';
+import SectionHead from '../../components/SectionHead.astro';
+import ProjectArt from '../../components/ProjectArt.astro';
+import ProjectDiagram from '../../components/case/ProjectDiagram.astro';
+import Palette from '../../components/case/Palette.astro';
+import TypeSpecimens from '../../components/case/TypeSpecimens.astro';
+import Gallery from '../../components/case/Gallery.astro';
+import ExtractorysMark from '../../components/case/ExtractorysMark.astro';
+import DinoGame from '../../components/case/DinoGame.astro';
+import BeforeAfter from '../../components/case/BeforeAfter.astro';
+import LayoutBoxes from '../../components/case/LayoutBoxes.astro';
+import PytestRun from '../../components/case/PytestRun.astro';
+import { projects, nextProject, projectHref, type CaseStudy } from '../../data/projects';
+import { plain, readingMinutes, rich } from '../../utils/rich';
+
+export function getStaticPaths() {
+  return projects.map((project) => ({ params: { slug: project.slug }, props: { project } }));
+}
+
+interface Props {
+  project: CaseStudy;
+}
+
+const { project: p } = Astro.props;
+const next = nextProject(p.slug);
+const live = p.status === 'Em andamento';
+
+/* Seções presentes, na ordem da página. O número entra no sobretítulo. */
+const doVerb = p.type === 'Pesquisa' ? 'O que a pesquisa *cobre*' : p.type === 'Produção técnica' ? 'O que ela *reúne*' : 'O que ele *faz*';
+const emphasizeLast = (title: string) => {
+  const words = title.split(' ');
+  return words.length > 1 ? `${words.slice(0, -1).join(' ')} *${words.at(-1)}*` : `*${title}*`;
+};
+const hasVisual = Boolean(p.visual && (p.visual.palette || p.visual.typography || p.visual.tokens || p.visual.gallery || p.visual.mark));
+const all = [
+  { id: 'contexto', label: 'Contexto', title: 'De onde *veio*', on: true },
+  { id: 'desafio', label: 'Desafio', title: 'O *problema*', on: Boolean(p.challenge) },
+  { id: 'processo', label: 'Processo', title: 'Como foi *construído*', on: Boolean(p.story?.length) },
+  { id: 'funcoes', label: 'Funções', title: doVerb, on: Boolean(p.features?.length) },
+  { id: 'por-dentro', label: 'Por dentro', title: p.inside ? emphasizeLast(p.inside.title) : '', on: Boolean(p.inside) },
+  { id: 'decisoes', label: 'Decisões', title: 'Escolhas e *porquês*', on: Boolean(p.decisions?.length) },
+  { id: 'na-pratica', label: p.demo?.title ?? '', title: p.demo ? emphasizeLast(p.demo.title) : '', on: Boolean(p.demo) },
+  { id: 'visual', label: 'Visual', title: 'Construção *visual*', on: hasVisual },
+  { id: 'tecnologias', label: 'Tecnologias', title: 'Com o que foi *feito*', on: Boolean(p.tech?.length) },
+  { id: 'habilidades', label: 'Habilidades', title: 'O que o projeto *ensinou*', on: Boolean(p.skills?.length) },
+  { id: 'resultados', label: 'Resultados', title: 'O que *ficou*', on: Boolean(p.results) },
+  { id: 'aprendizados', label: 'Aprendizados', title: 'Desafios e *aprendizados*', on: Boolean(p.lessons?.length) },
+  { id: 'proximos', label: 'Próximos passos', title: 'Próximos *passos*', on: Boolean(p.next?.length) },
+  { id: 'creditos', label: 'Créditos', title: 'Quem fez *junto*', on: Boolean(p.credits?.length) },
+];
+const sections = all.filter((s) => s.on);
+const head = (id: string) => {
+  const i = sections.findIndex((s) => s.id === id);
+  const s = sections[i];
+  return { kicker: `${String(i + 1).padStart(2, '0')} — ${s.label}`, title: s.title, id: `${id}-titulo` };
+};
+
+const texts = [
+  p.tagline,
+  ...p.context,
+  p.challenge?.problem ?? '',
+  ...(p.challenge?.goals ?? []),
+  ...(p.story ?? []).flatMap((s) => [s.title, s.text]),
+  ...(p.features ?? []).flatMap((f) => [f.title, f.text]),
+  ...(p.inside?.text ?? []),
+  ...(p.decisions ?? []).flatMap((d) => [d.title, d.why, d.tradeoff ?? '']),
+  p.visual?.intro ?? '',
+  p.visual?.mark ?? '',
+  ...(p.skills ?? []).flatMap((s) => [s.title, s.text]),
+  ...(p.results?.highlights ?? []),
+  ...(p.lessons ?? []).flatMap((l) => [l.title, l.text]),
+  ...(p.next ?? []),
+].map(plain);
+const minutes = readingMinutes(texts);
+const titleWords = p.title.split(' ');
+---
+
+<BaseLayout title={`${p.title} · Projetos · Carlos Michael`} description={plain(p.summary)} current="projetos">
+  <article class="cs" data-case>
+    <header class="cs-hero" data-tilt-area data-ambient>
+      <div class="cs-aura" aria-hidden="true"></div>
+      <div class="container">
+        <a class="link-arrow cs-back" href="/projetos">
+          <Icon name="arrow-left" size={16} />
+          Todos os projetos
+        </a>
+        <div class="cs-hero-grid">
+          <div class="cs-hero-text">
+            <p class="kicker" data-reveal="fade">{p.type} · {p.period}</p>
+            <h1 class="display-xl cs-title" style={`view-transition-name:title-${p.slug}`}>
+              {titleWords.map((w, i) => (i === titleWords.length - 1 && titleWords.length > 1 ? <em>{w}</em> : <>{w} </>))}
+            </h1>
+            <p class="cs-tagline" data-reveal style="--i:1">{p.tagline}</p>
+            <div class="cs-hero-meta" data-reveal style="--i:2">
+              <span class="status" data-live={live ? '' : undefined}>
+                <span class="status-dot" aria-hidden="true"></span>
+                {p.status}
+              </span>
+              <span class="cs-read">
+                <Icon name="clock" size={15} />
+                Leitura de {minutes} min
+              </span>
+            </div>
+            {
+              p.links && (
+                <div class="cs-links" data-reveal style="--i:3">
+                  {p.links.map((link) => (
+                    <a class="btn btn-secondary" href={link.href} target="_blank" rel="noopener noreferrer">
+                      {link.icon && <Icon name={link.icon} size={17} />}
+                      {link.label}
+                      <Icon name="arrow-up-right" size={16} class="icon-diagonal" />
+                      <span class="sr-only">(abre em nova aba)</span>
+                    </a>
+                  ))}
+                </div>
+              )
+            }
+          </div>
+          <div class="cs-hero-art">
+            <div class="cs-tilt" data-tilt>
+              <ProjectArt kind={p.art} size="hero" vt={`art-${p.slug}`} />
+            </div>
+          </div>
+        </div>
+        <dl class="cs-facts">
+          {
+            p.facts.map((f, i) => (
+              <div class="cs-fact" data-reveal style={`--i:${i}`}>
+                <dt>{f.label}</dt>
+                <dd>{f.value}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+    </header>
+
+    <div class="container cs-layout">
+      <aside class="cs-aside">
+        <nav class="cs-toc" aria-labelledby="toc-titulo" data-toc>
+          <p class="cs-toc-title" id="toc-titulo">
+            <Icon name="list" size={16} />
+            Nesta página
+          </p>
+          <ol class="list-reset">
+            {
+              sections.map((s, i) => (
+                <li>
+                  <a href={`#${s.id}`} data-toc-link>
+                    <span class="cs-toc-n">{String(i + 1).padStart(2, '0')}</span>
+                    {s.label}
+                  </a>
+                </li>
+              ))
+            }
+          </ol>
+        </nav>
+      </aside>
+
+      <div class="cs-body">
+        <section id="contexto" class="cs-section" aria-labelledby="contexto-titulo">
+          <SectionHead {...head('contexto')} size="md" />
+          <div class="cs-prose">
+            {p.context.map((t, i) => <p class:list={{ 'cs-lead': i === 0 }} data-reveal style={`--i:${i}`} set:html={rich(t)} />)}
+          </div>
+        </section>
+
+        {
+          p.challenge && (
+            <section id="desafio" class="cs-section" aria-labelledby="desafio-titulo">
+              <SectionHead {...head('desafio')} size="md" />
+              <blockquote class="cs-problem" data-reveal>
+                <Icon name="target" size={26} />
+                <p set:html={rich(p.challenge.problem)} />
+              </blockquote>
+              {p.challenge.goals && (
+                <>
+                  <h3 class="cs-sub" data-reveal>
+                    Objetivos
+                  </h3>
+                  <ol class="list-reset cs-goals">
+                    {p.challenge.goals.map((g, i) => (
+                      <li data-reveal style={`--i:${i}`}>
+                        <span class="cs-goal-n" aria-hidden="true">
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                        <span set:html={rich(g)} />
+                      </li>
+                    ))}
+                  </ol>
+                </>
+              )}
+            </section>
+          )
+        }
+
+        {
+          p.story && (
+            <section id="processo" class="cs-section" aria-labelledby="processo-titulo">
+              <SectionHead {...head('processo')} size="md" />
+              <ol class="list-reset cs-timeline">
+                {p.story.map((s, i) => (
+                  <li class="cs-step" data-reveal style={`--i:${i % 3}`}>
+                    <span class="cs-step-dot" aria-hidden="true" />
+                    <p class="cs-step-date">{s.date}</p>
+                    <h3 class="cs-step-title">{s.title}</h3>
+                    <p class="cs-step-text" set:html={rich(s.text)} />
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )
+        }
+
+        {
+          p.features && (
+            <section id="funcoes" class="cs-section" aria-labelledby="funcoes-titulo">
+              <SectionHead {...head('funcoes')} size="md" />
+              <ul class="list-reset cs-features">
+                {p.features.map((f, i) => (
+                  <li class="card card-canvas card-lift cs-feature" data-spotlight data-reveal style={`--i:${i % 3}`}>
+                    <span class="cs-feature-icon" aria-hidden="true">
+                      <Icon name={f.icon} size={22} />
+                    </span>
+                    <h3 class="cs-feature-title">{f.title}</h3>
+                    <p set:html={rich(f.text)} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )
+        }
+
+        {
+          p.inside && (
+            <section id="por-dentro" class="cs-section" aria-labelledby="por-dentro-titulo">
+              <SectionHead {...head('por-dentro')} size="md" />
+              <div class="cs-prose">
+                {p.inside.text.map((t, i) => (
+                  <p data-reveal style={`--i:${i}`} set:html={rich(t)} />
+                ))}
+              </div>
+              {p.inside.diagram && (
+                <div class="cs-wide" data-reveal>
+                  <ProjectDiagram kind={p.inside.diagram} />
+                </div>
+              )}
+            </section>
+          )
+        }
+
+        {
+          p.decisions && (
+            <section id="decisoes" class="cs-section" aria-labelledby="decisoes-titulo">
+              <SectionHead {...head('decisoes')} size="md" />
+              <ol class="list-reset cs-decisions">
+                {p.decisions.map((d, i) => (
+                  <li class="cs-decision" data-reveal style={`--i:${i % 2}`}>
+                    <span class="cs-decision-n" aria-hidden="true" data-n={String(i + 1).padStart(2, '0')} />
+                    <h3 class="cs-decision-title" set:html={rich(d.title)} />
+                    <p class="cs-decision-why">
+                      <span class="cs-label">Por quê</span>
+                      <span set:html={rich(d.why)} />
+                    </p>
+                    {d.tradeoff && (
+                      <p class="cs-decision-cost">
+                        <span class="cs-label">Custo</span>
+                        <span set:html={rich(d.tradeoff)} />
+                      </p>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )
+        }
+
+        {
+          p.demo && (
+            <section id="na-pratica" class="cs-section" aria-labelledby="na-pratica-titulo">
+              <SectionHead {...head('na-pratica')} size="md" text={p.demo.text} />
+              <div class="cs-wide" data-reveal>
+                {p.demo.kind === 'dino-game' && <DinoGame />}
+                {p.demo.kind === 'before-after' && <BeforeAfter />}
+                {p.demo.kind === 'layout-boxes' && <LayoutBoxes />}
+                {p.demo.kind === 'pytest-run' && <PytestRun />}
+              </div>
+            </section>
+          )
+        }
+
+        {
+          hasVisual && p.visual && (
+            <section id="visual" class="cs-section" aria-labelledby="visual-titulo">
+              <SectionHead {...head('visual')} size="md" text={p.visual.intro} />
+              {p.visual.palette && (
+                <div class="cs-block">
+                  <h3 class="cs-sub" data-reveal>
+                    <Icon name="palette" size={18} /> Cores
+                  </h3>
+                  <Palette swatches={p.visual.palette} gradient={p.visual.gradient} note={p.visual.paletteNote} />
+                </div>
+              )}
+              {p.visual.typography && (
+                <div class="cs-block">
+                  <h3 class="cs-sub" data-reveal>
+                    <Icon name="type" size={18} /> Tipografia
+                  </h3>
+                  <TypeSpecimens specimens={p.visual.typography} />
+                </div>
+              )}
+              {p.visual.tokens && (
+                <div class="cs-block">
+                  <h3 class="cs-sub" data-reveal>
+                    <Icon name="layers" size={18} /> Design system
+                  </h3>
+                  <TypeSpecimens tokens={p.visual.tokens} />
+                </div>
+              )}
+              {p.visual.mark && (
+                <div class="cs-block cs-mark" data-reveal>
+                  <div class="cs-mark-art" aria-hidden="true">
+                    <ExtractorysMark />
+                  </div>
+                  <div>
+                    <h3 class="cs-sub">
+                      <Icon name="sparkles" size={18} /> Marca
+                    </h3>
+                    <p set:html={rich(p.visual.mark)} />
+                  </div>
+                </div>
+              )}
+              {p.visual.gallery && (
+                <div class="cs-block">
+                  <h3 class="cs-sub" data-reveal>
+                    <Icon name="monitor" size={18} /> Telas
+                  </h3>
+                  <Gallery shots={p.visual.gallery} label={`Telas do projeto ${p.title}`} />
+                </div>
+              )}
+            </section>
+          )
+        }
+
+        {
+          p.tech && (
+            <section id="tecnologias" class="cs-section" aria-labelledby="tecnologias-titulo">
+              <SectionHead {...head('tecnologias')} size="md" />
+              <div class="cs-tech">
+                {p.tech.map((group, i) => (
+                  <div class="cs-tech-group" data-reveal style={`--i:${i % 4}`}>
+                    <h3 class="cs-tech-title">{group.group}</h3>
+                    <ul class="chip-list">
+                      {group.items.map((item) => (
+                        <li class="chip">{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )
+        }
+
+        {
+          p.skills && (
+            <section id="habilidades" class="cs-section" aria-labelledby="habilidades-titulo">
+              <SectionHead {...head('habilidades')} size="md" />
+              <ul class="list-reset cs-skills">
+                {p.skills.map((s, i) => (
+                  <li class="cs-skill" data-reveal style={`--i:${i % 3}`}>
+                    <Icon name="check" size={18} />
+                    <div>
+                      <h3 class="cs-skill-title">{s.title}</h3>
+                      <p set:html={rich(s.text)} />
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )
+        }
+
+        {
+          p.results && (
+            <section id="resultados" class="cs-section" aria-labelledby="resultados-titulo">
+              <SectionHead {...head('resultados')} size="md" />
+              {p.results.metrics && (
+                <ul class="list-reset cs-metrics">
+                  {p.results.metrics.map((m, i) => (
+                    <li class="cs-metric" data-reveal style={`--i:${i}`}>
+                      <span class="cs-metric-value">
+                        {m.prefix}
+                        <span data-count={m.value}>{m.value}</span>
+                        {m.suffix}
+                      </span>
+                      <span class="cs-metric-label">{m.label}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {p.results.highlights && (
+                <ul class="list-reset cs-highlights">
+                  {p.results.highlights.map((h, i) => (
+                    <li data-reveal style={`--i:${i}`}>
+                      <Icon name="award" size={18} />
+                      <span set:html={rich(h)} />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          )
+        }
+
+        {
+          p.lessons && (
+            <section id="aprendizados" class="cs-section" aria-labelledby="aprendizados-titulo">
+              <SectionHead {...head('aprendizados')} size="md" />
+              <ul class="list-reset cs-lessons">
+                {p.lessons.map((l, i) => (
+                  <li class="card card-canvas cs-lesson" data-reveal style={`--i:${i % 2}`}>
+                    <Icon name="lightbulb" size={20} />
+                    <h3 class="cs-lesson-title">{l.title}</h3>
+                    <p set:html={rich(l.text)} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )
+        }
+
+        {
+          p.next && (
+            <section id="proximos" class="cs-section" aria-labelledby="proximos-titulo">
+              <SectionHead {...head('proximos')} size="md" />
+              <ul class="list-reset cs-next-steps">
+                {p.next.map((n, i) => (
+                  <li data-reveal style={`--i:${i}`}>
+                    <Icon name="compass" size={18} />
+                    <span set:html={rich(n)} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )
+        }
+
+        {
+          p.credits && (
+            <section id="creditos" class="cs-section" aria-labelledby="creditos-titulo">
+              <SectionHead {...head('creditos')} size="md" />
+              <ul class="list-reset cs-credits">
+                {p.credits.map((c) => (
+                  <li class="cs-credit" data-reveal>
+                    <span class="cs-credit-avatar" aria-hidden="true">
+                      {c.name
+                        .split(' ')
+                        .map((w) => w[0])
+                        .slice(0, 2)
+                        .join('')}
+                    </span>
+                    <span>
+                      {c.href ? (
+                        <a class="text-link" href={c.href} target="_blank" rel="noopener noreferrer">
+                          {c.name}
+                          <span class="sr-only"> (abre em nova aba)</span>
+                        </a>
+                      ) : (
+                        <strong>{c.name}</strong>
+                      )}
+                      <span class="cs-credit-role">{c.role}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )
+        }
+
+        {p.sources && <p class="cs-sources">Fontes desta página: {p.sources}</p>}
+      </div>
+    </div>
+
+    <nav class="cs-next band-inverse" aria-label="Próximo projeto">
+      <a class="cs-next-link" href={projectHref(next.slug)}>
+        <div class="container cs-next-inner">
+          <div class="cs-next-text">
+            <span class="cs-next-kicker">Próximo projeto</span>
+            <span class="cs-next-title">{next.title}</span>
+            <span class="cs-next-tagline">{next.tagline}</span>
+            <span class="cs-next-go" aria-hidden="true">
+              Ver o projeto
+              <Icon name="arrow-right" size={18} class="icon-trail" />
+            </span>
+          </div>
+          <div class="cs-next-art">
+            <ProjectArt kind={next.art} />
+          </div>
+        </div>
+      </a>
+    </nav>
+  </article>
+</BaseLayout>
+
+<script>
+  import '../../scripts/projeto';
+</script>
+
+<style>
+  /* ---------- topo ---------- */
+  .cs-hero {
+    position: relative;
+    overflow: clip;
+    isolation: isolate;
+    padding-block: clamp(1.5rem, 1rem + 2vw, 2.5rem) clamp(2.5rem, 2rem + 3vw, 4rem);
+  }
+
+  .cs-aura {
+    position: absolute;
+    z-index: -1;
+    top: -28vmax;
+    right: -16vmax;
+    width: 62vmax;
+    height: 62vmax;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgb(var(--c-glow-a-rgb) / 0.55), transparent);
+  }
+
+  :global(:root[data-motion='full']) .cs-aura {
+    animation: drift 20s ease-in-out infinite;
+  }
+
+  .cs-back {
+    margin-bottom: clamp(1.25rem, 1rem + 1.5vw, 2.25rem);
+    color: var(--c-muted);
+  }
+
+  .cs-back:hover :global(.icon) {
+    transform: translateX(-4px);
+  }
+
+  .cs-hero-grid {
+    display: grid;
+    gap: clamp(2rem, 1.5rem + 2vw, 3.5rem);
+    align-items: center;
+  }
+
+  @media (min-width: 60rem) {
+    .cs-hero-grid {
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    }
+  }
+
+  .cs-title {
+    margin-block: 0.4rem 1rem;
+    overflow-wrap: anywhere;
+  }
+
+  /* números alinhados na Cormorant (o padrão dela são numerais antigos) */
+  .cs-title,
+  .cs-problem,
+  .cs-step-title,
+  .cs-next-title {
+    font-variant-numeric: lining-nums;
+  }
+
+
+  .cs-tagline {
+    max-width: 34rem;
+    color: var(--c-body-strong);
+    font-size: var(--fs-body-lg);
+    line-height: 1.6;
+  }
+
+  .cs-hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1.5rem;
+    margin-top: 1.25rem;
+  }
+
+  .cs-read {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--c-muted);
+    font-size: var(--fs-caption);
+    font-weight: 500;
+  }
+
+  .cs-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
+
+  .cs-hero-art {
+    perspective: 1400px;
+  }
+
+  .cs-tilt {
+    transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+    transition: transform 0.6s var(--ease-out);
+  }
+
+
+  .cs-facts {
+    display: grid;
+    gap: 0;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+    margin: clamp(2.5rem, 2rem + 2vw, 3.5rem) 0 0;
+    border-top: 1px solid var(--c-hairline);
+  }
+
+  .cs-fact {
+    padding: 1rem 1.25rem 1rem 0;
+    border-bottom: 1px solid var(--c-hairline);
+  }
+
+  .cs-fact dt {
+    margin-bottom: 0.3rem;
+    color: var(--c-muted);
+    font-size: var(--fs-caption-upper);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .cs-fact dd {
+    margin: 0;
+    color: var(--c-ink);
+    font-weight: 500;
+    line-height: 1.45;
+  }
+
+  /* ---------- corpo e sumário ---------- */
+  .cs-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+    padding-block: clamp(1.5rem, 1rem + 2vw, 3rem) var(--space-section);
+  }
+
+  @media (min-width: 64rem) {
+    .cs-layout {
+      grid-template-columns: 13.5rem minmax(0, 1fr);
+      gap: clamp(3rem, 1rem + 4vw, 5rem);
+    }
+
+    .cs-aside {
+      position: sticky;
+      top: calc(var(--nav-h) + 2rem);
+      align-self: start;
+    }
+  }
+
+  .cs-aside,
+  .cs-toc {
+    position: relative;
+    min-width: 0;
+  }
+
+  .cs-toc-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
+    color: var(--c-ink);
+    font-size: var(--fs-caption-upper);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* celular: as seções viram uma faixa de atalhos que rola para o lado */
+  .cs-toc ol {
+    display: flex;
+    gap: 0.4rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    scrollbar-width: none;
+  }
+
+  .cs-toc ol::-webkit-scrollbar {
+    display: none;
+  }
+
+  .cs-toc a {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    border: 1px solid var(--c-hairline);
+    border-radius: var(--radius-pill);
+    background: var(--c-canvas);
+    color: var(--c-muted);
+    font-size: var(--fs-body-sm);
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+      color 0.25s ease,
+      border-color 0.25s ease,
+      background-color 0.25s ease;
+  }
+
+  .cs-toc a:hover,
+  .cs-toc a.is-active {
+    color: var(--c-ink);
+    border-color: var(--c-outline);
+  }
+
+  .cs-toc-n {
+    color: var(--c-accent-strong);
+    font-family: var(--font-mono);
+    font-size: var(--fs-caption);
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (min-width: 64rem) {
+    .cs-toc ol {
+      display: block;
+      padding: 0 0 0 1rem;
+      overflow: visible;
+      border-inline-start: 1px solid var(--c-hairline);
+    }
+
+    .cs-toc a {
+      padding: 0.4rem 0;
+      border: 0;
+      background: none;
+      white-space: normal;
+    }
+
+    .cs-toc a.is-active {
+      font-weight: 600;
+    }
+
+    /* barra que desliza até a seção ativa */
+    .cs-toc::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 2px;
+      height: var(--toc-h, 0);
+      background: var(--c-accent-strong);
+      transform: translateY(var(--toc-y, 0));
+      opacity: 0;
+      transition:
+        transform 0.5s var(--ease-out),
+        height 0.5s var(--ease-out),
+        opacity 0.3s ease;
+    }
+
+    .cs-toc.has-active::before {
+      opacity: 1;
+    }
+  }
+
+  .cs-body {
+    min-width: 0;
+  }
+
+  .cs-section {
+    padding-block: clamp(2.5rem, 2rem + 2.5vw, 4rem);
+    border-top: 1px solid var(--c-hairline);
+    scroll-margin-top: calc(var(--nav-h) + 1rem);
+  }
+
+  .cs-section:first-child {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .cs-section :global(.section-head) {
+    margin-bottom: clamp(1.5rem, 1.2rem + 1vw, 2.25rem);
+  }
+
+  .cs-prose {
+    display: grid;
+    gap: 1rem;
+    max-width: 44rem;
+    color: var(--c-body);
+    font-size: var(--fs-body-lg);
+    line-height: 1.7;
+  }
+
+  .cs-lead {
+    color: var(--c-body-strong);
+  }
+
+  .cs-prose :global(code),
+  .cs-body :global(p code),
+  .cs-body :global(h3 code),
+  .cs-body :global(span code) {
+    padding: 0.05em 0.35em;
+    border-radius: var(--radius-xs);
+    background: var(--c-surface-card);
+    color: var(--c-ink);
+    font-family: var(--font-mono);
+    font-size: 0.86em;
+  }
+
+  .cs-body :global(strong) {
+    color: var(--c-ink);
+    font-weight: 600;
+  }
+
+  .cs-wide {
+    margin-top: 2rem;
+  }
+
+  .cs-sub {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 1rem;
+    color: var(--c-ink);
+    font-family: var(--font-sans);
+    font-size: var(--fs-title-md);
+    font-weight: 600;
+  }
+
+  .cs-block + .cs-block {
+    margin-top: clamp(2rem, 1.5rem + 2vw, 3rem);
+  }
+
+  .cs-label {
+    display: block;
+    margin-bottom: 0.2rem;
+    color: var(--c-accent-strong);
+    font-size: var(--fs-caption-upper);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* ---------- desafio ---------- */
+  .cs-problem {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 1rem;
+    margin: 0;
+    padding: clamp(1.25rem, 1rem + 1.5vw, 2rem);
+    border-radius: var(--radius-xl);
+    background: var(--c-inverse);
+    color: var(--c-on-inverse);
+    font-family: var(--font-display);
+    font-size: clamp(1.2rem, 1.05rem + 0.7vw, 1.55rem);
+    line-height: 1.4;
+  }
+
+  .cs-problem :global(.icon) {
+    color: var(--c-inverse-accent);
+    margin-top: 0.3rem;
+  }
+
+  .cs-problem :global(code) {
+    background: var(--c-inverse-elevated) !important;
+    color: var(--c-on-inverse) !important;
+  }
+
+  .cs-goals {
+    display: grid;
+    gap: 0.6rem;
+    counter-reset: goal;
+  }
+
+  .cs-goals li {
+    display: flex;
+    gap: 1rem;
+    align-items: baseline;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--c-hairline);
+    border-radius: var(--radius-md);
+    background: var(--c-canvas);
+    color: var(--c-body);
+  }
+
+  .cs-goal-n {
+    color: var(--c-accent-strong);
+    font-family: var(--font-mono);
+    font-size: var(--fs-caption);
+  }
+
+  .cs-problem + .cs-sub {
+    margin-top: 2rem;
+  }
+
+  /* ---------- processo (linha do tempo) ---------- */
+  .cs-timeline {
+    position: relative;
+    display: grid;
+    gap: 1.75rem;
+    padding-inline-start: 2rem;
+  }
+
+  .cs-timeline::before {
+    content: '';
+    position: absolute;
+    top: 0.4rem;
+    bottom: 0.4rem;
+    left: 0.45rem;
+    width: 2px;
+    background: var(--c-hairline);
+  }
+
+  /* a linha se preenche conforme a leitura avança */
+  .cs-timeline::after {
+    content: '';
+    position: absolute;
+    top: 0.4rem;
+    bottom: 0.4rem;
+    left: 0.45rem;
+    width: 2px;
+    background: var(--c-accent-strong);
+    transform-origin: top;
+    transform: scaleY(1);
+  }
+
+  @supports (animation-timeline: view()) {
+    :global(:root[data-motion='full']) .cs-timeline::after {
+      animation: grow-y linear both;
+      animation-timeline: view();
+      animation-range: entry 30% cover 60%;
+    }
+  }
+
+  .cs-step {
+    position: relative;
+  }
+
+  .cs-step-dot {
+    position: absolute;
+    left: -2rem;
+    top: 0.25rem;
+    width: 0.95rem;
+    height: 0.95rem;
+    border: 2px solid var(--c-accent-strong);
+    border-radius: 50%;
+    background: var(--c-canvas);
+    transition: background-color 0.4s ease 0.3s;
+  }
+
+  .cs-step:global(.is-visible) .cs-step-dot {
+    background: var(--c-accent-strong);
+  }
+
+  .cs-step-date {
+    color: var(--c-accent-strong);
+    font-family: var(--font-mono);
+    font-size: var(--fs-caption);
+  }
+
+  .cs-step-title {
+    margin: 0.2rem 0 0.4rem;
+    color: var(--c-ink);
+    font-family: var(--font-display);
+    font-size: var(--fs-title-lg);
+    font-weight: 500;
+  }
+
+  .cs-step-text {
+    max-width: 42rem;
+    color: var(--c-body);
+  }
+
+  /* ---------- funções ---------- */
+  .cs-features {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+  }
+
+  .cs-feature {
+    display: grid;
+    align-content: start;
+    gap: 0.6rem;
+  }
+
+  .cs-feature-icon {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: var(--radius-md);
+    background: var(--c-surface-card);
+    color: var(--c-ink);
+    transition:
+      transform 0.5s var(--ease-spring),
+      background-color 0.3s ease,
+      color 0.3s ease;
+  }
+
+  .cs-feature:hover .cs-feature-icon {
+    transform: rotate(-8deg) scale(1.08);
+    background: var(--c-primary);
+    color: var(--c-on-primary);
+  }
+
+  .cs-feature-title {
+    color: var(--c-ink);
+    font-family: var(--font-sans);
+    font-size: var(--fs-title-md);
+    font-weight: 600;
+  }
+
+  .cs-feature p {
+    color: var(--c-body);
+    font-size: var(--fs-body-sm);
+  }
+
+  /* ---------- decisões ---------- */
+  .cs-decisions {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+  }
+
+  .cs-decision {
+    position: relative;
+    display: grid;
+    align-content: start;
+    gap: 0.75rem;
+    padding: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+    border: 1px solid var(--c-hairline);
+    border-radius: var(--radius-lg);
+    background: var(--c-surface-soft);
+    overflow: hidden;
+  }
+
+  .cs-decision-n::after {
+    content: attr(data-n);
+  }
+
+  .cs-decision-n {
+    position: absolute;
+    top: -0.6rem;
+    right: 0.6rem;
+    color: rgb(var(--c-accent-rgb) / 0.18);
+    font-family: var(--font-display);
+    font-size: 4.5rem;
+    font-style: italic;
+    line-height: 1;
+    pointer-events: none;
+    transition: transform 0.6s var(--ease-out);
+  }
+
+  .cs-decision:hover .cs-decision-n {
+    transform: translateY(6px) rotate(-6deg);
+  }
+
+  .cs-decision-title {
+    padding-inline-end: 3rem;
+    color: var(--c-ink);
+    font-family: var(--font-sans);
+    font-size: var(--fs-title-md);
+    font-weight: 600;
+  }
+
+  .cs-decision-why,
+  .cs-decision-cost {
+    color: var(--c-body);
+    font-size: var(--fs-body-sm);
+  }
+
+  .cs-decision-cost {
+    padding-top: 0.75rem;
+    border-top: 1px dashed var(--c-hairline);
+  }
+
+  /* ---------- marca ---------- */
+  .cs-mark {
+    display: grid;
+    gap: 1.5rem;
+    align-items: center;
+    padding: clamp(1.25rem, 1rem + 1.5vw, 2rem);
+    border-radius: var(--radius-xl);
+    background: linear-gradient(135deg, #2a0048, #800080 45%, #d50048);
+    color: #f3f1ea;
+  }
+
+  .cs-mark .cs-sub {
+    color: #fff;
+  }
+
+  .cs-mark p {
+    color: #f3f1ea;
+  }
+
+  @media (min-width: 40rem) {
+    .cs-mark {
+      grid-template-columns: 9rem minmax(0, 1fr);
+    }
+  }
+
+  .cs-mark-art {
+    width: 9rem;
+    justify-self: center;
+  }
+
+  /* ---------- tecnologias ---------- */
+  .cs-tech {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+  }
+
+  .cs-tech-group {
+    padding: 1.25rem;
+    border: 1px solid var(--c-hairline);
+    border-radius: var(--radius-lg);
+    background: var(--c-canvas);
+  }
+
+  .cs-tech-title {
+    margin-bottom: 0.75rem;
+    color: var(--c-muted);
+    font-family: var(--font-sans);
+    font-size: var(--fs-caption-upper);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .cs-tech .chip {
+    transition:
+      transform 0.4s var(--ease-spring),
+      border-color 0.3s ease;
+  }
+
+  .cs-tech .chip:hover {
+    transform: translateY(-2px);
+    border-color: var(--c-outline);
+  }
+
+  /* ---------- habilidades ---------- */
+  .cs-skills {
+    display: grid;
+    gap: 0.25rem 2rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+  }
+
+  .cs-skill {
+    display: flex;
+    gap: 0.85rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--c-hairline-soft);
+  }
+
+  .cs-skill > :global(.icon) {
+    flex: none;
+    margin-top: 0.15rem;
+    padding: 0.2rem;
+    border-radius: 50%;
+    background: var(--c-primary);
+    color: var(--c-on-primary);
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+
+  .cs-skill-title {
+    color: var(--c-ink);
+    font-family: var(--font-sans);
+    font-size: var(--fs-title-sm);
+    font-weight: 600;
+  }
+
+  .cs-skill p {
+    color: var(--c-body);
+    font-size: var(--fs-body-sm);
+  }
+
+  /* ---------- resultados ---------- */
+  .cs-metrics {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+    margin-bottom: 1.5rem;
+  }
+
+  .cs-metric {
+    display: grid;
+    gap: 0.4rem;
+    padding: 1.25rem;
+    border-radius: var(--radius-lg);
+    background: var(--c-inverse);
+    color: var(--c-on-inverse);
+  }
+
+  .cs-metric-value {
+    color: var(--c-inverse-accent);
+    font-family: var(--font-display);
+    font-size: var(--fs-display-lg);
+    font-style: italic;
+    line-height: 1;
+    font-variant-numeric: lining-nums;
+  }
+
+  .cs-metric-label {
+    color: var(--c-on-inverse-soft);
+    font-size: var(--fs-body-sm);
+  }
+
+  .cs-highlights,
+  .cs-next-steps {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .cs-highlights li,
+  .cs-next-steps li {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    color: var(--c-body);
+  }
+
+  .cs-highlights :global(.icon),
+  .cs-next-steps :global(.icon) {
+    flex: none;
+    margin-top: 0.2rem;
+    color: var(--c-accent-strong);
+  }
+
+  /* ---------- aprendizados ---------- */
+  .cs-lessons {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+  }
+
+  .cs-lesson {
+    display: grid;
+    align-content: start;
+    gap: 0.6rem;
+  }
+
+  .cs-lesson > :global(.icon) {
+    color: var(--c-accent-strong);
+  }
+
+  .cs-lesson-title {
+    color: var(--c-ink);
+    font-family: var(--font-sans);
+    font-size: var(--fs-title-md);
+    font-weight: 600;
+  }
+
+  .cs-lesson p {
+    color: var(--c-body);
+    font-size: var(--fs-body-sm);
+  }
+
+  /* ---------- créditos ---------- */
+  .cs-credits {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .cs-credit {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .cs-credit-avatar {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background: var(--c-surface-strong);
+    color: var(--c-ink);
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+  }
+
+  .cs-credit-role {
+    display: block;
+    color: var(--c-muted);
+    font-size: var(--fs-body-sm);
+  }
+
+  .cs-sources {
+    margin-top: 2.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--c-hairline);
+    color: var(--c-muted-soft);
+    font-size: var(--fs-caption);
+  }
+
+  /* ---------- próximo projeto ---------- */
+  .cs-next {
+    border-bottom: 1px solid var(--c-inverse-hairline);
+  }
+
+  .cs-next-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .cs-next-inner {
+    display: grid;
+    gap: 2rem;
+    align-items: center;
+    padding-block: clamp(3rem, 2rem + 4vw, 5rem);
+  }
+
+  @media (min-width: 52rem) {
+    .cs-next-inner {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 24rem);
+    }
+  }
+
+  .cs-next-text {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .cs-next-kicker {
+    color: var(--c-on-inverse-soft);
+    font-size: var(--fs-caption-upper);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .cs-next-title {
+    color: var(--c-on-inverse);
+    font-family: var(--font-display);
+    font-size: var(--fs-display-lg);
+    font-weight: 500;
+    line-height: 1.05;
+    background: linear-gradient(currentColor, currentColor) 0 100% / 0 2px no-repeat;
+    width: fit-content;
+    transition: background-size 0.6s var(--ease-out);
+  }
+
+  .cs-next-tagline {
+    max-width: 32rem;
+    color: var(--c-on-inverse-soft);
+  }
+
+  .cs-next-go {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    color: var(--c-inverse-accent);
+    font-weight: 600;
+  }
+
+  .cs-next-go :global(.icon) {
+    transition: transform 0.45s var(--ease-out);
+  }
+
+  .cs-next-art {
+    overflow: hidden;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--c-inverse-hairline);
+    transform: rotate(1.5deg);
+    transition: transform 0.7s var(--ease-out);
+  }
+
+  .cs-next-link:hover .cs-next-title,
+  .cs-next-link:focus-visible .cs-next-title {
+    background-size: 100% 2px;
+  }
+
+  .cs-next-link:hover .cs-next-go :global(.icon) {
+    transform: translateX(6px);
+  }
+
+  .cs-next-link:hover .cs-next-art {
+    transform: rotate(0deg) scale(1.03);
+  }
+
+  .cs-next-link:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: -6px;
+  }
+</style>

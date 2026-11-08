@@ -1,0 +1,1090 @@
+---
+import { Image } from 'astro:assets';
+import type { ArtKind } from '../data/projects/types';
+import ExtractorysMark from './case/ExtractorysMark.astro';
+import telaClara from '../assets/images/projetos/extractorys/tela-inicial-clara.webp';
+import telaEscura from '../assets/images/projetos/extractorys/tela-inicial-escura.webp';
+import siteClaro from '../assets/images/projetos/portfolio/depois-claro.webp';
+import siteEscuro from '../assets/images/projetos/portfolio/depois-escuro.webp';
+
+/*
+ * Ilustração de cada projeto, usada no cartão da lista (size="card") e no topo do
+ * estudo de caso (size="hero"). É decorativa: o texto da página descreve o projeto.
+ * Tudo se mede pelo próprio quadro (SVG com viewBox ou unidades cqw), então a mesma
+ * ilustração serve aos dois tamanhos. As animações só rodam com movimento ligado e
+ * pausam quando o quadro sai da tela (data-ambient).
+ */
+interface Props {
+  kind: ArtKind;
+  size?: 'card' | 'hero';
+  class?: string;
+  /** view-transition-name, para o cartão "virar" o topo da página do projeto. */
+  vt?: string;
+}
+
+const { kind, size = 'card', class: className, vt } = Astro.props;
+const uid = `${kind}-${size}-${Math.random().toString(36).slice(2, 7)}`;
+const hero = size === 'hero';
+
+/* ---------- Dino Runner: quadros da matriz 5×5 (as mesmas poses do código) ---------- */
+const FRAME = 330;
+const dino = (up: number) => [
+  [4 - up, 0],
+  [3 - up, 0],
+];
+// [pulo, coluna do inimigo]: o inimigo vem pela linha de baixo e o dinossauro pula na hora certa
+const frames = [
+  [0, 4],
+  [0, 3],
+  [0, 2],
+  [1, 1],
+  [1, 0],
+  [0, -1],
+  [0, -1],
+  [0, -1],
+].map(([up, col]) => {
+  const on = new Map<string, 'dino' | 'enemy'>();
+  for (const [r, c] of dino(up)) if (r >= 0) on.set(`${r},${c}`, 'dino');
+  if (col >= 0 && col < 5) on.set(`4,${col}`, 'enemy');
+  return on;
+});
+const total = FRAME * frames.length;
+let ledCss = '';
+const leds: { r: number; c: number; cls?: string }[] = [];
+for (let r = 0; r < 5; r++) {
+  for (let c = 0; c < 5; c++) {
+    const states = frames.map((f) => f.get(`${r},${c}`) ?? 'off');
+    if (kind !== 'dino-runner' || states.every((s) => s === 'off')) {
+      leds.push({ r, c });
+      continue;
+    }
+    const name = `led-${uid}-${r}${c}`;
+    const color = { off: 'var(--led-off)', dino: 'var(--led-dino)', enemy: 'var(--led-enemy)' } as const;
+    const stops = states.map((s, i) => `${((i / frames.length) * 100).toFixed(2)}%{fill:${color[s]}}`).join('');
+    ledCss += `@keyframes ${name}{${stops}100%{fill:${color[states[0]]}}}:root[data-motion='full'] .${name}{animation:${name} ${total}ms steps(1,end) infinite}.art .dr-led.${name}{fill:${color[states[3]]}}`;
+    leds.push({ r, c, cls: name });
+  }
+}
+
+/* ---------- Bee Sense: favo de mel ---------- */
+const hex = (cx: number, cy: number, R: number) =>
+  `M${[0, 60, 120, 180, 240, 300]
+    .map((a) => {
+      const rad = ((a - 90) * Math.PI) / 180;
+      return `${(cx + R * Math.cos(rad)).toFixed(1)} ${(cy + R * Math.sin(rad)).toFixed(1)}`;
+    })
+    .join('L')}Z`;
+const R = 13;
+const hw = Math.sqrt(3) * R;
+const comb = [
+  [0, 0],
+  [hw, 0],
+  [-hw, 0],
+  [hw / 2, -1.5 * R],
+  [-hw / 2, -1.5 * R],
+  [hw / 2, 1.5 * R],
+  [-hw / 2, 1.5 * R],
+].map(([x, y]) => [72 + x, 52 + y]);
+const trap = comb[3];
+
+/* ---------- Agende Aí: calendário ---------- */
+const cells = Array.from({ length: 15 }, (_, i) => ({ x: 26 + (i % 5) * 17, y: 38 + Math.floor(i / 5) * 15 }));
+---
+
+<div
+  class:list={['art', `art-${kind}`, `art-${size}`, className]}
+  aria-hidden="true"
+  data-ambient
+  style={vt ? `view-transition-name:${vt}` : undefined}
+>
+  {kind === 'dino-runner' && <style is:inline set:html={ledCss} />}
+
+  {
+    kind === 'extractorys' && (
+      <>
+        <div class="ex-glow" />
+        <div class="ex-phones">
+          <div class="ex-phone ex-phone-a">
+            <Image src={telaEscura} alt="" widths={[180, 320]} sizes={hero ? '(min-width: 64rem) 16rem, 34vw' : '9rem'} loading={hero ? 'eager' : 'lazy'} />
+          </div>
+          <div class="ex-phone ex-phone-b">
+            <Image src={telaClara} alt="" widths={[180, 320]} sizes={hero ? '(min-width: 64rem) 16rem, 34vw' : '9rem'} loading={hero ? 'eager' : 'lazy'} />
+          </div>
+        </div>
+        <ExtractorysMark class="ex-mark" />
+      </>
+    )
+  }
+
+  {
+    kind === 'bee-sense' && (
+      <svg class="svg" viewBox="0 0 160 100" preserveAspectRatio="xMidYMid meet">
+        {comb.map(([x, y]) => (
+          <path class="bs-cell" d={hex(x, y, R - 1)} />
+        ))}
+        <path class="bs-trap" d={hex(trap[0], trap[1], R - 1)} />
+        <g transform="translate(112 64)">
+          <rect class="bs-board" width="30" height="19" rx="3" />
+          <rect class="bs-chip" x="4" y="4.5" width="9" height="10" rx="1.2" />
+          <circle class="bs-led" cx="22" cy="9.5" r="2.6" />
+          <circle class="bs-ping" cx="22" cy="9.5" r="9" />
+        </g>
+        <g class="bs-bee">
+          <g class="bs-bee-body">
+            <ellipse class="bs-wing bs-flap" cx="-1.5" cy="-6.5" rx="3.4" ry="5.2" />
+            <ellipse class="bs-body" cx="0" cy="0" rx="7" ry="4.6" />
+            <rect class="bs-stripe" x="-2.8" y="-4.6" width="1.9" height="9.2" />
+            <rect class="bs-stripe" x="1" y="-4.6" width="1.9" height="9.2" />
+            <circle class="bs-body" cx="7.4" cy="-0.6" r="3.1" />
+          </g>
+        </g>
+      </svg>
+    )
+  }
+
+  {
+    kind === 'agende-ai' && (
+      <svg class="svg" viewBox="0 0 160 100" preserveAspectRatio="xMidYMid meet">
+        <rect class="ag-card" x="18" y="14" width="96" height="78" rx="8" />
+        <path class="ag-head" d="M18 22a8 8 0 0 1 8-8h80a8 8 0 0 1 8 8v8H18Z" />
+        <circle class="ag-dot" cx="28" cy="22" r="2" />
+        <rect class="ag-title" x="35" y="20.5" width="30" height="3" rx="1.5" />
+        {cells.map((c) => (
+          <rect class="ag-cell" x={c.x} y={c.y} width="13" height="11" rx="2.5" />
+        ))}
+        <rect class="ag-sel" x={cells[2].x - 1.5} y={cells[2].y - 1.5} width="16" height="14" rx="3.5" />
+        <path class="ag-check" d={`M${cells[13].x + 3.5} ${cells[13].y + 5.8}l2.6 2.6 4.4-5`} />
+        <g class="ag-stock">
+          <rect class="ag-bar-bg" x="122" y="32" width="26" height="4" rx="2" />
+          <rect class="ag-bar ag-bar-1" x="122" y="32" width="20" height="4" rx="2" />
+          <rect class="ag-bar-bg" x="122" y="44" width="26" height="4" rx="2" />
+          <rect class="ag-bar ag-bar-2" x="122" y="44" width="12" height="4" rx="2" />
+          <rect class="ag-bar-bg" x="122" y="56" width="26" height="4" rx="2" />
+          <rect class="ag-bar ag-bar-3" x="122" y="56" width="23" height="4" rx="2" />
+        </g>
+        <g class="ag-toast">
+          <rect x="44" y="80" width="62" height="14" rx="7" />
+          <path d="M53 87l2 2 3.6-4" />
+          <rect class="ag-toast-line" x="62" y="85.5" width="34" height="3" rx="1.5" />
+        </g>
+      </svg>
+    )
+  }
+
+  {
+    kind === 'dino-runner' && (
+      <svg class="svg" viewBox="0 0 160 100" preserveAspectRatio="xMidYMid meet">
+        <rect class="dr-board" x="20" y="12" width="76" height="76" rx="10" />
+        {leds.map((l) => (
+          <circle class:list={['dr-led', l.cls]} cx={34 + l.c * 12} cy={26 + l.r * 12} r="4.4" />
+        ))}
+        <rect class="dr-board" x="104" y="28" width="40" height="34" rx="5" />
+        <rect class="dr-oled" x="107.5" y="31.5" width="33" height="27" rx="2" />
+        <text class="dr-oled-label" x="124" y="41" text-anchor="middle">DINO</text>
+        <text class="dr-oled-score" x="124" y="53" text-anchor="middle">12</text>
+        <rect class="dr-btn" x="106" y="70" width="14" height="10" rx="3" />
+        <rect class="dr-btn" x="128" y="70" width="14" height="10" rx="3" />
+      </svg>
+    )
+  }
+
+  {
+    kind === 'inclua' && (
+      <svg class="svg" viewBox="0 0 160 100" preserveAspectRatio="xMidYMid meet">
+        <g class="in-cards">
+          <g class="in-card in-card-1">
+            <rect x="22" y="22" width="34" height="44" rx="5" />
+            <path d="M28 32h22M28 38h16M28 44h19" />
+          </g>
+          <g class="in-card in-card-2">
+            <rect x="62" y="18" width="34" height="44" rx="5" />
+            <path d="M68 28h22M68 34h12M68 40h20" />
+          </g>
+          <g class="in-card in-card-3">
+            <rect x="102" y="22" width="34" height="44" rx="5" />
+            <path d="M108 32h22M108 38h18M108 44h10" />
+          </g>
+        </g>
+        <g class="in-scale">
+          <path class="in-post" d="M79 72v16M71 88h16" />
+          <g class="in-beam">
+            <path d="M55 74h48" />
+            <path class="in-pan" d="M55 74l-7 9h14Z" />
+            <path class="in-pan" d="M103 74l-7 9h14Z" />
+          </g>
+          <circle class="in-pivot" cx="79" cy="74" r="2.6" />
+        </g>
+      </svg>
+    )
+  }
+
+  {
+    kind === 'pytest' && (
+      <div class="py-term">
+        <div class="py-bar">
+          <span />
+          <span />
+          <span />
+        </div>
+        <div class="py-body">
+          <p>
+            <span class="py-prompt">$</span> pytest -q
+          </p>
+          <p class="py-dots-line">
+            <span class="py-dots">............</span>
+            <span class="py-pct">[100%]</span>
+          </p>
+          <p class="py-pass">12 passed in 0.08s</p>
+          <p class="py-next">
+            <span class="py-prompt">$</span>
+            <span class="py-caret" />
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  {
+    kind === 'portfolio' && (
+      <div class="pf-browser">
+        <div class="pf-bar">
+          <span />
+          <span />
+          <span />
+          <span class="pf-url">seinenk.github.io</span>
+        </div>
+        <div class="pf-view">
+          <Image src={siteClaro} alt="" widths={[480, 800, 1200]} sizes={hero ? '(min-width: 64rem) 34rem, 92vw' : '22rem'} loading={hero ? 'eager' : 'lazy'} />
+          <div class="pf-dark">
+            <Image src={siteEscuro} alt="" widths={[480, 800, 1200]} sizes={hero ? '(min-width: 64rem) 34rem, 92vw' : '22rem'} loading="lazy" />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  {
+    kind === 'layout-simples' && (
+      <svg class="svg" viewBox="0 0 160 100" preserveAspectRatio="xMidYMid meet">
+        <rect class="ls-sheet" x="14" y="10" width="132" height="82" rx="5" />
+        <g class="ls-part ls-head">
+          <path d="M14 15a5 5 0 0 1 5-5h122a5 5 0 0 1 5 5v8H14Z" fill="#8e7cc3" />
+          <rect x="17" y="12.5" width="15" height="8" rx="1.5" fill="#eee" stroke="#000" stroke-width=".4" />
+          <text x="24.5" y="18.2" text-anchor="middle" class="ls-t ls-logo-t">Logo</text>
+          <text x="36" y="18.2" class="ls-t ls-menu-t">Home | Cursos | Professores | Contato</text>
+        </g>
+        <g class="ls-part ls-c1">
+          <rect x="28" y="36" width="26" height="26" rx="2.6" fill="#6aa84f" />
+          <text x="41" y="41.5" text-anchor="middle" class="ls-t">Missão</text>
+        </g>
+        <g class="ls-part ls-c2">
+          <rect x="67" y="36" width="26" height="26" rx="2.6" fill="#6fa8dc" />
+          <text x="80" y="41.5" text-anchor="middle" class="ls-t">Visão</text>
+        </g>
+        <g class="ls-part ls-c3">
+          <rect x="106" y="36" width="26" height="26" rx="2.6" fill="#f6b26b" />
+          <text x="119" y="41.5" text-anchor="middle" class="ls-t">Valores</text>
+        </g>
+        <g class="ls-part ls-foot">
+          <path d="M14 82h132v5a5 5 0 0 1-5 5H19a5 5 0 0 1-5-5Z" fill="#999" />
+          <text x="80" y="88.6" text-anchor="middle" class="ls-t">@carlosmichaels_</text>
+        </g>
+      </svg>
+    )
+  }
+</div>
+
+<style>
+  .art {
+    --led-off: #2b2d39;
+    --led-dino: #4f6bff;
+    --led-enemy: #ff4b4b;
+    container-type: inline-size;
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    aspect-ratio: 16 / 10;
+    background:
+      radial-gradient(120% 90% at 85% 0%, rgb(var(--c-glow-a-rgb) / 0.55), transparent 60%),
+      var(--c-surface-card);
+  }
+
+  .art-hero {
+    aspect-ratio: 5 / 4;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--c-hairline);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .art :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* ---------- Extractorys ---------- */
+  .art-extractorys {
+    background: linear-gradient(135deg, #2a0048 0%, #560072 34%, #800080 58%, #a90072 82%, #d50048 100%);
+  }
+
+  .ex-glow {
+    position: absolute;
+    inset: -20%;
+    background: radial-gradient(closest-side at 30% 60%, rgb(255 0 0 / 0.35), transparent);
+  }
+
+  .art :global(.ex-mark) {
+    position: absolute;
+    left: 7cqw;
+    top: 50%;
+    width: 38cqw;
+    translate: 0 -50%;
+    overflow: visible;
+    filter: drop-shadow(0 1.5cqw 2.5cqw rgb(11 7 16 / 0.45));
+  }
+
+  .ex-phones {
+    position: absolute;
+    right: 3cqw;
+    top: 9cqw;
+    width: 50cqw;
+    height: 100%;
+  }
+
+  .ex-phone {
+    position: absolute;
+    width: 26cqw;
+    overflow: hidden;
+    border: 0.9cqw solid #0b0710;
+    border-radius: 4cqw;
+    background: #0b0710;
+    box-shadow: 0 3cqw 6cqw -2cqw rgb(11 7 16 / 0.7);
+  }
+
+  .ex-phone-a {
+    left: 0;
+    top: 6cqw;
+    rotate: -9deg;
+  }
+
+  .ex-phone-b {
+    right: 0;
+    top: 0;
+    rotate: 7deg;
+  }
+
+  .art-hero :global(.ex-mark) {
+    left: 50%;
+    top: 7cqw;
+    width: 30cqw;
+    translate: -50% 0;
+  }
+
+  .art-hero .ex-phones {
+    left: 50%;
+    right: auto;
+    top: 36cqw;
+    width: 74cqw;
+    translate: -50% 0;
+  }
+
+  .art-hero .ex-phone {
+    width: 34cqw;
+  }
+
+
+
+
+  :global(:root[data-motion='full']) .ex-phone-a {
+    animation: ex-float 7s ease-in-out infinite;
+  }
+
+  :global(:root[data-motion='full']) .ex-phone-b {
+    animation: ex-float 7s ease-in-out -3.5s infinite;
+  }
+
+
+
+
+  @keyframes ex-float {
+    50% {
+      translate: 0 -1.6cqw;
+    }
+  }
+
+  /* ---------- Bee Sense ---------- */
+  .bs-cell {
+    fill: none;
+    stroke: var(--c-accent);
+    stroke-width: 1.5;
+  }
+
+  .bs-trap {
+    fill: var(--c-accent);
+    fill-opacity: 0;
+    stroke: none;
+  }
+
+  .bs-board {
+    fill: var(--c-ink);
+  }
+
+  .bs-chip {
+    fill: var(--c-muted);
+  }
+
+  .bs-led {
+    fill: var(--c-hairline);
+  }
+
+  .bs-ping {
+    fill: none;
+    stroke: var(--c-accent-strong);
+    stroke-width: 1.4;
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  .bs-body {
+    fill: var(--c-ink);
+  }
+
+  .bs-stripe {
+    fill: var(--c-glow-a);
+  }
+
+  .bs-wing {
+    fill: var(--c-canvas);
+    fill-opacity: 0.9;
+    stroke: var(--c-accent);
+    stroke-width: 0.8;
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+  }
+
+  /* pousada na isca, quando não há movimento */
+  .bs-bee {
+    transform: translate(85px, 30px);
+  }
+
+  :global(:root[data-motion='full']) .bs-bee {
+    animation: bs-fly 6.4s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+  }
+
+  :global(:root[data-motion='full']) .bs-flap {
+    animation: bs-flap 0.1s linear infinite alternate;
+  }
+
+  :global(:root[data-motion='full']) .bs-trap {
+    animation: bs-trap 6.4s ease-in-out infinite;
+  }
+
+  :global(:root[data-motion='full']) .bs-led {
+    animation: bs-led 6.4s steps(1, end) infinite;
+  }
+
+  :global(:root[data-motion='full']) .bs-ping {
+    animation: bs-ping 6.4s ease-out infinite;
+  }
+
+  @keyframes bs-fly {
+    0% {
+      transform: translate(-12px, 88px) rotate(-30deg);
+    }
+    18% {
+      transform: translate(30px, 70px) rotate(-40deg);
+    }
+    32% {
+      transform: translate(58px, 22px) rotate(10deg);
+    }
+    42%,
+    74% {
+      transform: translate(85px, 30px) rotate(0deg);
+    }
+    88% {
+      transform: translate(120px, 12px) rotate(-25deg);
+    }
+    100% {
+      transform: translate(172px, 4px) rotate(-20deg);
+    }
+  }
+
+  @keyframes bs-flap {
+    to {
+      transform: scaleY(0.35);
+    }
+  }
+
+  @keyframes bs-trap {
+    0%,
+    42% {
+      fill-opacity: 0;
+    }
+    48%,
+    80% {
+      fill-opacity: 0.85;
+    }
+    90%,
+    100% {
+      fill-opacity: 0;
+    }
+  }
+
+  @keyframes bs-led {
+    0% {
+      fill: var(--c-hairline);
+    }
+    46% {
+      fill: var(--c-accent-strong);
+    }
+    84% {
+      fill: var(--c-hairline);
+    }
+  }
+
+  @keyframes bs-ping {
+    0%,
+    46% {
+      opacity: 0;
+      transform: scale(0.5);
+    }
+    48% {
+      opacity: 1;
+      transform: scale(0.5);
+    }
+    62%,
+    100% {
+      opacity: 0;
+      transform: scale(1.6);
+    }
+  }
+
+  /* ---------- Agende Aí ---------- */
+  .ag-card {
+    fill: var(--c-canvas);
+    stroke: var(--c-hairline);
+  }
+
+  .ag-head {
+    fill: var(--c-primary);
+  }
+
+  .ag-dot {
+    fill: var(--c-on-primary);
+  }
+
+  .ag-title {
+    fill: var(--c-on-primary);
+    opacity: 0.8;
+  }
+
+  .ag-cell {
+    fill: var(--c-surface-card);
+  }
+
+  .ag-sel {
+    fill: none;
+    stroke: var(--c-accent-strong);
+    stroke-width: 1.6;
+    transform: translate(17px, 30px);
+  }
+
+  .ag-check {
+    fill: none;
+    stroke: var(--c-accent-strong);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 12;
+  }
+
+  .ag-bar-bg {
+    fill: var(--c-hairline);
+  }
+
+  .ag-bar {
+    fill: var(--c-accent);
+    transform-box: fill-box;
+    transform-origin: left center;
+  }
+
+  .ag-toast rect:first-child {
+    fill: var(--c-ink);
+  }
+
+  .ag-toast path {
+    fill: none;
+    stroke: var(--c-canvas);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+  }
+
+  .ag-toast-line {
+    fill: var(--c-canvas);
+    opacity: 0.7;
+  }
+
+  :global(:root[data-motion='full']) .ag-sel {
+    animation: ag-sel 6s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+  }
+
+  :global(:root[data-motion='full']) .ag-check {
+    animation: ag-check 6s ease-out infinite;
+  }
+
+  :global(:root[data-motion='full']) .ag-toast {
+    animation: ag-toast 6s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  }
+
+  :global(:root[data-motion='full']) .ag-bar-1 {
+    animation: ag-bar 6s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  }
+
+  :global(:root[data-motion='full']) .ag-bar-2 {
+    animation: ag-bar 6s cubic-bezier(0.16, 1, 0.3, 1) 0.15s infinite;
+  }
+
+  :global(:root[data-motion='full']) .ag-bar-3 {
+    animation: ag-bar 6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s infinite;
+  }
+
+  @keyframes ag-sel {
+    0%,
+    8% {
+      transform: translate(0, 0);
+    }
+    18%,
+    26% {
+      transform: translate(-17px, 15px);
+    }
+    36%,
+    44% {
+      transform: translate(0, 15px);
+    }
+    54%,
+    92% {
+      transform: translate(17px, 30px);
+    }
+    100% {
+      transform: translate(0, 0);
+    }
+  }
+
+  @keyframes ag-check {
+    0%,
+    54% {
+      stroke-dashoffset: 12;
+    }
+    62%,
+    92% {
+      stroke-dashoffset: 0;
+    }
+    100% {
+      stroke-dashoffset: 12;
+    }
+  }
+
+  @keyframes ag-toast {
+    0%,
+    58% {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    66%,
+    90% {
+      opacity: 1;
+      transform: none;
+    }
+    100% {
+      opacity: 0;
+      transform: none;
+    }
+  }
+
+  @keyframes ag-bar {
+    0%,
+    10% {
+      transform: scaleX(0.2);
+    }
+    30%,
+    90% {
+      transform: scaleX(1);
+    }
+    100% {
+      transform: scaleX(0.2);
+    }
+  }
+
+  /* ---------- Dino Runner ---------- */
+  .dr-board {
+    fill: #161722;
+  }
+
+  .dr-led {
+    fill: var(--led-off);
+  }
+
+  .dr-oled {
+    fill: #07070b;
+  }
+
+  .dr-oled-label {
+    fill: #9c9396;
+    font: 600 5px var(--font-mono);
+    letter-spacing: 0.08em;
+  }
+
+  .dr-oled-score {
+    fill: #f4eeea;
+    font: 600 10px var(--font-mono);
+  }
+
+  .dr-btn {
+    fill: var(--c-ink);
+  }
+
+  /* ---------- INCLUA ---------- */
+  .in-card rect {
+    fill: var(--c-canvas);
+    stroke: var(--c-hairline);
+  }
+
+  .in-card path {
+    fill: none;
+    stroke: var(--c-accent);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+  }
+
+  .in-card-2 rect {
+    fill: var(--c-ink);
+  }
+
+  .in-card-2 path {
+    stroke: var(--c-canvas);
+    opacity: 0.8;
+  }
+
+  .in-scale path {
+    fill: none;
+    stroke: var(--c-ink);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .in-scale .in-pan {
+    fill: var(--c-accent);
+    stroke: none;
+  }
+
+  .in-pivot {
+    fill: var(--c-ink);
+  }
+
+  .in-beam {
+    transform-box: view-box;
+    transform-origin: 79px 74px;
+  }
+
+  .in-card {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+  }
+
+  :global(:root[data-motion='full']) .in-beam {
+    animation: in-balance 5s ease-in-out infinite;
+  }
+
+  :global(:root[data-motion='full']) .in-card-1 {
+    animation: in-rise 5s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  }
+
+  :global(:root[data-motion='full']) .in-card-2 {
+    animation: in-rise 5s cubic-bezier(0.16, 1, 0.3, 1) 0.2s infinite;
+  }
+
+  :global(:root[data-motion='full']) .in-card-3 {
+    animation: in-rise 5s cubic-bezier(0.16, 1, 0.3, 1) 0.4s infinite;
+  }
+
+  @keyframes in-balance {
+    0%,
+    100% {
+      transform: rotate(0deg);
+    }
+    25% {
+      transform: rotate(-9deg);
+    }
+    50% {
+      transform: rotate(6deg);
+    }
+    70% {
+      transform: rotate(-2deg);
+    }
+    85% {
+      transform: rotate(0deg);
+    }
+  }
+
+  @keyframes in-rise {
+    0%,
+    6% {
+      opacity: 0;
+      transform: translateY(10px) scale(0.92);
+    }
+    18%,
+    86% {
+      opacity: 1;
+      transform: none;
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+  }
+
+  /* ---------- pytest ---------- */
+  .art-pytest {
+    display: grid;
+    place-items: center;
+  }
+
+  .py-term {
+    width: 82cqw;
+    overflow: hidden;
+    border-radius: 2.4cqw;
+    background: var(--c-inverse-soft);
+    border: 1px solid var(--c-inverse-hairline);
+    box-shadow: var(--shadow-md);
+    font-family: var(--font-mono);
+    font-size: 3.9cqw;
+    color: var(--c-on-inverse-soft);
+  }
+
+  .py-bar {
+    display: flex;
+    gap: 1.2cqw;
+    padding: 2.2cqw 2.6cqw;
+    background: var(--c-inverse-elevated);
+  }
+
+  .py-bar span {
+    width: 2cqw;
+    height: 2cqw;
+    border-radius: 50%;
+    background: var(--c-code-punct);
+    opacity: 0.6;
+  }
+
+  .py-body {
+    display: grid;
+    gap: 1.4cqw;
+    padding: 3.4cqw 4cqw 4.4cqw;
+  }
+
+  .py-body p {
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .py-prompt {
+    color: var(--c-code-string);
+  }
+
+  .py-dots {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom;
+    color: var(--c-code-key);
+    width: 12ch;
+  }
+
+  .py-pct {
+    color: var(--c-code-comment);
+  }
+
+  .py-pass {
+    color: var(--c-inverse-accent);
+    font-weight: 600;
+  }
+
+  .py-caret {
+    display: inline-block;
+    width: 0.6ch;
+    height: 1.1em;
+    margin-inline-start: 0.4ch;
+    vertical-align: text-bottom;
+    background: var(--c-code-key);
+  }
+
+  :global(:root[data-motion='full']) .py-dots {
+    animation: py-dots 5s steps(12, jump-start) infinite;
+  }
+
+  :global(:root[data-motion='full']) .py-pct,
+  :global(:root[data-motion='full']) .py-pass,
+  :global(:root[data-motion='full']) .py-next {
+    animation: py-show 5s steps(1, end) infinite;
+  }
+
+  :global(:root[data-motion='full']) .py-caret {
+    animation: blink 1.05s steps(1) infinite;
+  }
+
+  @keyframes py-dots {
+    0%,
+    8% {
+      width: 0;
+    }
+    52%,
+    100% {
+      width: 12ch;
+    }
+  }
+
+  @keyframes py-show {
+    0% {
+      opacity: 0;
+    }
+    56% {
+      opacity: 1;
+    }
+  }
+
+  /* ---------- Portfólio ---------- */
+  .art-portfolio {
+    display: grid;
+    place-items: center;
+  }
+
+  .pf-browser {
+    width: 88cqw;
+    overflow: hidden;
+    border-radius: 2cqw;
+    border: 1px solid var(--c-hairline);
+    background: var(--c-canvas);
+    box-shadow: var(--shadow-md);
+  }
+
+  .pf-bar {
+    display: flex;
+    align-items: center;
+    gap: 1cqw;
+    padding: 1.6cqw 2cqw;
+    border-bottom: 1px solid var(--c-hairline);
+  }
+
+  .pf-bar span:not(.pf-url) {
+    width: 1.7cqw;
+    height: 1.7cqw;
+    border-radius: 50%;
+    background: var(--c-hairline);
+  }
+
+  .pf-url {
+    margin-inline: auto;
+    padding: 0.4cqw 3cqw;
+    border-radius: var(--radius-pill);
+    background: var(--c-surface-card);
+    color: var(--c-muted);
+    font-size: 2.4cqw;
+  }
+
+  .pf-view {
+    position: relative;
+  }
+
+  .pf-dark {
+    position: absolute;
+    inset: 0;
+    clip-path: circle(0% at 92% 4%);
+  }
+
+  :global(:root[data-motion='full']) .pf-dark {
+    animation: pf-theme 7s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  }
+
+  @keyframes pf-theme {
+    0%,
+    22% {
+      clip-path: circle(0% at 92% 4%);
+    }
+    40%,
+    72% {
+      clip-path: circle(150% at 92% 4%);
+    }
+    90%,
+    100% {
+      clip-path: circle(0% at 92% 4%);
+    }
+  }
+
+  /* ---------- Layout Simples ---------- */
+  .ls-sheet {
+    fill: #fff;
+    stroke: var(--c-hairline);
+  }
+
+  .ls-t {
+    fill: #000;
+    font: 400 3.4px 'Times New Roman', Times, serif;
+  }
+
+  .ls-logo-t {
+    font-weight: 700;
+  }
+
+  .ls-menu-t {
+    fill: #fff;
+    font-size: 3.1px;
+  }
+
+  .ls-part {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  :global(:root[data-motion='full']) .ls-part {
+    animation: ls-build 6s cubic-bezier(0.16, 1, 0.3, 1) infinite both;
+  }
+
+  :global(:root[data-motion='full']) .ls-c1 {
+    animation-delay: 0.25s;
+  }
+
+  :global(:root[data-motion='full']) .ls-c2 {
+    animation-delay: 0.4s;
+  }
+
+  :global(:root[data-motion='full']) .ls-c3 {
+    animation-delay: 0.55s;
+  }
+
+  :global(:root[data-motion='full']) .ls-foot {
+    animation-delay: 0.7s;
+  }
+
+  @keyframes ls-build {
+    0% {
+      opacity: 0;
+      transform: translateY(3px) scale(0.96);
+    }
+    12%,
+    88% {
+      opacity: 1;
+      transform: none;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+</style>

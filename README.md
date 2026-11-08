@@ -27,14 +27,39 @@ npm run build
 
 | Caminho | Conteúdo |
 | --- | --- |
-| `src/data/profile.ts` | **Todo o texto do site**: sobre, atuação, formação, projetos, prêmios, eventos, competências e links. A fonte é o Currículo Lattes. |
-| `src/pages/` | As páginas: `index` (início), `projetos`, `hobbies` e `404`. |
+| `src/data/profile.ts` | **O texto do site**: sobre, atuação, formação, prêmios, eventos, competências e links. A fonte é o Currículo Lattes. |
+| `src/data/projects/` | Um arquivo por projeto, com o estudo de caso completo (veja "Páginas de projeto" abaixo). |
+| `src/pages/` | As páginas: `index` (início), `projetos` (lista), `projeto/[slug]` (uma página por projeto) e `404`. |
 | `src/components/` | Cabeçalho, rodapé, cartões e as seções da página inicial (`home/`). |
 | `src/themes/` | O sistema de temas: paletas, regras de contraste e geração das variáveis de cor. |
 | `src/styles/` | Design system: tokens (tipografia, espaços, raios), base, componentes e movimento. |
 | `src/scripts/site.ts` | Interações: tema, paleta, pausa das animações, menu, animações ao rolar, contadores. |
 | `src/assets/images/` | Fotos e imagens. O Astro gera versões otimizadas (WebP em vários tamanhos). |
 | `public/` | Arquivos servidos como estão: favicon, ícones, imagem de compartilhamento, robots.txt. |
+
+## Páginas de projeto
+
+Cada projeto tem um estudo de caso em `/projeto/<nome>`, gerado a partir de um arquivo em
+`src/data/projects/`. A estrutura segue o que se recomenda para estudos de caso de portfólio:
+resumo rápido no topo (papel, período, plataforma), contexto, desafio, processo, funções,
+como funciona por dentro, decisões com os porquês, uma demonstração, construção visual
+(cores, tipografia, design system e telas), tecnologias, habilidades, resultados, aprendizados
+e o próximo projeto. Só aparecem as seções que o projeto preenche.
+
+Para incluir um projeto:
+
+1. Crie `src/data/projects/<nome>.ts` copiando um dos existentes (o tipo `CaseStudy` em
+   `types.ts` explica cada campo). Nos textos, `código` vira código e `**palavra**` vira destaque.
+2. Acrescente o projeto à lista de `src/data/projects/index.ts`, na posição em que deve aparecer.
+3. Imagens vão em `src/assets/images/projetos/<nome>/` e entram em `visual.gallery` com texto
+   alternativo e legenda.
+4. A ilustração do cartão (`art`) e o diagrama de "Por dentro" ficam em
+   `src/components/ProjectArt.astro` e `src/components/case/ProjectDiagram.astro`.
+
+Efeitos das páginas: transição do cartão para o topo da página (View Transitions), sumário que
+acompanha a leitura, linha do tempo que se preenche ao rolar, cores que se copiam com um clique,
+amostras de fonte variável, galeria com caixa de luz, comparação antes/depois e o Dino Runner
+jogável. Tudo funciona com teclado e fica parado quando o movimento está desligado.
 
 ## Design system
 

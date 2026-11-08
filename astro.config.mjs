@@ -8,7 +8,7 @@ const fontFile = (pkg, file) => `./node_modules/${pkg}/files/${file}`;
 
 export default defineConfig({
   site: 'https://seinenk.github.io',
-  // Gera hobbies.html e projetos.html, mantendo os endereços antigos do site.
+  // Gera projetos.html (endereço antigo do site) e projeto/<nome>.html para cada projeto.
   build: {
     format: 'file',
     // CSS embutido no HTML: a primeira pintura não espera nenhum arquivo extra.

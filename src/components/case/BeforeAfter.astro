@@ -1,0 +1,143 @@
+---
+import { Image } from 'astro:assets';
+import antes from '../../assets/images/projetos/portfolio/antes-2023.webp';
+import depois from '../../assets/images/projetos/portfolio/depois-claro.webp';
+
+/*
+ * Comparação 2023 × 2026 com um controle deslizante de verdade (input range):
+ * funciona com mouse, toque e teclado (setas), e o valor é anunciado.
+ */
+---
+
+<figure class="ba" data-before-after style="--pos:50%">
+  <div class="ba-stage">
+    <Image src={depois} alt="Página inicial de 2026: fundo claro, nome em serifa e retrato em preto e branco." widths={[640, 1328]} sizes="(min-width: 64rem) 52rem, 92vw" class="ba-img" />
+    <div class="ba-before">
+      <Image src={antes} alt="Página inicial de 2023: fundo escuro em degradê, nome em cinza e uma ilustração de panda." widths={[664]} sizes="(min-width: 64rem) 52rem, 92vw" class="ba-img" />
+    </div>
+    <span class="ba-tag ba-tag-before" aria-hidden="true">2023</span>
+    <span class="ba-tag ba-tag-after" aria-hidden="true">2026</span>
+    <span class="ba-handle" aria-hidden="true">
+      <span class="ba-knob">‹ ›</span>
+    </span>
+    <input class="ba-range" type="range" min="0" max="100" value="50" step="1" aria-label="Comparar a versão de 2023 com a de 2026" aria-valuetext="Metade de cada versão" data-ba-range />
+  </div>
+  <figcaption class="ba-caption">À esquerda, 2023; à direita, 2026. Arraste a divisória ou use as setas do teclado.</figcaption>
+</figure>
+
+<style>
+  .ba {
+    margin: 0;
+  }
+
+  .ba-stage {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--c-hairline);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+    aspect-ratio: 1328 / 808;
+    background: var(--c-surface-card);
+  }
+
+  .ba-stage :global(.ba-img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top left;
+  }
+
+  .ba-before {
+    position: absolute;
+    inset: 0;
+    clip-path: inset(0 calc(100% - var(--pos)) 0 0);
+  }
+
+  .ba-handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--pos);
+    width: 2px;
+    translate: -50% 0;
+    background: #fff;
+    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.25);
+    pointer-events: none;
+  }
+
+  .ba-knob {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    translate: -50% -50%;
+    border-radius: 50%;
+    background: #fff;
+    color: #181722;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    box-shadow: var(--shadow-md);
+    transition: scale 0.3s var(--ease-spring);
+  }
+
+  .ba-stage:has(.ba-range:focus-visible) .ba-knob {
+    outline: 3px solid var(--c-focus);
+    outline-offset: 3px;
+  }
+
+  .ba-stage:hover .ba-knob {
+    scale: 1.08;
+  }
+
+  .ba-tag {
+    position: absolute;
+    top: 0.75rem;
+    padding: 0.25rem 0.7rem;
+    border-radius: var(--radius-pill);
+    background: rgb(24 23 34 / 0.78);
+    color: #fff;
+    font-size: var(--fs-caption);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    pointer-events: none;
+  }
+
+  .ba-tag-before {
+    left: 0.75rem;
+  }
+
+  .ba-tag-after {
+    right: 0.75rem;
+  }
+
+  /* o input cobre o palco: arrastar em qualquer ponto move a divisória */
+  .ba-range {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: ew-resize;
+    touch-action: pan-y;
+  }
+
+  .ba-caption {
+    margin-top: 0.8rem;
+    color: var(--c-muted);
+    font-size: var(--fs-caption);
+  }
+
+  /* dica de movimento na primeira vez que aparece */
+  :global(:root[data-motion='full']) .ba.is-hinting .ba-before,
+  :global(:root[data-motion='full']) .ba.is-hinting .ba-handle {
+    transition:
+      clip-path 1.1s var(--ease-in-out),
+      left 1.1s var(--ease-in-out);
+  }
+</style>

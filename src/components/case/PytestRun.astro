@@ -1,0 +1,203 @@
+---
+import Icon from '../Icon.astro';
+
+/*
+ * Ilustração: um arquivo de teste com fixture, approx e parametrize (práticas
+ * comuns do pytest) e a saída do terminal. Os testes são exemplos, não os da pesquisa.
+ */
+const code = [
+  [['c', '# test_carrinho.py — exemplo']],
+  [['k', 'import'], ['p', ' '], ['v', 'pytest']],
+  [['k', 'from'], ['p', ' '], ['v', 'carrinho'], ['p', ' '], ['k', 'import'], ['p', ' '], ['v', 'total']],
+  [],
+  [['s', '@pytest.fixture']],
+  [['k', 'def'], ['p', ' '], ['v', 'itens'], ['p', '():']],
+  [['p', '    '], ['k', 'return'], ['p', ' [('], ['s', '"café"'], ['p', ', 2, 9.5), ('], ['s', '"pão"'], ['p', ', 6, 0.8)]']],
+  [],
+  [['k', 'def'], ['p', ' '], ['v', 'test_total'], ['p', '(itens):']],
+  [['p', '    '], ['k', 'assert'], ['p', ' total(itens) == pytest.approx(23.8)']],
+  [],
+  [['s', '@pytest.mark.parametrize'], ['p', '('], ['s', '"qtd"'], ['p', ', [0, 1, 10])']],
+  [['k', 'def'], ['p', ' '], ['v', 'test_quantidade'], ['p', '(qtd):']],
+  [['p', '    '], ['k', 'assert'], ['p', ' qtd >= 0']],
+] as [string, string][][];
+---
+
+<div class="pr" data-pytest>
+  <div class="pr-window">
+    <div class="pr-bar" aria-hidden="true">
+      <span></span><span></span><span></span>
+      <span class="pr-file">test_carrinho.py</span>
+    </div>
+    <pre class="pr-code" tabindex="0" role="region" aria-label="Código de exemplo: test_carrinho.py"><code>{
+      code.map((line, i) => (
+        <span class="pr-line"><span class="pr-ln" aria-hidden="true">{i + 1}</span>{line.map(([k, t]) => <span class={`t-${k}`}>{t}</span>)}{'\n'}</span>
+      ))
+    }</code></pre>
+  </div>
+  <div class="pr-window pr-term" aria-live="off">
+    <div class="pr-bar" aria-hidden="true">
+      <span></span><span></span><span></span>
+      <span class="pr-file">terminal</span>
+    </div>
+    <div class="pr-out" data-pytest-out>
+      <p><span class="t-s">$</span> pytest -q</p>
+      <p><span class="pr-dots">....</span> <span class="pr-pct">[100%]</span></p>
+      <p class="pr-pass">4 passed in 0.03s</p>
+    </div>
+  </div>
+  <button class="btn btn-secondary pr-run" type="button" data-pytest-run>
+    <Icon name="play" size={16} />
+    Rodar de novo
+  </button>
+</div>
+
+<style>
+  .pr {
+    display: grid;
+    gap: 1rem;
+  }
+
+  @media (min-width: 52rem) {
+    .pr {
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+      align-items: start;
+    }
+
+    .pr-run {
+      grid-column: 2;
+      justify-self: start;
+    }
+  }
+
+  .pr-window {
+    overflow: hidden;
+    border: 1px solid var(--c-inverse-hairline);
+    border-radius: var(--radius-lg);
+    background: var(--c-inverse-soft);
+    box-shadow: var(--shadow-md);
+  }
+
+  .pr-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.6rem 0.8rem;
+    background: var(--c-inverse-elevated);
+    border-bottom: 1px solid var(--c-inverse-hairline);
+  }
+
+  .pr-bar > span:not(.pr-file) {
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    background: var(--c-code-punct);
+    opacity: 0.55;
+  }
+
+  .pr-file {
+    margin-inline-start: 0.5rem;
+    color: var(--c-on-inverse-soft);
+    font-family: var(--font-mono);
+    font-size: var(--fs-caption);
+  }
+
+  .pr-code {
+    margin: 0;
+    font-variant-ligatures: none;
+    padding: 1rem 1rem 1.2rem 0.5rem;
+    overflow-x: auto;
+    color: var(--c-code-punct);
+    font-family: var(--font-mono);
+    font-size: var(--fs-code);
+    line-height: 1.7;
+  }
+
+  .pr-code:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: -2px;
+  }
+
+  .pr-code code {
+    font: inherit;
+  }
+
+  .pr-line {
+    display: block;
+    white-space: pre;
+  }
+
+  .pr-ln {
+    display: inline-block;
+    width: 2.2em;
+    padding-inline-end: 0.9em;
+    color: var(--c-code-comment);
+    text-align: right;
+  }
+
+  .t-c {
+    color: var(--c-code-comment);
+    font-style: italic;
+  }
+
+  .t-k,
+  .t-s {
+    color: var(--c-code-string);
+  }
+
+  .t-v {
+    color: var(--c-code-key);
+  }
+
+  .pr-out {
+    display: grid;
+    gap: 0.35rem;
+    padding: 1rem 1.1rem 1.3rem;
+    color: var(--c-on-inverse-soft);
+    font-family: var(--font-mono);
+    font-size: var(--fs-code);
+  }
+
+  .pr-dots {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom;
+    width: 4ch;
+    color: var(--c-code-key);
+  }
+
+  .pr-pct {
+    color: var(--c-code-comment);
+  }
+
+  .pr-pass {
+    color: var(--c-inverse-accent);
+    font-weight: 600;
+  }
+
+  :global(:root[data-motion='full']) .pr.is-running .pr-dots {
+    animation: pr-dots 1.2s steps(4, jump-start) 0.5s both;
+  }
+
+  :global(:root[data-motion='full']) .pr.is-running :is(.pr-pct, .pr-pass) {
+    animation: pr-show 0.01s linear 1.8s both;
+  }
+
+  @keyframes pr-dots {
+    from {
+      width: 0;
+    }
+    to {
+      width: 4ch;
+    }
+  }
+
+  @keyframes pr-show {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+</style>

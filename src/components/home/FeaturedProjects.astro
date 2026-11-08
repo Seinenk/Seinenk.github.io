@@ -2,7 +2,7 @@
 import Icon from '../Icon.astro';
 import ProjectCard from '../ProjectCard.astro';
 import SectionHead from '../SectionHead.astro';
-import { projects } from '../../data/profile';
+import { projects } from '../../data/projects';
 
 const featured = projects.filter((p) => p.featured);
 ---
@@ -13,7 +13,7 @@ const featured = projects.filter((p) => p.featured);
       <SectionHead
         kicker="04 — Projetos"
         title="Projetos em *destaque*"
-        text="Pesquisa, extensão e desenvolvimento: de uma plataforma SaaS para pequenos negócios a um sistema de IoT para abelhas sem ferrão."
+        text="Pesquisa e desenvolvimento: de um extrator de APK em Flutter a um sistema de IoT para abelhas sem ferrão. Cada um tem a sua página, com a história completa."
         id="projetos-title"
       />
       <a class="btn btn-secondary projects-all" href="/projetos" data-reveal>

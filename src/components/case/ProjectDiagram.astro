@@ -1,0 +1,474 @@
+---
+import Icon from '../Icon.astro';
+import type { IconName } from '../icons';
+import type { DiagramKind } from '../../data/projects/types';
+
+/*
+ * Diagramas de "Por dentro": caixas ligadas por conectores com um pulso de dados
+ * correndo por eles (só com movimento ligado). Cada projeto tem o seu desenho.
+ */
+interface Props {
+  kind: DiagramKind;
+}
+
+const { kind } = Astro.props;
+
+type Node = { icon: IconName; title: string; text: string; tone?: 'accent' | 'ink' };
+const flows: Record<Exclude<DiagramKind, 'extractorys'>, { label: string; nodes: Node[]; branch?: Node[] }> = {
+  'bee-sense': {
+    label: 'Fluxo do Bee Sense, da isca ao app',
+    nodes: [
+      { icon: 'hexagon', title: 'Isca', text: 'Sensores na caixa de captura' },
+      { icon: 'cpu', title: 'Pico W', text: 'Lê os sensores, com Wi-Fi', tone: 'ink' },
+      { icon: 'bell', title: 'Aviso', text: 'Colônia chegou ou invasor', tone: 'accent' },
+      { icon: 'smartphone', title: 'App', text: 'Iscas e conteúdo do manejo' },
+    ],
+  },
+  'dino-runner': {
+    label: 'Fluxo do Dino Runner, dos botões aos LEDs e à tela',
+    nodes: [
+      { icon: 'arrow-up', title: 'Botões', text: 'GPIO 5 e 6, com pull-up' },
+      { icon: 'clock', title: 'Laço do jogo', text: 'Um passo a cada 10 ms', tone: 'ink' },
+      { icon: 'cpu', title: 'PIO', text: 'Sinal exato no GPIO 7' },
+      { icon: 'square', title: 'Matriz 5×5', text: 'LEDs WS2812', tone: 'accent' },
+    ],
+    branch: [
+      { icon: 'arrow-down-up', title: 'I²C', text: 'GPIO 14 e 15' },
+      { icon: 'monitor', title: 'OLED', text: 'SSD1306 com o placar', tone: 'accent' },
+    ],
+  },
+  portfolio: {
+    label: 'Como uma paleta vira tema no site',
+    nodes: [
+      { icon: 'palette', title: 'Paleta', text: '6 cores, claro e escuro' },
+      { icon: 'sparkles', title: 'OKLab', text: 'Tons intermediários' },
+      { icon: 'shield-check', title: 'Contraste', text: 'WCAG AA no build', tone: 'accent' },
+      { icon: 'code-xml', title: 'Variáveis CSS', text: 'Uma por papel de cor' },
+      { icon: 'zap', title: 'Antes de pintar', text: 'Tema aplicado sem piscar', tone: 'ink' },
+    ],
+  },
+};
+const flow = kind === 'extractorys' ? null : flows[kind];
+---
+
+{
+  kind === 'extractorys' && (
+    <figure class="dg dg-stack" data-ambient>
+      <div class="dg-layer" data-reveal>
+        <p class="dg-tag">Interface · Dart</p>
+        <ul class="list-reset dg-row" role="list">
+          {['Tela inicial', 'Extração', 'Instalação', 'Ajustes'].map((t) => (
+            <li class="dg-node">{t}</li>
+          ))}
+        </ul>
+        <p class="dg-note">ViewModels com ChangeNotifier</p>
+      </div>
+      <span class="dg-link" aria-hidden="true">
+        <i />
+      </span>
+      <div class="dg-layer dg-seam" data-reveal>
+        <p class="dg-tag">A única costura</p>
+        <p class="dg-big">ApkService</p>
+      </div>
+      <div class="dg-split" aria-hidden="true">
+        <span class="dg-link">
+          <i />
+        </span>
+        <span class="dg-link">
+          <i />
+        </span>
+      </div>
+      <div class="dg-pair">
+        <div class="dg-layer" data-reveal>
+          <p class="dg-tag">Android real</p>
+          <p class="dg-mid">ApkPlatformService</p>
+          <p class="dg-note">1 MethodChannel · 2 EventChannels</p>
+        </div>
+        <div class="dg-layer dg-ghost" data-reveal style="--i:1">
+          <p class="dg-tag">iOS e testes</p>
+          <p class="dg-mid">DemoApkService</p>
+          <p class="dg-note">Catálogo e extração simulados</p>
+        </div>
+      </div>
+      <span class="dg-link dg-link-left" aria-hidden="true">
+        <i />
+      </span>
+      <div class="dg-layer dg-ink" data-reveal>
+        <p class="dg-tag">Kotlin</p>
+        <ul class="list-reset dg-row" role="list">
+          {['MainActivity', 'ExtractionService', 'InstallService', 'Notificações'].map((t) => (
+            <li class="dg-node">{t}</li>
+          ))}
+        </ul>
+      </div>
+      <span class="dg-link dg-link-left" aria-hidden="true">
+        <i />
+      </span>
+      <div class="dg-layer" data-reveal>
+        <p class="dg-tag">Android</p>
+        <ul class="list-reset dg-row" role="list">
+          {['PackageManager', 'MediaStore', 'PackageInstaller'].map((t) => (
+            <li class="dg-node">{t}</li>
+          ))}
+        </ul>
+      </div>
+      <figcaption class="dg-caption">As telas só falam com a ApkService; o trabalho pesado fica no Kotlin.</figcaption>
+    </figure>
+  )
+}
+
+{
+  flow && (
+    <figure class="dg dg-flow" data-ambient>
+      <ol class="list-reset dg-steps" aria-label={flow.label}>
+        {flow.nodes.map((n, i) => (
+          <li class:list={['dg-step', n.tone && `dg-${n.tone}`]} data-reveal style={`--i:${i}`}>
+            <span class="dg-icon" aria-hidden="true">
+              <Icon name={n.icon} size={20} />
+            </span>
+            <span class="dg-step-title">{n.title}</span>
+            <span class="dg-step-text">{n.text}</span>
+            {i < flow.nodes.length - 1 && (
+              <span class="dg-arrow" aria-hidden="true">
+                <i />
+              </span>
+            )}
+          </li>
+        ))}
+      </ol>
+      {flow.branch && (
+        <ol class="list-reset dg-steps dg-branch" aria-label="Ramo do placar">
+          {flow.branch.map((n, i) => (
+            <li class:list={['dg-step', n.tone && `dg-${n.tone}`]} data-reveal style={`--i:${i + 2}`}>
+              <span class="dg-icon" aria-hidden="true">
+                <Icon name={n.icon} size={20} />
+              </span>
+              <span class="dg-step-title">{n.title}</span>
+              <span class="dg-step-text">{n.text}</span>
+              {i < flow.branch!.length - 1 && (
+                <span class="dg-arrow" aria-hidden="true">
+                  <i />
+                </span>
+              )}
+            </li>
+          ))}
+        </ol>
+      )}
+      {kind === 'dino-runner' && <figcaption class="dg-caption">O laço do jogo também manda o placar para o OLED pelo I²C.</figcaption>}
+    </figure>
+  )
+}
+
+<style>
+  .dg {
+    margin: 0;
+    padding: clamp(1.25rem, 1rem + 1.5vw, 2rem);
+    border: 1px solid var(--c-hairline);
+    border-radius: var(--radius-xl);
+    background:
+      radial-gradient(90% 60% at 100% 0%, rgb(var(--c-glow-a-rgb) / 0.35), transparent 70%),
+      var(--c-surface-soft);
+  }
+
+  .dg-caption {
+    margin-top: 1.25rem;
+    color: var(--c-muted);
+    font-size: var(--fs-caption);
+    text-align: center;
+  }
+
+  /* ---------- pilha (Extractorys) ---------- */
+  .dg-stack {
+    display: grid;
+    justify-items: stretch;
+  }
+
+  .dg-layer {
+    padding: 1rem 1.15rem;
+    border: 1px solid var(--c-hairline);
+    border-radius: var(--radius-lg);
+    background: var(--c-canvas);
+    text-align: center;
+  }
+
+  .dg-tag {
+    margin-bottom: 0.5rem;
+    color: var(--c-muted);
+    font-size: var(--fs-caption-upper);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .dg-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.4rem;
+  }
+
+  .dg-node {
+    padding: 0.35rem 0.75rem;
+    border: 1px solid var(--c-hairline);
+    border-radius: var(--radius-pill);
+    background: var(--c-surface-card);
+    color: var(--c-ink);
+    font-family: var(--font-mono);
+    font-size: var(--fs-caption);
+  }
+
+  .dg-note {
+    margin-top: 0.5rem;
+    color: var(--c-muted);
+    font-size: var(--fs-caption);
+  }
+
+  .dg-seam {
+    border-color: var(--c-accent);
+    background: var(--c-primary);
+    color: var(--c-on-primary);
+  }
+
+  .dg-seam .dg-tag {
+    color: var(--c-on-primary);
+    opacity: 0.8;
+  }
+
+  .dg-big {
+    font-family: var(--font-mono);
+    font-size: var(--fs-title-lg);
+    font-weight: 600;
+  }
+
+  .dg-mid {
+    color: var(--c-ink);
+    font-family: var(--font-mono);
+    font-weight: 600;
+  }
+
+  .dg-ghost {
+    border-style: dashed;
+    background: transparent;
+  }
+
+  .dg-ink {
+    border-color: var(--c-inverse-hairline);
+    background: var(--c-inverse);
+    color: var(--c-on-inverse);
+  }
+
+  .dg-ink .dg-tag {
+    color: var(--c-on-inverse-soft);
+  }
+
+  .dg-ink .dg-node {
+    border-color: var(--c-inverse-hairline);
+    background: var(--c-inverse-elevated);
+    color: var(--c-on-inverse);
+  }
+
+  .dg-pair {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  }
+
+  .dg-mid,
+  .dg-big {
+    overflow-wrap: anywhere;
+  }
+
+  .dg-split {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  /* no celular os dois serviços ficam empilhados: um conector só */
+  @media (max-width: 34.99rem) {
+    .dg-split {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .dg-split .dg-link:last-child {
+      display: none;
+    }
+  }
+
+  /* conector vertical com um pulso descendo */
+  .dg-link {
+    position: relative;
+    display: block;
+    justify-self: center;
+    width: 2px;
+    height: 1.75rem;
+    background: var(--c-hairline);
+    overflow: hidden;
+  }
+
+  .dg-link i {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 40%;
+    background: var(--c-accent-strong);
+    border-radius: 2px;
+    transform: translateY(-110%);
+  }
+
+  .dg-pair + .dg-link-left,
+  .dg-link-left {
+    justify-self: center;
+  }
+
+  @media (min-width: 40rem) {
+    .dg-pair + .dg-link-left,
+    .dg-pair ~ .dg-link-left {
+      justify-self: start;
+      margin-inline-start: 25%;
+    }
+  }
+
+  :global(:root[data-motion='full']) .dg-link i {
+    animation: dg-pulse-y 1.8s var(--ease-in-out) infinite;
+  }
+
+  @keyframes dg-pulse-y {
+    to {
+      transform: translateY(260%);
+    }
+  }
+
+  /* ---------- fluxo (setas entre passos) ---------- */
+  .dg-steps {
+    display: grid;
+    gap: 2rem;
+  }
+
+  .dg-step {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 0.3rem;
+    padding: 1.1rem 0.9rem;
+    border: 1px solid var(--c-hairline);
+    border-radius: var(--radius-lg);
+    background: var(--c-canvas);
+    text-align: center;
+  }
+
+  .dg-icon {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin-bottom: 0.25rem;
+    border-radius: 50%;
+    background: var(--c-surface-card);
+    color: var(--c-ink);
+  }
+
+  .dg-step-title {
+    color: var(--c-ink);
+    font-weight: 600;
+  }
+
+  .dg-step-text {
+    color: var(--c-muted);
+    font-size: var(--fs-caption);
+    line-height: 1.4;
+  }
+
+  .dg-accent .dg-icon {
+    background: var(--c-primary);
+    color: var(--c-on-primary);
+  }
+
+  .dg-ink {
+    border-color: var(--c-inverse-hairline);
+  }
+
+  .dg-step.dg-ink {
+    background: var(--c-inverse);
+  }
+
+  .dg-step.dg-ink .dg-step-title {
+    color: var(--c-on-inverse);
+  }
+
+  .dg-step.dg-ink .dg-step-text {
+    color: var(--c-on-inverse-soft);
+  }
+
+  .dg-step.dg-ink .dg-icon {
+    background: var(--c-inverse-elevated);
+    color: var(--c-on-inverse);
+  }
+
+  .dg-arrow {
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    width: 2px;
+    height: 2rem;
+    translate: -50% 0;
+    overflow: hidden;
+    background: var(--c-hairline);
+  }
+
+  .dg-arrow i {
+    position: absolute;
+    inset: 0 0 auto;
+    height: 45%;
+    background: var(--c-accent-strong);
+    transform: translateY(-110%);
+  }
+
+  :global(:root[data-motion='full']) .dg-arrow i {
+    animation: dg-pulse-y 1.6s var(--ease-in-out) infinite;
+  }
+
+  .dg-branch {
+    margin-top: 2rem;
+    padding-top: 1.25rem;
+    border-top: 1px dashed var(--c-hairline);
+  }
+
+  @media (min-width: 46rem) {
+    .dg-steps {
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(0, 1fr);
+      gap: 2.25rem;
+    }
+
+    .dg-arrow {
+      left: 100%;
+      top: 50%;
+      width: 2.25rem;
+      height: 2px;
+      translate: 0 -50%;
+    }
+
+    .dg-arrow i {
+      inset: 0 auto 0 0;
+      width: 45%;
+      height: 100%;
+      transform: translateX(-110%);
+    }
+
+    :global(:root[data-motion='full']) .dg-arrow i {
+      animation-name: dg-pulse-x;
+    }
+
+    .dg-branch {
+      width: 50%;
+      margin-inline-start: 25%;
+    }
+  }
+
+  @keyframes dg-pulse-x {
+    to {
+      transform: translateX(260%);
+    }
+  }
+</style>

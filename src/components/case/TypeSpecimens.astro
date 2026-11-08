@@ -1,0 +1,246 @@
+---
+import type { Specimen, Token } from '../../data/projects/types';
+
+/*
+ * Amostras de tipografia e tokens do design system do projeto. Fontes variáveis
+ * passeiam pelos pesos (com o número do peso acompanhando), só com movimento ligado.
+ */
+interface Props {
+  specimens?: Specimen[];
+  tokens?: { title: string; items: Token[] }[];
+}
+
+const { specimens = [], tokens = [] } = Astro.props;
+---
+
+{
+  specimens.length > 0 && (
+    <ul class="list-reset specimens" role="list">
+      {specimens.map((s, i) => (
+        <li class="specimen" data-reveal style={`--i:${i}`}>
+          <div class="specimen-head">
+            <p class="specimen-family">{s.family}</p>
+            <p class="specimen-role">{s.role}</p>
+          </div>
+          <p class:list={['specimen-aa', { 'is-variable': s.variable }]} style={`font-family:${s.css};font-weight:${s.weight ?? 400}`} aria-hidden="true">
+            Aa
+            {s.variable && <span class="specimen-weight">peso </span>}
+          </p>
+          <p class="specimen-sample" style={`font-family:${s.css};font-weight:${s.weight ?? 400}`}>
+            {s.sample}
+          </p>
+          {s.note && <p class="specimen-note">{s.note}</p>}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+{
+  tokens.length > 0 && (
+    <div class="tokens">
+      {tokens.map((group, gi) => (
+        <section class="token-group" data-reveal style={`--i:${gi}`} aria-label={group.title}>
+          <h4 class="token-title">{group.title}</h4>
+          <ul class="list-reset token-list" role="list">
+            {group.items.map((t) => {
+              const radius = group.title === 'Raios' ? t.value.replace(/[^\d.]/g, '') : null;
+              const duration = /^\d+ ms$/.test(t.value) ? Number.parseInt(t.value, 10) : null;
+              return (
+                <li class="token">
+                  {radius && <span class="token-radius" style={`--r:${radius}px`} aria-hidden="true" />}
+                  {duration && <span class="token-motion" style={`--d:${duration}ms`} aria-hidden="true"><span /></span>}
+                  <span class="token-name">{t.name}</span>
+                  <span class="token-value">{t.value}</span>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ))}
+    </div>
+  )
+}
+
+<style>
+  .specimens {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .specimen {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 0.5rem 1.5rem;
+    padding: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+    border: 1px solid var(--c-hairline);
+    border-radius: var(--radius-lg);
+    background: var(--c-canvas);
+    overflow: hidden;
+  }
+
+  .specimen-head {
+    grid-column: 1;
+  }
+
+  .specimen-family {
+    color: var(--c-ink);
+    font-weight: 600;
+  }
+
+  .specimen-role {
+    color: var(--c-muted);
+    font-size: var(--fs-body-sm);
+  }
+
+  .specimen-aa {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    display: grid;
+    justify-items: end;
+    color: var(--c-accent);
+    font-size: clamp(3.5rem, 2.5rem + 4vw, 6rem);
+    line-height: 0.9;
+    font-variant-numeric: lining-nums;
+  }
+
+  .specimen-sample {
+    grid-column: 1;
+    color: var(--c-ink);
+    font-size: clamp(1.25rem, 1.05rem + 1vw, 1.75rem);
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  .specimen-note {
+    grid-column: 1 / -1;
+    color: var(--c-muted);
+    font-size: var(--fs-caption);
+  }
+
+  /* fonte variável: o peso anda de 100 a 900 e o número acompanha */
+  @property --wght {
+    syntax: '<integer>';
+    inherits: true;
+    initial-value: 400;
+  }
+
+  .specimen-weight {
+    color: var(--c-muted);
+    font: 500 var(--fs-caption) / 1.4 var(--font-sans);
+    counter-reset: wght var(--wght);
+  }
+
+  .specimen-weight::after {
+    content: counter(wght);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .is-variable {
+    font-weight: var(--wght) !important;
+  }
+
+  :global(:root[data-motion='full']) .is-variable {
+    animation: wght 6s var(--ease-in-out) infinite alternate;
+  }
+
+  @keyframes wght {
+    from {
+      --wght: 100;
+    }
+    to {
+      --wght: 900;
+    }
+  }
+
+  .tokens {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    margin-top: 1rem;
+  }
+
+  .token-group {
+    padding: 1.25rem;
+    border: 1px solid var(--c-hairline);
+    border-radius: var(--radius-lg);
+    background: var(--c-surface-soft);
+  }
+
+  .token-title {
+    margin-bottom: 0.75rem;
+    color: var(--c-muted);
+    font-family: var(--font-sans);
+    font-size: var(--fs-caption-upper);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .token-list {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .token {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: var(--fs-body-sm);
+  }
+
+  .token-name {
+    color: var(--c-ink);
+    font-weight: 500;
+  }
+
+  .token-value {
+    margin-inline-start: auto;
+    color: var(--c-muted);
+    font-family: var(--font-mono);
+    font-size: var(--fs-caption);
+    text-align: end;
+  }
+
+  .token-radius {
+    width: 1.6rem;
+    height: 1.6rem;
+    flex: none;
+    border: 2px solid var(--c-accent);
+    border-radius: var(--r);
+    border-bottom-color: transparent;
+    border-left-color: transparent;
+  }
+
+  .token-motion {
+    position: relative;
+    width: 2.4rem;
+    height: 0.5rem;
+    flex: none;
+    border-radius: var(--radius-pill);
+    background: var(--c-hairline);
+  }
+
+  .token-motion span {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    background: var(--c-accent-strong);
+    translate: 0 -50%;
+  }
+
+  :global(:root[data-motion='full']) .token-motion span {
+    animation: token-move var(--d) var(--ease-in-out) infinite alternate;
+    animation-delay: 0.6s;
+  }
+
+  @keyframes token-move {
+    to {
+      left: calc(100% - 0.7rem);
+    }
+  }
+</style>

@@ -1,3 +1,7 @@
+import { projects } from './projects';
+
+export { projects, type CaseStudy as Project, type ProjectType } from './projects';
+
 /**
  * Conteúdo do portfólio. A fonte é o Currículo Lattes de Carlos Michael
  * (http://lattes.cnpq.br/7665168854776714), atualizado em 07/10/2026, mais a
@@ -44,7 +48,6 @@ export const links = {
     href: 'https://orcid.org/0009-0000-8549-7762',
     handle: '0009-0000-8549-7762',
   },
-  steam: { label: 'Steam', href: 'https://steamcommunity.com/profiles/76561198320042614/' },
 };
 
 export interface Experience {
@@ -173,117 +176,6 @@ export const courses: Course[] = [
     title: 'Conect.AI — IA Generativa em Startups',
     org: 'Virtus Tecnologia',
     hours: 4,
-  },
-];
-
-export type ProjectType = 'Desenvolvimento' | 'Extensão' | 'Pesquisa' | 'Produção técnica' | 'Web';
-
-export interface Project {
-  slug: string;
-  title: string;
-  type: ProjectType;
-  period: string;
-  status: 'Concluído' | 'Em andamento';
-  summary: string;
-  tags: string[];
-  note?: string;
-  link?: { label: string; href: string };
-  /** Aparece na página inicial. */
-  featured?: boolean;
-}
-
-export const projects: Project[] = [
-  {
-    slug: 'bee-sense',
-    title: 'Bee Sense',
-    type: 'Desenvolvimento',
-    period: '2025 — 2026',
-    status: 'Concluído',
-    summary:
-      'Sistema de Internet das Coisas com Raspberry Pi Pico W e sensores que monitora iscas de captura de abelhas sem ferrão: identifica a chegada de colônias e de possíveis invasores e torna a captura e a realocação mais seguras.',
-    tags: ['IoT', 'Raspberry Pi Pico W', 'Sensores', 'Meliponicultura'],
-    note: 'Projeto final da Residência Tecnológica em Sistemas Embarcados.',
-    link: { label: 'Código no GitHub', href: 'https://github.com/EmilenyRochaLeal/beeSense' },
-    featured: true,
-  },
-  {
-    slug: 'agende-ai',
-    title: 'Agende Aí',
-    type: 'Desenvolvimento',
-    period: '2024 — atual',
-    status: 'Em andamento',
-    summary:
-      'Plataforma SaaS para pequenos empreendimentos do setor alimentício. Reúne agendamentos, controle de estoque e logística para melhorar o atendimento e agilizar processos administrativos e operacionais.',
-    tags: ['SaaS', 'Gestão', 'Produto digital'],
-    note: 'Tema do TCC; exposto no Startup Day 2026 e na Missão Técnica NEON 2026.',
-    featured: true,
-  },
-  {
-    slug: 'fabrica-de-software',
-    title: 'Fábrica de Software',
-    type: 'Extensão',
-    period: '2024 — atual',
-    status: 'Em andamento',
-    summary:
-      'Projeto de extensão do IFPI que une teoria e prática num ambiente real de desenvolvimento. O projeto em andamento é o Zona Azul Digital, que automatiza o gerenciamento e a cobrança do estacionamento rotativo de Picos.',
-    tags: ['Extensão', 'Engenharia de software', 'Setor público'],
-    featured: true,
-  },
-  {
-    slug: 'dino-runner',
-    title: 'Dino Runner',
-    type: 'Desenvolvimento',
-    period: '2025',
-    status: 'Concluído',
-    summary:
-      'Sistema embarcado inspirado no jogo do T-Rex do Google, registrado também como produto tecnológico.',
-    tags: ['Sistemas embarcados', 'Jogos'],
-    link: { label: 'Código no GitHub', href: 'https://github.com/Seinenk/Dino-runner' },
-    featured: true,
-  },
-  {
-    slug: 'inclua',
-    title: 'INCLUA',
-    type: 'Produção técnica',
-    period: '2025',
-    status: 'Concluído',
-    summary:
-      'Plataforma de Recursos Pró-Equidade em Políticas Públicas, registrada como material didático e instrucional.',
-    tags: ['Políticas públicas', 'Equidade', 'Plataforma'],
-    featured: true,
-  },
-  {
-    slug: 'pytest',
-    title: 'Testes de unidade com pytest',
-    type: 'Pesquisa',
-    period: '2024 — 2025',
-    status: 'Concluído',
-    summary:
-      'Revisão sistemática da literatura sobre melhores práticas e desafios dos testes de unidade em Python com o framework pytest, selecionada em edital de pesquisa do IFPI.',
-    tags: ['Python', 'pytest', 'Revisão sistemática'],
-    featured: true,
-  },
-  {
-    slug: 'portfolio-2023',
-    title: 'Portfólio',
-    type: 'Web',
-    period: '2023',
-    status: 'Concluído',
-    summary:
-      'Segunda atividade da disciplina de Web: criar uma página de portfólio em HTML e CSS com foco no design. Foi a primeira versão deste site.',
-    tags: ['HTML', 'CSS', 'Design'],
-    link: { label: 'Código no GitHub', href: 'https://github.com/Seinenk/Seinenk.github.io' },
-  },
-  {
-    slug: 'layout-simples',
-    title: 'Layout Simples',
-    type: 'Web',
-    period: '2023',
-    status: 'Concluído',
-    summary:
-      'Primeira atividade da disciplina de Web: reproduzir em HTML e CSS o layout passado pelo professor.',
-    tags: ['HTML', 'CSS'],
-    link: { label: 'Código no GitHub', href: 'https://github.com/Seinenk/Web-1/tree/master/Web-1' },
   },
 ];
 
@@ -420,7 +312,7 @@ export const languages = [
 /** Números de destaque, todos contados a partir do Lattes. */
 export const stats = [
   { value: events.length, suffix: '', label: 'eventos, feiras e exposições' },
-  { value: projects.filter((p) => p.type !== 'Web' && p.type !== 'Produção técnica').length, suffix: '', label: 'projetos de pesquisa, extensão e desenvolvimento' },
+  { value: projects.filter((p) => p.type === 'Desenvolvimento' || p.type === 'Pesquisa').length, suffix: '', label: 'projetos de pesquisa e desenvolvimento' },
   { value: new Set(experience.map((e) => e.org)).size, suffix: '', label: 'instituições em que atuo ou atuei' },
   { value: 1, suffix: 'º', label: 'lugar em pitch na Mostra Semiárido Digital' },
 ];
