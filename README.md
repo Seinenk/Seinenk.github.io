@@ -46,9 +46,10 @@ como funciona por dentro, decisões com os porquês, uma demonstração, constru
 (cores, tipografia, design system e telas), tecnologias, habilidades, resultados, aprendizados
 e o próximo projeto. Só aparecem as seções que o projeto preenche.
 
-O conteúdo fica em abas, por área de atuação:
+As seções ficam numa página só, uma abaixo da outra, organizadas em tópicos por área de
+atuação. Uma barra de abas fixa no alto leva direto ao começo de cada tópico:
 
-| Aba | Seções |
+| Aba (tópico) | Seções |
 | --- | --- |
 | Resumo | Contexto, funções, vídeo e resultados |
 | Pesquisa e estruturação | Desafio, por dentro e decisões |
@@ -56,10 +57,11 @@ O conteúdo fica em abas, por área de atuação:
 | Construção | Processo, testes em campo e tecnologias (e a demonstração, quando ela é rodar testes) |
 | Aprendizado | Habilidades, aprendizados, próximos passos e créditos |
 
-Uma aba só aparece se o projeto tem alguma seção dela. No fim de cada aba há os botões de
-voltar ao topo, ir à próxima aba (com o nome dela) e, a partir da segunda, voltar à anterior.
-O endereço acompanha a aba (`#aba-ux-ui`), e um link para uma seção (`#visual`) abre a aba
-dela. Sem JavaScript, as abas viram atalhos e todo o conteúdo aparece em sequência. O
+Um tópico só aparece se o projeto tem alguma seção dele, e cada um começa com o próprio nome.
+As abas são links (`#aba-ux-ui`) e funcionam sem JavaScript; com ele, a barra acompanha a
+leitura e marca o tópico que está na tela. No fim de cada tópico há os botões de voltar ao
+topo, ir à próxima aba (com o nome dela) e, a partir da segunda, voltar à anterior. O sumário
+lateral lista todas as seções; no celular, a barra de abas faz esse papel. O
 agrupamento fica no topo de `src/pages/projeto/[slug].astro` (`groups`).
 
 Para incluir um projeto:
@@ -102,9 +104,8 @@ miniatura, gere de novo com o `pyftsubset` (fonttools), por exemplo:
 pyftsubset rubik-distressed-latin-400-normal.woff2 --text="EFIPLAa" --flavor=woff2 --layout-features='*' --output-file=src/assets/fonts/efipla/rubik-distressed.woff2
 ```
 
-Efeitos das páginas: transição do cartão para o topo da página (View Transitions), abas com
-uma pílula que desliza até a escolhida e conteúdo que entra do lado para onde se andou, sumário que
-acompanha a leitura, linha do tempo que se preenche ao rolar, cores que se copiam com um clique,
+Efeitos das páginas: transição do cartão para o topo da página (View Transitions), barra de
+abas com uma pílula que desliza até o tópico que está sendo lido, sumário que acompanha a leitura, linha do tempo que se preenche ao rolar, cores que se copiam com um clique,
 amostras de fonte variável, galeria com caixa de luz, comparação antes/depois, o Dino Runner
 jogável e a miniatura de temas do EFIPLA. Tudo funciona com teclado e fica parado quando o
 movimento está desligado.

@@ -45,7 +45,7 @@ const marks = { extractorys: ExtractorysMark, efipla: EfiplaMark, 'bee-sense': B
 const Mark = p.art in marks ? marks[p.art as keyof typeof marks] : null;
 const hasVisual = Boolean(p.visual && (p.visual.palette || p.visual.appThemes || p.visual.typography || p.visual.tokens || p.visual.gallery || p.visual.mark));
 type TabId = 'resumo' | 'pesquisa' | 'ux-ui' | 'construcao' | 'aprendizado';
-/* As abas, por área de atuação. Uma aba só aparece se o projeto tem alguma seção dela. */
+/* Os tópicos (abas), por área de atuação. Um tópico só aparece se o projeto tem alguma seção dele. */
 const tabDefs: { id: TabId; label: string; icon: IconName }[] = [
   { id: 'resumo', label: 'Resumo', icon: 'file-text' },
   { id: 'pesquisa', label: 'Pesquisa e estruturação', icon: 'search' },
@@ -81,7 +81,7 @@ const groups: Record<TabId, SectionId[]> = {
   construcao: demoInBuild ? ['processo', 'campo', 'na-pratica', 'tecnologias'] : ['processo', 'campo', 'tecnologias'],
   aprendizado: ['habilidades', 'aprendizados', 'proximos', 'creditos'],
 };
-/* Seções presentes, na ordem da página (aba por aba). O número entra no sobretítulo. */
+/* Seções presentes, na ordem da página (tópico por tópico). O número entra no sobretítulo. */
 const sections = tabDefs.flatMap((t) => groups[t.id].filter((id) => defs[id].on).map((id) => ({ id, tab: t.id, ...defs[id] })));
 const tabs = tabDefs.filter((t) => sections.some((s) => s.tab === t.id));
 const sectionsOf = (tab: TabId) => sections.filter((s) => s.tab === tab);
@@ -90,8 +90,6 @@ const head = (id: SectionId) => {
   const s = sections[i];
   return { kicker: `${String(i + 1).padStart(2, '0')} — ${s.label}`, title: s.title, id: `${id}-titulo` };
 };
-// para o script que escolhe a aba antes da primeira pintura (links para uma seção abrem a aba dela)
-const tabBoot = JSON.stringify({ tabs: tabs.map((t) => t.id), sections: Object.fromEntries(sections.map((s) => [s.id, s.tab])) });
 
 const texts = [
   p.tagline,
@@ -192,7 +190,7 @@ const titleWords = p.title.split(' ');
     <div class="cs-main">
       <div class="cs-tabs-bar" data-tabs-bar>
         <div class="container">
-          <nav class="cs-tabs-nav" aria-label="Áreas do projeto">
+          <nav class="cs-tabs-nav" aria-label="Tópicos do projeto">
             <div class="cs-tabs" data-tablist>
               {
                 tabs.map((t) => (
@@ -207,16 +205,6 @@ const titleWords = p.title.split(' ');
           </nav>
         </div>
       </div>
-      {/* escolhe a aba antes da primeira pintura: a do endereço (#aba-ux-ui ou uma seção) ou a primeira */}
-      <script is:inline define:vars={{ tabBoot }}>
-        (function () {
-          var page = document.querySelector('[data-case]');
-          var boot = JSON.parse(tabBoot);
-          var hash = decodeURIComponent(location.hash.slice(1));
-          var tab = hash.indexOf('aba-') === 0 ? hash.slice(4) : boot.sections[hash];
-          if (page) page.dataset.tab = boot.tabs.indexOf(tab) >= 0 ? tab : boot.tabs[0];
-        })();
-      </script>
     <div class="container cs-layout">
       <aside class="cs-aside">
         <nav class="cs-toc" aria-labelledby="toc-titulo" data-toc>
@@ -227,7 +215,7 @@ const titleWords = p.title.split(' ');
           <ol class="list-reset">
             {
               sections.map((s, i) => (
-                <li data-tab={s.tab}>
+                <li data-tab={s.tab} data-first={i > 0 && sections[i - 1].tab !== s.tab ? '' : undefined}>
                   <a href={`#${s.id}`} data-toc-link>
                     <span class="cs-toc-n">{String(i + 1).padStart(2, '0')}</span>
                     {s.label}
@@ -246,6 +234,10 @@ const titleWords = p.title.split(' ');
             const after = tabs[ti + 1];
             return (
               <div class="cs-panel" id={`aba-${t.id}`} data-panel={t.id}>
+                <p class="cs-area" data-reveal="fade">
+                  <Icon name={t.icon} size={16} />
+                  {t.label}
+                </p>
                 {sectionsOf(t.id).map((s) => (
                   <>
                   {
@@ -791,7 +783,7 @@ const titleWords = p.title.split(' ');
     line-height: 1.45;
   }
 
-  /* ---------- abas por área de atuação ---------- */
+  /* ---------- tópicos (abas) por área de atuação: atalhos numa página só ---------- */
   .cs {
     --tabs-h: 3.75rem;
   }
@@ -861,13 +853,13 @@ const titleWords = p.title.split(' ');
     outline-offset: 2px;
   }
 
-  .cs-tab[aria-selected='true'],
-  .cs-tab[aria-selected='true']:hover {
+  .cs-tab[aria-current],
+  .cs-tab[aria-current]:hover {
     background: transparent;
     color: var(--c-on-primary);
   }
 
-  /* a pílula desliza até a aba escolhida */
+  /* a pílula desliza até o tópico que está sendo lido */
   .cs-tabs-ink {
     position: absolute;
     top: 0.5rem;
@@ -890,59 +882,55 @@ const titleWords = p.title.split(' ');
       width 0.5s var(--ease-out);
   }
 
-  /* com o script, só a aba escolhida aparece; sem ele, todas, uma depois da outra */
-  .cs[data-tab] .cs-panel {
-    display: none;
-  }
-
-  .cs[data-tab='resumo'] .cs-panel[data-panel='resumo'],
-  .cs[data-tab='pesquisa'] .cs-panel[data-panel='pesquisa'],
-  .cs[data-tab='ux-ui'] .cs-panel[data-panel='ux-ui'],
-  .cs[data-tab='construcao'] .cs-panel[data-panel='construcao'],
-  .cs[data-tab='aprendizado'] .cs-panel[data-panel='aprendizado'] {
-    display: block;
-  }
-
+  /* todos os tópicos à mostra, um depois do outro; o link da barra leva ao começo de cada um */
   .cs-panel {
     scroll-margin-top: var(--tabs-h);
   }
 
-  .cs-panel:focus {
-    outline: none;
+  .cs-panel + .cs-panel {
+    margin-top: clamp(2.5rem, 2rem + 2.5vw, 4rem);
   }
 
-  /* a aba nova entra deslizando do lado para onde se andou */
-  :global(:root[data-motion='full']) .cs[data-tab-switched] .cs-panel {
-    animation: cs-panel-in 0.55s var(--ease-out) both;
+  /* o nome do tópico abre cada bloco, para quem lê tudo em sequência */
+  .cs-area {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: clamp(1.5rem, 1.2rem + 1vw, 2.25rem);
+    padding: 0.45rem 0.95rem;
+    border: 1px solid var(--c-hairline);
+    border-radius: var(--radius-pill);
+    background: var(--c-surface-soft);
+    color: var(--c-ink);
+    font-size: var(--fs-caption-upper);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
   }
 
-  @keyframes cs-panel-in {
-    from {
-      opacity: 0;
-      translate: calc(var(--tab-dir, 1) * 2.5rem) 0;
+  .cs-area :global(svg) {
+    color: var(--c-accent-strong);
+  }
+
+  .cs-area + .cs-section {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  /* o sumário lista todas as seções, com um respiro entre os tópicos; no celular, a barra basta */
+  @media (min-width: 64rem) {
+    .cs-toc li[data-first] {
+      margin-top: 0.7rem;
     }
   }
 
-  /* o sumário mostra só as seções da aba aberta; no celular, as abas bastam */
-  .cs[data-tab] .cs-toc li {
-    display: none;
-  }
-
-  .cs[data-tab='resumo'] .cs-toc li[data-tab='resumo'],
-  .cs[data-tab='pesquisa'] .cs-toc li[data-tab='pesquisa'],
-  .cs[data-tab='ux-ui'] .cs-toc li[data-tab='ux-ui'],
-  .cs[data-tab='construcao'] .cs-toc li[data-tab='construcao'],
-  .cs[data-tab='aprendizado'] .cs-toc li[data-tab='aprendizado'] {
-    display: block;
-  }
-
   @media (max-width: 63.999rem) {
-    .cs[data-tab] .cs-aside {
+    .cs-aside {
       display: none;
     }
   }
 
-  /* fim de cada aba: anterior, topo e próxima */
+  /* fim de cada tópico: anterior, topo e próximo */
   .cs-tabnav {
     display: grid;
     grid-template-columns: 1fr auto 1fr;

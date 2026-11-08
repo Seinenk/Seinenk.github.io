@@ -67,7 +67,7 @@ export const portfolio: CaseStudy = {
     {
       date: 'Novembro de 2026',
       title: 'Estudos de caso',
-      text: 'Cada projeto ganhou uma página própria, como esta, dividida em abas por área: resumo, pesquisa e estruturação, UX/UI, construção e aprendizado.',
+      text: 'Cada projeto ganhou uma página própria, como esta, organizada em tópicos por área (resumo, pesquisa e estruturação, UX/UI, construção e aprendizado), com uma barra de abas que leva direto a cada um.',
     },
   ],
   features: [
