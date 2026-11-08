@@ -32,6 +32,8 @@ if (toc && 'IntersectionObserver' in window) {
       }
     }
   };
+  // só contam os itens à mostra: com as abas, os das outras abas ficam escondidos
+  const shown = () => links.filter((a) => a.offsetParent !== null).map((a) => a.hash.slice(1));
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -39,7 +41,7 @@ if (toc && 'IntersectionObserver' in window) {
         else visible.delete(entry.target.id);
       });
       // a seção ativa é a primeira (de cima para baixo) que está na faixa de leitura
-      const order = links.map((a) => a.hash.slice(1));
+      const order = shown();
       const current = order.find((id) => visible.has(id));
       if (current) setActive(current);
       // acima da primeira seção (ainda no topo da página), vale a primeira
@@ -48,9 +50,148 @@ if (toc && 'IntersectionObserver' in window) {
     },
     { rootMargin: '-20% 0px -55% 0px' },
   );
+  // trocou de aba: o destaque vai para a primeira seção dela
+  document.addEventListener('case:tab', () => {
+    const first = shown()[0];
+    if (first) setActive(first);
+  });
   byId.forEach((_, id) => {
     const section = document.getElementById(id);
     if (section) observer.observe(section);
+  });
+}
+
+/* ---------- abas por área de atuação ---------- */
+// O HTML traz as abas como âncoras e todas as seções à mostra (funciona sem script);
+// um script embutido na página já escolheu a aba antes da primeira pintura
+// (data-tab no <article>). Aqui entram a semântica de abas, o teclado e os botões.
+const casePage = document.querySelector<HTMLElement>('[data-case]');
+const tablist = document.querySelector<HTMLElement>('[data-tablist]');
+if (casePage && tablist && casePage.dataset.tab) {
+  const tabs = Array.from(tablist.querySelectorAll<HTMLAnchorElement>('[data-tab-link]'));
+  const ids = tabs.map((a) => a.dataset.tabLink ?? '');
+  const bar = document.querySelector<HTMLElement>('[data-tabs-bar]');
+  const area = bar?.parentElement ?? null;
+  const panelOf = (id: string) => document.getElementById(`aba-${id}`);
+
+  tablist.setAttribute('role', 'tablist');
+  tablist.setAttribute('aria-label', 'Áreas do projeto');
+  tabs.forEach((a) => {
+    const id = a.dataset.tabLink ?? '';
+    a.id = `tab-${id}`;
+    a.setAttribute('role', 'tab');
+    a.setAttribute('aria-controls', `aba-${id}`);
+    const panel = panelOf(id);
+    if (panel) {
+      panel.setAttribute('role', 'tabpanel');
+      panel.setAttribute('aria-labelledby', a.id);
+      panel.tabIndex = -1;
+    }
+  });
+
+  // a pílula vai até a aba escolhida; no celular, a faixa rola até ela
+  const placeInk = (animate: boolean) => {
+    const active = tabs.find((a) => a.getAttribute('aria-selected') === 'true');
+    if (!active) return;
+    tablist.classList.toggle('is-moving', animate);
+    tablist.style.setProperty('--ink-x', `${active.offsetLeft}px`);
+    tablist.style.setProperty('--ink-w', `${active.offsetWidth}px`);
+    tablist.classList.add('has-ink');
+    const strip = tablist.parentElement;
+    if (strip && strip.scrollWidth > strip.clientWidth) {
+      strip.scrollTo({
+        left: active.offsetLeft - (strip.clientWidth - active.offsetWidth) / 2,
+        behavior: animate && motionOn() ? 'smooth' : 'auto',
+      });
+    }
+  };
+
+  // onde a área das abas começa, com a barra encostada no menu
+  const areaTop = () => {
+    if (!area || !bar) return 0;
+    const stick = Number.parseFloat(getComputedStyle(bar).top) || 0;
+    return area.getBoundingClientRect().top + window.scrollY - stick;
+  };
+
+  type Options = { scroll?: 'if-below' | 'always'; focus?: 'tab' | 'panel'; hash?: boolean };
+  const select = (id: string, { scroll, focus, hash = true }: Options = {}) => {
+    if (!ids.includes(id)) return;
+    const before = casePage.dataset.tab ?? id;
+    if (before !== id) {
+      // a aba nova entra do lado para onde se andou
+      casePage.style.setProperty('--tab-dir', ids.indexOf(id) > ids.indexOf(before) ? '1' : '-1');
+      casePage.setAttribute('data-tab-switched', '');
+    }
+    casePage.dataset.tab = id;
+    tabs.forEach((a) => {
+      const on = a.dataset.tabLink === id;
+      a.setAttribute('aria-selected', String(on));
+      a.tabIndex = on ? 0 : -1;
+    });
+    placeInk(before !== id);
+    if (hash) history.replaceState(null, '', `#aba-${id}`);
+    const top = areaTop();
+    if (scroll === 'always' || (scroll === 'if-below' && window.scrollY > top + 1)) {
+      window.scrollTo({ top, behavior: motionOn() ? 'smooth' : 'auto' });
+    }
+    if (focus === 'tab') tabs.find((a) => a.dataset.tabLink === id)?.focus({ preventScroll: true });
+    if (focus === 'panel') panelOf(id)?.focus({ preventScroll: true });
+    document.dispatchEvent(new CustomEvent('case:tab', { detail: id }));
+  };
+
+  select(casePage.dataset.tab, { hash: false });
+  new ResizeObserver(() => placeInk(false)).observe(tablist);
+
+  tabs.forEach((a) =>
+    a.addEventListener('click', (event) => {
+      event.preventDefault();
+      select(a.dataset.tabLink ?? '', { scroll: 'if-below' });
+    }),
+  );
+
+  // teclado: setas, Home e End trocam de aba; espaço também escolhe
+  tablist.addEventListener('keydown', (event) => {
+    const i = tabs.findIndex((a) => a === document.activeElement);
+    if (i < 0) return;
+    const moves: Record<string, number> = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 };
+    if (event.key in moves) {
+      event.preventDefault();
+      const target = tabs[(moves[event.key] + tabs.length) % tabs.length];
+      select(target.dataset.tabLink ?? '', { focus: 'tab', scroll: 'if-below' });
+    } else if (event.key === ' ') {
+      event.preventDefault();
+      select(tabs[i].dataset.tabLink ?? '', { scroll: 'if-below' });
+    }
+  });
+
+  // fim de cada aba: anterior e próxima levam ao começo da outra aba
+  document.querySelectorAll<HTMLAnchorElement>('[data-tab-go]').forEach((link) =>
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+      select(link.dataset.tabGo ?? '', { scroll: 'always', focus: 'panel' });
+    }),
+  );
+  document.querySelectorAll<HTMLAnchorElement>('[data-to-top]').forEach((link) =>
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+      window.scrollTo({ top: 0, behavior: motionOn() ? 'smooth' : 'auto' });
+      document.querySelector<HTMLElement>('.cs-title')?.focus({ preventScroll: true });
+    }),
+  );
+
+  // um link para uma seção de outra aba (#visual, por exemplo) abre a aba dela
+  window.addEventListener('hashchange', () => {
+    const target = decodeURIComponent(location.hash.slice(1));
+    if (target.startsWith('aba-')) {
+      select(target.slice(4), { hash: false, scroll: 'always' });
+      return;
+    }
+    const section = document.getElementById(target);
+    const panel = section?.closest<HTMLElement>('[data-panel]');
+    if (section && panel?.dataset.panel && panel.dataset.panel !== casePage.dataset.tab) {
+      select(panel.dataset.panel, { hash: false });
+      section.scrollIntoView();
+    }
   });
 }
 

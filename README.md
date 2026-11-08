@@ -46,6 +46,22 @@ como funciona por dentro, decisões com os porquês, uma demonstração, constru
 (cores, tipografia, design system e telas), tecnologias, habilidades, resultados, aprendizados
 e o próximo projeto. Só aparecem as seções que o projeto preenche.
 
+O conteúdo fica em abas, por área de atuação:
+
+| Aba | Seções |
+| --- | --- |
+| Resumo | Contexto, funções e resultados |
+| Pesquisa e estruturação | Desafio, por dentro e decisões |
+| UX/UI | Demonstração e construção visual |
+| Construção | Processo e tecnologias (e a demonstração, quando ela é rodar testes) |
+| Aprendizado | Habilidades, aprendizados, próximos passos e créditos |
+
+Uma aba só aparece se o projeto tem alguma seção dela. No fim de cada aba há os botões de
+voltar ao topo, ir à próxima aba (com o nome dela) e, a partir da segunda, voltar à anterior.
+O endereço acompanha a aba (`#aba-ux-ui`), e um link para uma seção (`#visual`) abre a aba
+dela. Sem JavaScript, as abas viram atalhos e todo o conteúdo aparece em sequência. O
+agrupamento fica no topo de `src/pages/projeto/[slug].astro` (`groups`).
+
 Para incluir um projeto:
 
 1. Crie `src/data/projects/<nome>.ts` copiando um dos existentes (o tipo `CaseStudy` em
@@ -79,7 +95,8 @@ miniatura, gere de novo com o `pyftsubset` (fonttools), por exemplo:
 pyftsubset rubik-distressed-latin-400-normal.woff2 --text="EFIPLAa" --flavor=woff2 --layout-features='*' --output-file=src/assets/fonts/efipla/rubik-distressed.woff2
 ```
 
-Efeitos das páginas: transição do cartão para o topo da página (View Transitions), sumário que
+Efeitos das páginas: transição do cartão para o topo da página (View Transitions), abas com
+uma pílula que desliza até a escolhida e conteúdo que entra do lado para onde se andou, sumário que
 acompanha a leitura, linha do tempo que se preenche ao rolar, cores que se copiam com um clique,
 amostras de fonte variável, galeria com caixa de luz, comparação antes/depois, o Dino Runner
 jogável e a miniatura de temas do EFIPLA. Tudo funciona com teclado e fica parado quando o
