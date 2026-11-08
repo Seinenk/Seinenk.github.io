@@ -202,4 +202,18 @@ export interface CaseStudy {
   sources?: string;
   /** Fontes extras que a página precisa (amostras de tipografia do projeto). */
   fonts?: PageFont[];
+  /** Vídeo do projeto no YouTube (o player só carrega quando a pessoa clica). */
+  video?: ProjectVideo;
+}
+
+export interface ProjectVideo {
+  /** Identificador do vídeo no YouTube (o que vem depois de /shorts/ ou de ?v=). */
+  youtube: string;
+  /** Título curto, também usado pelo leitor de tela no player. */
+  title: string;
+  /** Texto de abertura da seção. */
+  text?: string;
+  caption: string;
+  /** Vídeo vertical (Shorts): moldura em pé, 9 por 16. */
+  vertical?: boolean;
 }

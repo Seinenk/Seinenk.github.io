@@ -510,6 +510,33 @@ document.querySelectorAll<HTMLElement>('[data-dino]').forEach((game) => {
   enemy = [4, -1];
 });
 
+/* ---------- vídeo: o player do YouTube só carrega no clique ---------- */
+document.querySelectorAll<HTMLElement>('[data-yt]').forEach((box) => {
+  const play = box.querySelector<HTMLAnchorElement>('[data-yt-play]');
+  const frame = box.querySelector<HTMLElement>('.yt-frame');
+  if (!play || !frame) return;
+  // com o script, o pôster carrega o player aqui mesmo: vira botão (sem script, é um link)
+  play.setAttribute('role', 'button');
+  play.addEventListener('keydown', (event) => {
+    if (event.key === ' ') {
+      event.preventDefault();
+      play.click();
+    }
+  });
+  play.addEventListener('click', (event) => {
+    event.preventDefault();
+    const iframe = document.createElement('iframe');
+    iframe.className = 'yt-iframe';
+    iframe.src = box.dataset.ytSrc ?? '';
+    iframe.title = box.dataset.ytTitle ?? 'Vídeo do projeto';
+    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+    iframe.allowFullscreen = true;
+    iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+    frame.replaceChildren(iframe);
+    iframe.focus();
+  });
+});
+
 /* ---------- fontes da página: só quando a seção visual chega perto ---------- */
 const lazyFonts = document.querySelector<HTMLStyleElement>('style[data-lazy-fonts]');
 if (lazyFonts) {

@@ -1,0 +1,212 @@
+---
+import Icon from '../Icon.astro';
+import ProjectArt from '../ProjectArt.astro';
+import type { ArtKind, ProjectVideo } from '../../data/projects/types';
+
+/*
+ * Vídeo do YouTube que só carrega quando a pessoa pede: até o clique, nenhuma
+ * requisição ao YouTube (nem cookies), e o pôster é a ilustração do próprio projeto.
+ * O player vem do youtube-nocookie.com. Sem JavaScript, o pôster é um link para o
+ * vídeo no YouTube.
+ */
+interface Props {
+  video: ProjectVideo;
+  art: ArtKind;
+}
+
+const { video, art } = Astro.props;
+const watch = video.vertical ? `https://www.youtube.com/shorts/${video.youtube}` : `https://www.youtube.com/watch?v=${video.youtube}`;
+const embed = `https://www.youtube-nocookie.com/embed/${video.youtube}?autoplay=1&playsinline=1&rel=0`;
+---
+
+<figure class:list={['yt', { 'yt-vertical': video.vertical }]} data-yt data-yt-src={embed} data-yt-title={video.title}>
+  <div class="yt-frame">
+    <a class="yt-poster" href={watch} data-yt-play>
+      <span class="yt-art" aria-hidden="true">
+        <ProjectArt kind={art} />
+      </span>
+      <span class="yt-play" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M8.5 5.6v12.8L19 12z"></path></svg>
+      </span>
+      <span class="yt-text">
+        <span class="yt-kicker">
+          <Icon name="youtube" size={16} />
+          {video.vertical ? 'YouTube Shorts' : 'YouTube'}
+        </span>
+        <span class="yt-title">{video.title}</span>
+        <span class="yt-hint">Toque para assistir aqui</span>
+        <span class="sr-only">(carrega o player do YouTube)</span>
+      </span>
+    </a>
+  </div>
+  <figcaption class="yt-caption">
+    {`${video.caption} `}
+    <a href={watch} target="_blank" rel="noopener noreferrer">
+      Abrir no YouTube<span class="sr-only"> (abre em nova aba)</span>
+    </a>
+  </figcaption>
+</figure>
+
+<style>
+  .yt {
+    margin: 0;
+  }
+
+  .yt-frame {
+    position: relative;
+    width: min(100%, 40rem);
+    aspect-ratio: 16 / 9;
+    margin-inline: auto;
+    overflow: hidden;
+    border-radius: var(--radius-xl);
+    background: #0b0a12;
+    box-shadow:
+      0 0 0 1px var(--c-hairline),
+      var(--shadow-lg);
+  }
+
+  /* Shorts: em pé, como no celular */
+  .yt-vertical .yt-frame {
+    width: min(100%, 20rem);
+    aspect-ratio: 9 / 16;
+    border-radius: 1.8rem;
+  }
+
+  .yt-poster {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    color: #fff;
+    text-decoration: none;
+    background:
+      radial-gradient(120% 70% at 50% 30%, rgb(79 107 255 / 0.28), transparent 60%),
+      linear-gradient(180deg, #14131d 0%, #0b0a12 100%);
+  }
+
+  .yt-art {
+    display: grid;
+    place-items: center;
+    padding: 1.25rem;
+  }
+
+  .yt-art :global(.art) {
+    width: 100%;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 1.5rem 3rem -1rem rgb(0 0 0 / 0.6);
+  }
+
+  .yt-play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: grid;
+    place-items: center;
+    width: 4.5rem;
+    height: 4.5rem;
+    translate: -50% -50%;
+    border-radius: 50%;
+    background: #fff;
+    color: #0b0a12;
+    box-shadow: 0 0.75rem 2rem rgb(0 0 0 / 0.45);
+    transition: scale 0.4s var(--ease-spring);
+  }
+
+  .yt-vertical .yt-play {
+    top: 58%;
+  }
+
+  .yt-play svg {
+    width: 2rem;
+    height: 2rem;
+    margin-left: 0.2rem;
+    fill: currentColor;
+  }
+
+  /* anel que pulsa em volta do play */
+  .yt-play::after {
+    content: '';
+    position: absolute;
+    inset: -0.5rem;
+    border: 2px solid rgb(255 255 255 / 0.7);
+    border-radius: 50%;
+    opacity: 0;
+  }
+
+  :global(:root[data-motion='full']) .yt-play::after {
+    animation: yt-ring 2.4s var(--ease-out) infinite;
+  }
+
+  @keyframes yt-ring {
+    0% {
+      opacity: 0.8;
+      scale: 0.9;
+    }
+    100% {
+      opacity: 0;
+      scale: 1.45;
+    }
+  }
+
+  .yt-poster:hover .yt-play,
+  .yt-poster:focus-visible .yt-play {
+    scale: 1.08;
+  }
+
+  .yt-poster:focus-visible {
+    outline: 3px solid var(--c-focus);
+    outline-offset: -3px;
+  }
+
+  .yt-text {
+    display: grid;
+    gap: 0.3rem;
+    padding: 1rem 1.25rem 1.4rem;
+    background: linear-gradient(180deg, transparent, rgb(0 0 0 / 0.55));
+  }
+
+  .yt-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: #fff;
+    font-size: var(--fs-caption);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .yt-title {
+    font-family: var(--font-display);
+    font-size: var(--fs-title-lg, 1.5rem);
+    font-weight: 500;
+    line-height: 1.15;
+  }
+
+  .yt-hint {
+    color: #e6e4ee;
+    font-size: var(--fs-caption);
+  }
+
+  /* o player, quando entra no lugar do pôster */
+  .yt-frame :global(.yt-iframe) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  .yt-caption {
+    max-width: 36rem;
+    margin: 0.9rem auto 0;
+    color: var(--c-muted);
+    font-size: var(--fs-caption);
+    text-align: center;
+  }
+
+  .yt-caption a {
+    color: var(--c-ink);
+    font-weight: 500;
+  }
+</style>

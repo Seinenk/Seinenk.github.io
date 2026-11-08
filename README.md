@@ -50,7 +50,7 @@ O conteúdo fica em abas, por área de atuação:
 
 | Aba | Seções |
 | --- | --- |
-| Resumo | Contexto, funções e resultados |
+| Resumo | Contexto, funções, vídeo e resultados |
 | Pesquisa e estruturação | Desafio, por dentro e decisões |
 | UX/UI | Demonstração e construção visual |
 | Construção | Processo e tecnologias (e a demonstração, quando ela é rodar testes) |
@@ -81,6 +81,9 @@ Recursos opcionais da construção visual:
   miniatura interativa (`ThemePlayground.astro`), que hoje reproduz a aba Combate do EFIPLA.
 - `visual.markBackground` (fundo do bloco da marca) e `visual.galleryNote` (observação sobre
   as telas da galeria).
+- `video`: um vídeo do YouTube (`youtube` é o identificador; `vertical: true` para Shorts).
+  Até alguém tocar para assistir, a página mostra um pôster com a ilustração do projeto e não
+  faz nenhuma requisição ao YouTube; o player vem do `youtube-nocookie.com`.
 - `fonts`: fontes que só a página usa, para as amostras de tipografia do projeto. Os arquivos
   são declarados em `astro.config.mjs`, e o `@font-face` sai de `src/utils/page-fonts.ts` numa
   folha que só liga quando a seção visual chega perto da tela, para quem não rola até lá não

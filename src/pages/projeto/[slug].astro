@@ -15,6 +15,7 @@ import DinoGame from '../../components/case/DinoGame.astro';
 import BeforeAfter from '../../components/case/BeforeAfter.astro';
 import LayoutBoxes from '../../components/case/LayoutBoxes.astro';
 import PytestRun from '../../components/case/PytestRun.astro';
+import VideoEmbed from '../../components/case/VideoEmbed.astro';
 import { projects, nextProject, projectHref, type CaseStudy } from '../../data/projects';
 import { plain, readingMinutes, rich } from '../../utils/rich';
 import { pageFontCss } from '../../utils/page-fonts';
@@ -54,6 +55,7 @@ const tabDefs: { id: TabId; label: string; icon: IconName }[] = [
 const defs = {
   contexto: { label: 'Contexto', title: 'De onde *veio*', on: true },
   funcoes: { label: 'Funções', title: doVerb, on: Boolean(p.features?.length) },
+  video: { label: 'Vídeo', title: 'Funcionando de *verdade*', on: Boolean(p.video) },
   resultados: { label: 'Resultados', title: 'O que *ficou*', on: Boolean(p.results) },
   desafio: { label: 'Desafio', title: 'O *problema*', on: Boolean(p.challenge) },
   'por-dentro': { label: 'Por dentro', title: p.inside ? emphasizeLast(p.inside.title) : '', on: Boolean(p.inside) },
@@ -71,7 +73,7 @@ type SectionId = keyof typeof defs;
 // a demonstração do pytest é rodar os testes: é construção, não interface
 const demoInBuild = p.demo?.kind === 'pytest-run';
 const groups: Record<TabId, SectionId[]> = {
-  resumo: ['contexto', 'funcoes', 'resultados'],
+  resumo: ['contexto', 'funcoes', 'video', 'resultados'],
   pesquisa: ['desafio', 'por-dentro', 'decisoes'],
   'ux-ui': demoInBuild ? ['visual'] : ['na-pratica', 'visual'],
   construcao: demoInBuild ? ['processo', 'na-pratica', 'tecnologias'] : ['processo', 'tecnologias'],
@@ -96,6 +98,7 @@ const texts = [
   ...(p.challenge?.goals ?? []),
   ...(p.story ?? []).flatMap((s) => [s.title, s.text]),
   ...(p.features ?? []).flatMap((f) => [f.title, f.text]),
+  p.video?.text ?? '',
   ...(p.inside?.text ?? []),
   ...(p.decisions ?? []).flatMap((d) => [d.title, d.why, d.tradeoff ?? '']),
   p.visual?.intro ?? '',
@@ -312,6 +315,16 @@ const titleWords = p.title.split(' ');
                             </li>
                           ))}
                         </ul>
+                      </section>
+                    )
+                  }
+                  {
+                    s.id === 'video' && p.video && (
+                      <section id="video" class="cs-section" aria-labelledby="video-titulo">
+                        <SectionHead {...head('video')} size="md" text={p.video.text} />
+                        <div data-reveal>
+                          <VideoEmbed video={p.video} art={p.art} />
+                        </div>
                       </section>
                     )
                   }
