@@ -10,6 +10,7 @@ import TypeSpecimens from '../../components/case/TypeSpecimens.astro';
 import Gallery from '../../components/case/Gallery.astro';
 import ExtractorysMark from '../../components/case/ExtractorysMark.astro';
 import EfiplaMark from '../../components/case/EfiplaMark.astro';
+import BeeSenseMark from '../../components/case/BeeSenseMark.astro';
 import ThemePlayground from '../../components/case/ThemePlayground.astro';
 import DinoGame from '../../components/case/DinoGame.astro';
 import BeforeAfter from '../../components/case/BeforeAfter.astro';
@@ -40,7 +41,7 @@ const emphasizeLast = (title: string) => {
   return words.length > 1 ? `${words.slice(0, -1).join(' ')} *${words.at(-1)}*` : `*${title}*`;
 };
 /* desenho da marca, por projeto (o texto vem dos dados) */
-const marks = { extractorys: ExtractorysMark, efipla: EfiplaMark } as const;
+const marks = { extractorys: ExtractorysMark, efipla: EfiplaMark, 'bee-sense': BeeSenseMark } as const;
 const Mark = p.art in marks ? marks[p.art as keyof typeof marks] : null;
 const hasVisual = Boolean(p.visual && (p.visual.palette || p.visual.appThemes || p.visual.typography || p.visual.tokens || p.visual.gallery || p.visual.mark));
 type TabId = 'resumo' | 'pesquisa' | 'ux-ui' | 'construcao' | 'aprendizado';
@@ -63,6 +64,7 @@ const defs = {
   'na-pratica': { label: p.demo?.title ?? '', title: p.demo ? emphasizeLast(p.demo.title) : '', on: Boolean(p.demo) },
   visual: { label: 'Visual', title: 'Construção *visual*', on: hasVisual },
   processo: { label: 'Processo', title: 'Como foi *construído*', on: Boolean(p.story?.length) },
+  campo: { label: 'Em campo', title: 'Testado no *campo*', on: Boolean(p.fieldwork?.shots.length) },
   tecnologias: { label: 'Tecnologias', title: 'Com o que foi *feito*', on: Boolean(p.tech?.length) },
   habilidades: { label: 'Habilidades', title: 'O que o projeto *ensinou*', on: Boolean(p.skills?.length) },
   aprendizados: { label: 'Aprendizados', title: 'Desafios e *aprendizados*', on: Boolean(p.lessons?.length) },
@@ -76,7 +78,7 @@ const groups: Record<TabId, SectionId[]> = {
   resumo: ['contexto', 'funcoes', 'video', 'resultados'],
   pesquisa: ['desafio', 'por-dentro', 'decisoes'],
   'ux-ui': demoInBuild ? ['visual'] : ['na-pratica', 'visual'],
-  construcao: demoInBuild ? ['processo', 'na-pratica', 'tecnologias'] : ['processo', 'tecnologias'],
+  construcao: demoInBuild ? ['processo', 'campo', 'na-pratica', 'tecnologias'] : ['processo', 'campo', 'tecnologias'],
   aprendizado: ['habilidades', 'aprendizados', 'proximos', 'creditos'],
 };
 /* Seções presentes, na ordem da página (aba por aba). O número entra no sobretítulo. */
@@ -105,6 +107,7 @@ const texts = [
   p.visual?.appThemesText ?? '',
   p.visual?.mark ?? '',
   p.visual?.galleryNote ?? '',
+  p.fieldwork?.text ?? '',
   ...(p.skills ?? []).flatMap((s) => [s.title, s.text]),
   ...(p.results?.highlights ?? []),
   ...(p.lessons ?? []).flatMap((l) => [l.title, l.text]),
@@ -301,6 +304,20 @@ const titleWords = p.title.split(' ');
                     )
                   }
                   {
+                    s.id === 'campo' && p.fieldwork && (
+                      <section id="campo" class="cs-section" aria-labelledby="campo-titulo">
+                        <SectionHead {...head('campo')} size="md" text={p.fieldwork.text} />
+                        <Gallery shots={p.fieldwork.shots} label={`Fotos dos testes do projeto ${p.title}`} />
+                        {p.fieldwork.note && (
+                          <p class="cs-gallery-note" data-reveal>
+                            <Icon name="map-pin" size={15} />
+                            <span set:html={rich(p.fieldwork.note)} />
+                          </p>
+                        )}
+                      </section>
+                    )
+                  }
+                  {
                     s.id === 'funcoes' && p.features && (
                       <section id="funcoes" class="cs-section" aria-labelledby="funcoes-titulo">
                         <SectionHead {...head('funcoes')} size="md" />
@@ -440,9 +457,9 @@ const titleWords = p.title.split(' ');
                         {p.visual.gallery && (
                           <div class="cs-block">
                             <h3 class="cs-sub" data-reveal>
-                              <Icon name="monitor" size={18} /> Telas
+                              <Icon name="monitor" size={18} /> {p.visual.galleryTitle ?? 'Telas'}
                             </h3>
-                            <Gallery shots={p.visual.gallery} label={`Telas do projeto ${p.title}`} />
+                            <Gallery shots={p.visual.gallery} label={`${p.visual.galleryTitle ?? 'Telas'} do projeto ${p.title}`} />
                             {p.visual.galleryNote && (
                               <p class="cs-gallery-note" data-reveal>
                                 <Icon name="clock" size={15} />

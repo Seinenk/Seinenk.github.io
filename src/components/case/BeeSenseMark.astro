@@ -1,0 +1,84 @@
+---
+import { Image } from 'astro:assets';
+import logo from '../../assets/images/projetos/bee-sense/logo.webp';
+
+/*
+ * Logo do Bee Sense, a imagem original da apresentação: a abelha com o sinal de
+ * Wi-Fi entre as antenas, sobre o favo. Com movimento ligado, a abelha flutua devagar
+ * e um anel de sinal sai do Wi-Fi de tempos em tempos.
+ */
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<span class:list={['bsm', className]}>
+  <span class="bsm-float">
+    <span class="bsm-ping"></span>
+    <span class="bsm-ping bsm-ping-late"></span>
+    <Image src={logo} alt="" widths={[160, 320]} sizes="10rem" loading="lazy" decoding="async" />
+  </span>
+</span>
+
+<style>
+  .bsm {
+    display: block;
+  }
+
+  .bsm-float {
+    position: relative;
+    display: block;
+  }
+
+  .bsm :global(img) {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 0.6rem 1.1rem rgb(0 0 0 / 0.4));
+  }
+
+  /* anel de sinal saindo do Wi-Fi, no alto do logo */
+  .bsm-ping {
+    position: absolute;
+    left: 50%;
+    top: 12%;
+    width: 34%;
+    aspect-ratio: 1;
+    border: 2px solid rgb(27 157 218 / 0.75);
+    border-radius: 50%;
+    opacity: 0;
+    translate: -50% -50%;
+  }
+
+  :global(:root[data-motion='full']) .bsm-float {
+    animation: bsm-float 5.5s ease-in-out infinite;
+  }
+
+  :global(:root[data-motion='full']) .bsm-ping {
+    animation: bsm-ping 3.2s ease-out infinite;
+  }
+
+  :global(:root[data-motion='full']) .bsm-ping-late {
+    animation-delay: 1.6s;
+  }
+
+  @keyframes bsm-float {
+    50% {
+      translate: 0 -0.4rem;
+    }
+  }
+
+  @keyframes bsm-ping {
+    0% {
+      opacity: 0.85;
+      scale: 0.5;
+    }
+    100% {
+      opacity: 0;
+      scale: 2.3;
+    }
+  }
+</style>

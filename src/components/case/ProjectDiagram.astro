@@ -14,16 +14,7 @@ interface Props {
 const { kind } = Astro.props;
 
 type Node = { icon: IconName; title: string; text: string; tone?: 'accent' | 'ink' };
-const flows: Record<Exclude<DiagramKind, 'extractorys' | 'efipla'>, { label: string; nodes: Node[]; branch?: Node[] }> = {
-  'bee-sense': {
-    label: 'Fluxo do Bee Sense, da isca ao app',
-    nodes: [
-      { icon: 'hexagon', title: 'Isca', text: 'Sensores na caixa de captura' },
-      { icon: 'cpu', title: 'Pico W', text: 'Lê os sensores, com Wi-Fi', tone: 'ink' },
-      { icon: 'bell', title: 'Aviso', text: 'Colônia chegou ou invasor', tone: 'accent' },
-      { icon: 'smartphone', title: 'App', text: 'Iscas e conteúdo do manejo' },
-    ],
-  },
+const flows: Record<Exclude<DiagramKind, 'extractorys' | 'efipla' | 'bee-sense'>, { label: string; nodes: Node[]; branch?: Node[] }> = {
   'dino-runner': {
     label: 'Fluxo do Dino Runner, dos botões aos LEDs e à tela',
     nodes: [
@@ -48,7 +39,7 @@ const flows: Record<Exclude<DiagramKind, 'extractorys' | 'efipla'>, { label: str
     ],
   },
 };
-const flow = kind === 'extractorys' || kind === 'efipla' ? null : flows[kind];
+const flow = kind === 'extractorys' || kind === 'efipla' || kind === 'bee-sense' ? null : flows[kind];
 ---
 
 {
@@ -170,6 +161,174 @@ const flow = kind === 'extractorys' || kind === 'efipla' ? null : flows[kind];
       </div>
       <figcaption class="dg-caption">A tela não faz conta: lê o provider, que guarda a ficha e chama as regras puras. Nada sai do aparelho.</figcaption>
     </figure>
+  )
+}
+
+{
+  kind === 'bee-sense' && (
+    <div class="bs-dg">
+      <figure class="dg bs-arch" data-ambient>
+        <p class="dg-head">Quem fala com quem</p>
+        <ul class="sr-only">
+          <li>Quem cuida das iscas coloca o código de pareamento na placa e acompanha as iscas pelo app.</li>
+          <li>O embarcado, a BitDogLab com a Raspberry Pi Pico W e o microfone, envia as leituras ao backend por HTTPS.</li>
+          <li>O app, em Flutter, conversa com o backend por HTTPS e WebSocket.</li>
+          <li>O backend guarda as leituras no banco de dados.</li>
+        </ul>
+        <div class="dg-stack" aria-hidden="true">
+          <div class="dg-layer bs-node" data-reveal>
+            <span class="bs-node-icon">
+              <Icon name="user" size={20} />
+            </span>
+            <p class="dg-mid">Quem cuida das iscas</p>
+          </div>
+          <div class="bs-cols">
+            <span class="bs-lk">
+              <span class="dg-link">
+                <i />
+              </span>
+              <span class="bs-lk-text">coloca o código de pareamento</span>
+            </span>
+            <span class="bs-lk">
+              <span class="dg-link">
+                <i />
+              </span>
+              <span class="bs-lk-text">acompanha as iscas</span>
+            </span>
+          </div>
+          <div class="bs-cols">
+            <div class="dg-layer dg-ink bs-node" data-reveal>
+              <span class="bs-node-icon">
+                <Icon name="cpu" size={20} />
+              </span>
+              <p class="dg-tag">Embarcado · na isca</p>
+              <p class="dg-mid">BitDogLab</p>
+              <div class="dg-row">
+                {['Pico W', 'Microfone', 'AHT10', 'Cartão SD'].map((t) => (
+                  <span class="dg-node">{t}</span>
+                ))}
+              </div>
+            </div>
+            <div class="dg-layer bs-node" data-reveal style="--i:1">
+              <span class="bs-node-icon">
+                <Icon name="smartphone" size={20} />
+              </span>
+              <p class="dg-tag">App · Flutter</p>
+              <p class="dg-mid">Frontend</p>
+              <div class="dg-row">
+                {['Iscas', 'Histórico', 'Cronômetro', 'Conteúdo'].map((t) => (
+                  <span class="dg-node">{t}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div class="bs-cols">
+            <span class="bs-lk">
+              <span class="dg-link">
+                <i />
+              </span>
+              <span class="bs-lk-text">
+                <strong>HTTPS</strong> leituras
+              </span>
+            </span>
+            <span class="bs-lk">
+              <span class="dg-link dg-link-both">
+                <i />
+                <i />
+              </span>
+              <span class="bs-lk-text">
+                <strong>HTTPS</strong> e <strong>WebSocket</strong>
+              </span>
+            </span>
+          </div>
+          <div class="dg-layer dg-seam bs-node" data-reveal>
+            <span class="bs-node-icon">
+              <Icon name="server" size={20} />
+            </span>
+            <p class="dg-big">Backend</p>
+            <p class="dg-note">Recebe as leituras das placas e atende o app</p>
+          </div>
+          <span class="bs-lk bs-lk-center">
+            <span class="dg-link">
+              <i />
+            </span>
+            <span class="bs-lk-text">guarda</span>
+          </span>
+          <div class="dg-layer bs-node" data-reveal>
+            <span class="bs-node-icon">
+              <Icon name="database" size={20} />
+            </span>
+            <p class="dg-mid">Banco de dados</p>
+          </div>
+        </div>
+        <figcaption class="dg-caption">Redesenhado do diagrama de arquitetura do projeto.</figcaption>
+      </figure>
+
+      <figure class="dg bs-pair" data-ambient>
+        <p class="dg-head" id="bs-pareamento">Ao ligar a placa</p>
+        <ol class="list-reset bs-flow" aria-labelledby="bs-pareamento">
+          <li class="bs-flow-row" data-reveal>
+            <span class="bs-flow-node">
+              <Icon name="zap" size={18} />
+              A pessoa liga a placa
+            </span>
+          </li>
+          <li class="bs-flow-row" data-reveal style="--i:1">
+            <span class="bs-flow-lk" aria-hidden="true">
+              <span class="dg-link">
+                <i />
+              </span>
+            </span>
+            <span class="bs-flow-node bs-flow-q">A isca já está registrada?</span>
+            <span class="bs-flow-branch">
+              <strong>Sim:</strong> vai direto para ler e enviar
+            </span>
+          </li>
+          <li class="bs-flow-row" data-reveal style="--i:2">
+            <span class="bs-flow-lk" aria-hidden="true">
+              <span class="dg-link">
+                <i />
+              </span>
+              <span class="bs-flow-lk-text">não</span>
+            </span>
+            <span class="bs-flow-node">
+              <span class="sr-only">Se não, </span>
+              Pede o código de pareamento
+            </span>
+          </li>
+          <li class="bs-flow-row" data-reveal style="--i:3">
+            <span class="bs-flow-lk" aria-hidden="true">
+              <span class="dg-link">
+                <i />
+              </span>
+            </span>
+            <span class="bs-flow-node bs-flow-q">O pareamento deu certo?</span>
+            <span class="bs-flow-branch bs-flow-retry">
+              <Icon name="rotate-ccw" size={15} />
+              <span>
+                <strong>Não:</strong> mostra um erro e pede o código de novo
+              </span>
+            </span>
+          </li>
+          <li class="bs-flow-row" data-reveal style="--i:4">
+            <span class="bs-flow-lk" aria-hidden="true">
+              <span class="dg-link">
+                <i />
+              </span>
+              <span class="bs-flow-lk-text">sim</span>
+            </span>
+            <span class="bs-flow-node bs-flow-end">
+              <Icon name="check" size={18} />
+              <span>
+                <span class="sr-only">Se sim, </span>
+                Começa a ler e enviar as leituras
+              </span>
+            </span>
+          </li>
+        </ol>
+        <figcaption class="dg-caption">Redesenhado do fluxograma de pareamento do projeto.</figcaption>
+      </figure>
+    </div>
   )
 }
 
@@ -523,6 +682,232 @@ const flow = kind === 'extractorys' || kind === 'efipla' ? null : flows[kind];
     .dg-branch {
       width: 50%;
       margin-inline-start: 25%;
+    }
+  }
+
+  /* ---------- Bee Sense: arquitetura e pareamento ---------- */
+  .bs-dg {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .dg-head {
+    margin-bottom: 1.1rem;
+    color: var(--c-muted);
+    font-size: var(--fs-caption-upper);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .bs-node {
+    display: grid;
+    justify-items: center;
+    align-content: start;
+    gap: 0.15rem;
+    min-width: 0;
+  }
+
+  .bs-node-icon {
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    margin-bottom: 0.4rem;
+    border-radius: 50%;
+    background: var(--c-surface-card);
+    color: var(--c-ink);
+  }
+
+  .dg-ink .bs-node-icon {
+    background: var(--c-inverse-elevated);
+    color: var(--c-on-inverse);
+  }
+
+  .dg-ink .dg-mid {
+    color: var(--c-on-inverse);
+  }
+
+  .dg-seam .bs-node-icon {
+    background: var(--c-on-primary);
+    color: var(--c-primary);
+  }
+
+  .bs-node .dg-row {
+    margin-top: 0.5rem;
+  }
+
+  /* aqui os nomes são de coisas, não de classes: fonte do texto, não a monoespaçada */
+  .bs-arch .dg-mid,
+  .bs-arch .dg-big,
+  .bs-arch .dg-node {
+    font-family: var(--font-sans);
+  }
+
+  .bs-cols {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  /* conector com a etiqueta pousada sobre a linha, como no diagrama original */
+  .bs-lk {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 3.5rem;
+    padding-block: 0.4rem;
+  }
+
+  .bs-lk .dg-link,
+  .bs-flow-lk .dg-link {
+    position: absolute;
+    inset-block: 0;
+    left: 50%;
+    height: auto;
+    translate: -50% 0;
+  }
+
+  .bs-lk-text {
+    position: relative;
+    max-width: 100%;
+    padding: 0.2rem 0.65rem;
+    border: 1px solid var(--c-hairline);
+    border-radius: var(--radius-pill);
+    background: var(--c-canvas);
+    color: var(--c-muted);
+    font-size: var(--fs-caption);
+    line-height: 1.3;
+    text-align: center;
+  }
+
+  .bs-lk-text strong {
+    color: var(--c-ink);
+    font-weight: 600;
+  }
+
+  /* HTTPS e WebSocket: um pulso desce e outro sobe */
+  :global(:root[data-motion='full']) .dg-link-both i + i {
+    animation-direction: reverse;
+    animation-delay: -0.9s;
+  }
+
+  .bs-flow {
+    display: grid;
+  }
+
+  .bs-flow-row {
+    display: grid;
+    justify-items: center;
+  }
+
+  .bs-flow-lk {
+    position: relative;
+    width: 100%;
+    height: 2.25rem;
+  }
+
+  .bs-flow-lk-text {
+    position: absolute;
+    top: 50%;
+    left: calc(50% + 0.7rem);
+    translate: 0 -50%;
+    color: var(--c-muted);
+    font-size: var(--fs-caption);
+    font-weight: 600;
+  }
+
+  .bs-flow-node {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: min(100%, 17rem);
+    padding: 0.8rem 1.1rem;
+    border: 1px solid var(--c-hairline);
+    border-radius: var(--radius-lg);
+    background: var(--c-canvas);
+    color: var(--c-ink);
+    font-weight: 600;
+    line-height: 1.3;
+    text-align: center;
+  }
+
+  .bs-flow-node :global(svg) {
+    flex: none;
+  }
+
+  /* perguntas em hexágono, como as células do favo */
+  .bs-flow-q {
+    padding-inline: 1.9rem;
+    border: 0;
+    border-radius: 0;
+    background: var(--c-primary);
+    color: var(--c-on-primary);
+    clip-path: polygon(1.15rem 0, calc(100% - 1.15rem) 0, 100% 50%, calc(100% - 1.15rem) 100%, 1.15rem 100%, 0 50%);
+  }
+
+  .bs-flow-end {
+    border-color: var(--c-accent);
+    box-shadow: 0 0 0 3px rgb(var(--c-glow-a-rgb) / 0.55);
+  }
+
+  .bs-flow-branch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    max-width: 100%;
+    margin-top: 0.6rem;
+    padding: 0.4rem 0.85rem;
+    border: 1px dashed var(--c-hairline);
+    border-radius: var(--radius-pill);
+    background: var(--c-canvas);
+    color: var(--c-body);
+    font-size: var(--fs-caption);
+    line-height: 1.35;
+  }
+
+  .bs-flow-branch :global(svg) {
+    flex: none;
+    color: var(--c-muted);
+  }
+
+  .bs-flow-branch strong {
+    color: var(--c-ink);
+  }
+
+  @media (min-width: 40rem) {
+    .bs-flow-row {
+      grid-template-columns: minmax(0, 1fr) 17rem minmax(0, 1fr);
+      align-items: center;
+    }
+
+    .bs-flow-lk,
+    .bs-flow-node {
+      grid-column: 2;
+    }
+
+    .bs-flow-node {
+      width: 100%;
+    }
+
+    /* o desvio sai para o lado da pergunta, ligado por um tracejado */
+    .bs-flow-branch {
+      grid-column: 3;
+      grid-row: 2;
+      justify-self: start;
+      margin: 0 0 0 1.4rem;
+    }
+
+    .bs-flow-branch::before {
+      content: '';
+      position: absolute;
+      right: 100%;
+      top: 50%;
+      width: 1.4rem;
+      border-top: 2px dashed var(--c-hairline);
     }
   }
 

@@ -88,7 +88,8 @@ export interface Shot {
   src: ImageMetadata;
   alt: string;
   caption: string;
-  frame: 'phone' | 'browser' | 'square';
+  /** 'phone' e 'browser' para telas, 'square' para ícones, 'photo' para fotos (na proporção delas). */
+  frame: 'phone' | 'browser' | 'square' | 'photo';
 }
 
 export interface Metric {
@@ -126,6 +127,8 @@ export interface Visual {
   /** Texto que apresenta a miniatura. */
   appThemesText?: string;
   gallery?: Shot[];
+  /** Título da galeria (padrão: "Telas"). */
+  galleryTitle?: string;
   /** Observação sobre as telas da galeria (de quando são, por exemplo). */
   galleryNote?: string;
 }
@@ -204,6 +207,16 @@ export interface CaseStudy {
   fonts?: PageFont[];
   /** Vídeo do projeto no YouTube (o player só carrega quando a pessoa clica). */
   video?: ProjectVideo;
+  /** Testes fora do laboratório, com fotos (seção "Em campo", na aba Construção). */
+  fieldwork?: Fieldwork;
+}
+
+export interface Fieldwork {
+  /** Texto de abertura da seção. */
+  text?: string;
+  shots: Shot[];
+  /** Observação sobre as fotos (de onde vêm, por exemplo). */
+  note?: string;
 }
 
 export interface ProjectVideo {

@@ -5,6 +5,8 @@ import ExtractorysMark from './case/ExtractorysMark.astro';
 import EfiplaMark from './case/EfiplaMark.astro';
 import efiplaCombate from '../assets/images/projetos/efipla/combate-depois.webp';
 import efiplaLoja from '../assets/images/projetos/efipla/loja.webp';
+import beeEntrada from '../assets/images/projetos/bee-sense/app-entrada.webp';
+import beeIscas from '../assets/images/projetos/bee-sense/app-iscas.webp';
 import telaClara from '../assets/images/projetos/extractorys/tela-inicial-clara.webp';
 import telaEscura from '../assets/images/projetos/extractorys/tela-inicial-escura.webp';
 import siteClaro from '../assets/images/projetos/portfolio/depois-claro.webp';
@@ -41,6 +43,7 @@ const uid = `${kind}-${size}-${Math.random().toString(36).slice(2, 7)}`;
 const hero = size === 'hero';
 // prints nos celulares da ilustração: o celular ocupa 26 % do cartão (uns 100 px) e
 // 34 % do topo da página (até 190 px); a imagem baixa no tamanho em que aparece
+// e em qualidade 70, que nesse tamanho não se distingue da padrão e pesa bem menos
 const phoneWidths = [200, 260, 320];
 const phoneSizes = hero ? '(min-width: 64rem) 12rem, 32vw' : '6.5rem';
 
@@ -92,7 +95,7 @@ const hex = (cx: number, cy: number, R: number) =>
       return `${(cx + R * Math.cos(rad)).toFixed(1)} ${(cy + R * Math.sin(rad)).toFixed(1)}`;
     })
     .join('L')}Z`;
-const R = 13;
+const R = 12;
 const hw = Math.sqrt(3) * R;
 const comb = [
   [0, 0],
@@ -102,7 +105,7 @@ const comb = [
   [-hw / 2, -1.5 * R],
   [hw / 2, 1.5 * R],
   [-hw / 2, 1.5 * R],
-].map(([x, y]) => [72 + x, 52 + y]);
+].map(([x, y]) => [44 + x, 46 + y]);
 const trap = comb[3];
 
 /* ---------- Agende Aí: calendário ---------- */
@@ -123,10 +126,10 @@ const cells = Array.from({ length: 15 }, (_, i) => ({ x: 26 + (i % 5) * 17, y: 3
         <div class="ex-glow" />
         <div class="ex-phones">
           <div class="ex-phone ex-phone-a">
-            <Image src={telaEscura} alt="" widths={phoneWidths} sizes={phoneSizes} loading={hero ? 'eager' : 'lazy'} />
+            <Image src={telaEscura} alt="" widths={phoneWidths} sizes={phoneSizes} quality={70} loading={hero ? 'eager' : 'lazy'} />
           </div>
           <div class="ex-phone ex-phone-b">
-            <Image src={telaClara} alt="" widths={phoneWidths} sizes={phoneSizes} loading={hero ? 'eager' : 'lazy'} />
+            <Image src={telaClara} alt="" widths={phoneWidths} sizes={phoneSizes} quality={70} loading={hero ? 'eager' : 'lazy'} />
           </div>
         </div>
         <ExtractorysMark class="ex-mark" />
@@ -149,10 +152,10 @@ const cells = Array.from({ length: 15 }, (_, i) => ({ x: 26 + (i % 5) * 17, y: 3
         </div>
         <div class="ef-phones">
           <div class="ef-phone ef-phone-a">
-            <Image src={efiplaCombate} alt="" widths={phoneWidths} sizes={phoneSizes} loading={hero ? 'eager' : 'lazy'} />
+            <Image src={efiplaCombate} alt="" widths={phoneWidths} sizes={phoneSizes} quality={70} loading={hero ? 'eager' : 'lazy'} />
           </div>
           <div class="ef-phone ef-phone-b">
-            <Image src={efiplaLoja} alt="" widths={phoneWidths} sizes={phoneSizes} loading={hero ? 'eager' : 'lazy'} />
+            <Image src={efiplaLoja} alt="" widths={phoneWidths} sizes={phoneSizes} quality={70} loading={hero ? 'eager' : 'lazy'} />
           </div>
         </div>
         <EfiplaMark class="ef-art-mark" />
@@ -162,27 +165,44 @@ const cells = Array.from({ length: 15 }, (_, i) => ({ x: 26 + (i % 5) * 17, y: 3
 
   {
     kind === 'bee-sense' && (
-      <svg class="svg" viewBox="0 0 160 100" preserveAspectRatio="xMidYMid meet">
-        {comb.map(([x, y]) => (
-          <path class="bs-cell" d={hex(x, y, R - 1)} />
-        ))}
-        <path class="bs-trap" d={hex(trap[0], trap[1], R - 1)} />
-        <g transform="translate(112 64)">
-          <rect class="bs-board" width="30" height="19" rx="3" />
-          <rect class="bs-chip" x="4" y="4.5" width="9" height="10" rx="1.2" />
-          <circle class="bs-led" cx="22" cy="9.5" r="2.6" />
-          <circle class="bs-ping" cx="22" cy="9.5" r="9" />
-        </g>
-        <g class="bs-bee">
-          <g class="bs-bee-body">
-            <ellipse class="bs-wing bs-flap" cx="-1.5" cy="-6.5" rx="3.4" ry="5.2" />
-            <ellipse class="bs-body" cx="0" cy="0" rx="7" ry="4.6" />
-            <rect class="bs-stripe" x="-2.8" y="-4.6" width="1.9" height="9.2" />
-            <rect class="bs-stripe" x="1" y="-4.6" width="1.9" height="9.2" />
-            <circle class="bs-body" cx="7.4" cy="-0.6" r="3.1" />
+      <>
+        <svg class="bs-scene" viewBox="0 0 100 100">
+          {comb.map(([x, y]) => (
+            <path class="bs-cell" d={hex(x, y, R - 1)} />
+          ))}
+          <path class="bs-trap" d={hex(trap[0], trap[1], R - 1)} />
+          <g transform="translate(60 78)">
+            <rect class="bs-board" width="30" height="17" rx="3" />
+            <rect class="bs-chip" x="4" y="4" width="8" height="9" rx="1.2" />
+            <rect class="bs-oled" x="15" y="4" width="11" height="6" rx="0.8" />
+            <circle class="bs-led" cx="20.5" cy="13" r="1.8" />
+            <circle class="bs-ping" cx="20.5" cy="13" r="8" />
           </g>
-        </g>
-      </svg>
+          <g class="bs-wifi">
+            <path class="bs-arc bs-arc-1" d="M78.4 73.9A3 3 0 0 1 82.6 73.9" />
+            <path class="bs-arc bs-arc-2" d="M76.6 72.1A5.5 5.5 0 0 1 84.4 72.1" />
+            <path class="bs-arc bs-arc-3" d="M74.8 70.3A8 8 0 0 1 86.2 70.3" />
+          </g>
+          <g class="bs-bee">
+            <g class="bs-bee-body">
+              <ellipse class="bs-wing bs-flap" cx="-1.5" cy="-6" rx="3.2" ry="5" />
+              <ellipse class="bs-body" cx="0" cy="0" rx="6.4" ry="4.2" />
+              <rect class="bs-stripe" x="-2.6" y="-4.2" width="1.8" height="8.4" />
+              <rect class="bs-stripe" x="0.9" y="-4.2" width="1.8" height="8.4" />
+              <circle class="bs-head" cx="6.8" cy="-0.6" r="2.9" />
+            </g>
+          </g>
+        </svg>
+        <div class="bs-phones">
+          {/* a tela de entrada (o logo) e a lista de iscas */}
+          <div class="bs-phone bs-phone-a">
+            <Image src={beeEntrada} alt="" widths={phoneWidths} sizes={phoneSizes} quality={70} loading={hero ? 'eager' : 'lazy'} />
+          </div>
+          <div class="bs-phone bs-phone-b">
+            <Image src={beeIscas} alt="" widths={phoneWidths} sizes={phoneSizes} quality={70} loading={hero ? 'eager' : 'lazy'} />
+          </div>
+        </div>
+      </>
     )
   }
 
@@ -587,60 +607,151 @@ const cells = Array.from({ length: 15 }, (_, i) => ({ x: 26 + (i % 5) * 17, y: 3
     }
   }
 
-  /* ---------- Bee Sense ---------- */
+  /* ---------- Bee Sense: a mata de fundo, como no último slide, e as cores do logo ---------- */
+  .art-bee-sense {
+    background:
+      radial-gradient(70% 60% at 22% 30%, rgb(237 176 57 / 0.2), transparent 70%),
+      linear-gradient(150deg, #161d0e 0%, #26331a 48%, #46552d 100%);
+  }
+
+  .bs-scene {
+    position: absolute;
+    left: 1cqw;
+    top: 50%;
+    width: 52cqw;
+    height: auto;
+    overflow: visible;
+    translate: 0 -50%;
+  }
+
   .bs-cell {
-    fill: none;
-    stroke: var(--c-accent);
-    stroke-width: 1.5;
+    fill: rgb(237 176 57 / 0.08);
+    stroke: #edb039;
+    stroke-width: 1.4;
   }
 
   .bs-trap {
-    fill: var(--c-accent);
+    fill: #edb039;
     fill-opacity: 0;
     stroke: none;
   }
 
   .bs-board {
-    fill: var(--c-ink);
+    fill: #0c2a1c;
+    stroke: #3f6b4f;
+    stroke-width: 0.6;
   }
 
   .bs-chip {
-    fill: var(--c-muted);
+    fill: #1d1f24;
+  }
+
+  .bs-oled {
+    fill: #0b1530;
+    stroke: #2c4a8c;
+    stroke-width: 0.4;
   }
 
   .bs-led {
-    fill: var(--c-hairline);
+    fill: #35503f;
   }
 
   .bs-ping {
     fill: none;
-    stroke: var(--c-accent-strong);
-    stroke-width: 1.4;
+    stroke: #1b9dda;
+    stroke-width: 1.2;
     opacity: 0;
     transform-box: fill-box;
     transform-origin: center;
   }
 
-  .bs-body {
-    fill: var(--c-ink);
+  .bs-body,
+  .bs-head {
+    fill: #9b5633;
   }
 
   .bs-stripe {
-    fill: var(--c-glow-a);
+    fill: #edb039;
   }
 
   .bs-wing {
-    fill: var(--c-canvas);
-    fill-opacity: 0.9;
-    stroke: var(--c-accent);
-    stroke-width: 0.8;
+    fill: #8fd6f6;
+    fill-opacity: 0.75;
+    stroke: #1b9dda;
+    stroke-width: 0.7;
     transform-box: fill-box;
     transform-origin: 50% 100%;
   }
 
+  /* sinal de Wi-Fi saindo da placa: as leituras indo para o backend */
+  .bs-arc {
+    fill: none;
+    stroke: #1b9dda;
+    stroke-width: 1.3;
+    stroke-linecap: round;
+    opacity: 0.7;
+  }
+
   /* pousada na isca, quando não há movimento */
   .bs-bee {
-    transform: translate(85px, 30px);
+    transform: translate(53px, 24px);
+  }
+
+  .bs-phones {
+    position: absolute;
+    right: 3cqw;
+    top: 9cqw;
+    width: 46cqw;
+    height: 100%;
+  }
+
+  .bs-phone {
+    position: absolute;
+    width: 24cqw;
+    overflow: hidden;
+    border: 0.9cqw solid #0b0d08;
+    border-radius: 4cqw;
+    background: #0b0d08;
+    box-shadow: 0 3cqw 6cqw -2cqw rgb(5 8 3 / 0.75);
+  }
+
+  .bs-phone-a {
+    left: 0;
+    top: 6cqw;
+    rotate: -8deg;
+  }
+
+  .bs-phone-b {
+    right: 0;
+    top: 0;
+    rotate: 7deg;
+  }
+
+  .art-hero .bs-scene {
+    left: 50%;
+    top: 2cqw;
+    width: 44cqw;
+    translate: -50% 0;
+  }
+
+  .art-hero .bs-phones {
+    left: 50%;
+    right: auto;
+    top: 49cqw;
+    width: 74cqw;
+    translate: -50% 0;
+  }
+
+  .art-hero .bs-phone {
+    width: 34cqw;
+  }
+
+  :global(:root[data-motion='full']) .bs-phone-a {
+    animation: ex-float 7s ease-in-out infinite;
+  }
+
+  :global(:root[data-motion='full']) .bs-phone-b {
+    animation: ex-float 7s ease-in-out -3.5s infinite;
   }
 
   :global(:root[data-motion='full']) .bs-bee {
@@ -663,31 +774,60 @@ const cells = Array.from({ length: 15 }, (_, i) => ({ x: 26 + (i % 5) * 17, y: 3
     animation: bs-ping 6.4s ease-out infinite;
   }
 
+  :global(:root[data-motion='full']) .bs-arc {
+    animation: bs-arc 6.4s ease-out infinite;
+  }
+
+  :global(:root[data-motion='full']) .bs-arc-2 {
+    animation-delay: 0.12s;
+  }
+
+  :global(:root[data-motion='full']) .bs-arc-3 {
+    animation-delay: 0.24s;
+  }
+
+  /* a abelha chega, pousa na isca, a placa escuta e avisa, e ela segue */
   @keyframes bs-fly {
     0% {
-      transform: translate(-12px, 88px) rotate(-30deg);
+      transform: translate(-14px, 92px) rotate(-30deg);
     }
     18% {
-      transform: translate(30px, 70px) rotate(-40deg);
+      transform: translate(12px, 70px) rotate(-40deg);
     }
     32% {
-      transform: translate(58px, 22px) rotate(10deg);
+      transform: translate(34px, 18px) rotate(10deg);
     }
     42%,
     74% {
-      transform: translate(85px, 30px) rotate(0deg);
+      transform: translate(53px, 24px) rotate(0deg);
     }
     88% {
-      transform: translate(120px, 12px) rotate(-25deg);
+      transform: translate(80px, 6px) rotate(-25deg);
     }
     100% {
-      transform: translate(172px, 4px) rotate(-20deg);
+      transform: translate(118px, -6px) rotate(-20deg);
     }
   }
 
   @keyframes bs-flap {
     to {
       transform: scaleY(0.35);
+    }
+  }
+
+  /* os arcos acendem em sequência quando a placa percebe a abelha */
+  @keyframes bs-arc {
+    0%,
+    46% {
+      opacity: 0.2;
+    }
+    50%,
+    70% {
+      opacity: 1;
+    }
+    84%,
+    100% {
+      opacity: 0.2;
     }
   }
 
@@ -708,13 +848,13 @@ const cells = Array.from({ length: 15 }, (_, i) => ({ x: 26 + (i % 5) * 17, y: 3
 
   @keyframes bs-led {
     0% {
-      fill: var(--c-hairline);
+      fill: #35503f;
     }
     46% {
-      fill: var(--c-accent-strong);
+      fill: #1b9dda;
     }
     84% {
-      fill: var(--c-hairline);
+      fill: #35503f;
     }
   }
 

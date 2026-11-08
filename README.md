@@ -53,7 +53,7 @@ O conteúdo fica em abas, por área de atuação:
 | Resumo | Contexto, funções, vídeo e resultados |
 | Pesquisa e estruturação | Desafio, por dentro e decisões |
 | UX/UI | Demonstração e construção visual |
-| Construção | Processo e tecnologias (e a demonstração, quando ela é rodar testes) |
+| Construção | Processo, testes em campo e tecnologias (e a demonstração, quando ela é rodar testes) |
 | Aprendizado | Habilidades, aprendizados, próximos passos e créditos |
 
 Uma aba só aparece se o projeto tem alguma seção dela. No fim de cada aba há os botões de
@@ -68,7 +68,9 @@ Para incluir um projeto:
    `types.ts` explica cada campo). Nos textos, `código` vira código e `**palavra**` vira destaque.
 2. Acrescente o projeto à lista de `src/data/projects/index.ts`, na posição em que deve aparecer.
 3. Imagens vão em `src/assets/images/projetos/<nome>/` e entram em `visual.gallery` com texto
-   alternativo e legenda.
+   alternativo e legenda. A moldura (`frame`) é `'phone'` para prints de celular, `'browser'`
+   para telas largas, `'square'` para ícones e `'photo'` para fotos, que ficam todas na mesma
+   altura, cada uma na sua proporção.
 4. A ilustração do cartão (`art`) e o diagrama de "Por dentro" ficam em
    `src/components/ProjectArt.astro` e `src/components/case/ProjectDiagram.astro`; o desenho
    da marca, quando existe, fica em `src/components/case/` (como `EfiplaMark.astro`).
@@ -79,8 +81,10 @@ Recursos opcionais da construção visual:
 
 - `visual.appThemes`: as cores de destaque de um app, com os papéis do Material 3. Liga a
   miniatura interativa (`ThemePlayground.astro`), que hoje reproduz a aba Combate do EFIPLA.
-- `visual.markBackground` (fundo do bloco da marca) e `visual.galleryNote` (observação sobre
-  as telas da galeria).
+- `visual.markBackground` (fundo do bloco da marca), `visual.galleryTitle` (título da galeria,
+  "Telas" por padrão) e `visual.galleryNote` (observação sobre as telas da galeria).
+- `fieldwork`: testes fora do laboratório, com texto e fotos. Vira a seção "Em campo", na aba
+  Construção, com a mesma galeria das telas (a Bee Sense usa para o teste de campo).
 - `video`: um vídeo do YouTube (`youtube` é o identificador; `vertical: true` para Shorts).
   Até alguém tocar para assistir, a página mostra um pôster com a ilustração do projeto e não
   faz nenhuma requisição ao YouTube; o player vem do `youtube-nocookie.com`.

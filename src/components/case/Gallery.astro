@@ -15,13 +15,24 @@ interface Props {
 
 const { shots, label } = Astro.props;
 const width = { phone: 300, browser: 640, square: 340 } as const;
+/* fotos: todas na mesma altura (até 17rem), cada uma na largura da sua proporção */
+const PHOTO_REM = 17;
+const sizing = (shot: Shot) => {
+  if (shot.frame !== 'photo') {
+    const w = width[shot.frame];
+    return { widths: [w, w * 2], sizes: `${w / 16}rem`, style: '' };
+  }
+  const ratio = shot.src.width / shot.src.height;
+  const w = Math.round(PHOTO_REM * 16 * ratio);
+  return { widths: [w, w * 2], sizes: `${(w / 16).toFixed(2)}rem`, style: `;--ar:${ratio.toFixed(4)}` };
+};
 ---
 
 <div class="gallery" data-gallery>
   <ul class="gallery-track list-reset" aria-label={label} tabindex="0">
     {
       shots.map((shot, i) => (
-        <li class:list={['shot', `shot-${shot.frame}`]} data-reveal="scale" style={`--i:${i % 4}`}>
+        <li class:list={['shot', `shot-${shot.frame}`]} data-reveal="scale" style={`--i:${i % 4}${sizing(shot).style}`}>
           <figure>
           <button class="shot-open" type="button" data-shot={i} aria-label={`Ampliar: ${shot.caption}`}>
             <span class="shot-frame">
@@ -35,8 +46,8 @@ const width = { phone: 300, browser: 640, square: 340 } as const;
               <Image
                 src={shot.src}
                 alt={shot.alt}
-                widths={[width[shot.frame], width[shot.frame] * 2]}
-                sizes={`${width[shot.frame] / 16}rem`}
+                widths={sizing(shot).widths}
+                sizes={sizing(shot).sizes}
                 loading="lazy"
                 decoding="async"
               />
@@ -136,6 +147,11 @@ const width = { phone: 300, browser: 640, square: 340 } as const;
     width: clamp(10rem, 9rem + 6vw, 14rem);
   }
 
+  .shot-photo {
+    --shot-h: clamp(13rem, 11rem + 6vw, 17rem);
+    width: min(calc(var(--shot-h) * var(--ar, 0.75)), 85vw);
+  }
+
   .shot-open {
     position: relative;
     display: block;
@@ -169,6 +185,11 @@ const width = { phone: 300, browser: 640, square: 340 } as const;
 
   .shot-square .shot-frame {
     border-radius: 22%;
+  }
+
+  .shot-photo .shot-frame {
+    border: 1px solid var(--c-hairline);
+    border-radius: var(--radius-lg);
   }
 
   .shot-bar {
