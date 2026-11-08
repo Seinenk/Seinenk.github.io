@@ -5,7 +5,7 @@ import type { Shot } from '../../data/projects/types';
 
 /*
  * Galeria em faixa rolável (com encaixe), cada imagem dentro de uma moldura de
- * celular, navegador ou quadrado. Um clique abre a imagem grande num <dialog>,
+ * celular, navegador, quadrado, foto ou pôster. Um clique abre a imagem grande num <dialog>,
  * com setas, Esc e foco devolvido ao fechar.
  */
 interface Props {
@@ -14,7 +14,7 @@ interface Props {
 }
 
 const { shots, label } = Astro.props;
-const width = { phone: 300, browser: 640, square: 340 } as const;
+const width = { phone: 300, browser: 640, square: 340, poster: 240 } as const;
 /* fotos: todas na mesma altura (até 17rem), cada uma na largura da sua proporção */
 const PHOTO_REM = 17;
 const sizing = (shot: Shot) => {
@@ -147,6 +147,11 @@ const sizing = (shot: Shot) => {
     width: clamp(10rem, 9rem + 6vw, 14rem);
   }
 
+  /* em pé, na largura de um celular, mas sem a moldura do aparelho */
+  .shot-poster {
+    width: clamp(10rem, 9rem + 6vw, 13.5rem);
+  }
+
   .shot-photo {
     --shot-h: clamp(13rem, 11rem + 6vw, 17rem);
     width: min(calc(var(--shot-h) * var(--ar, 0.75)), 85vw);
@@ -187,7 +192,8 @@ const sizing = (shot: Shot) => {
     border-radius: 22%;
   }
 
-  .shot-photo .shot-frame {
+  .shot-photo .shot-frame,
+  .shot-poster .shot-frame {
     border: 1px solid var(--c-hairline);
     border-radius: var(--radius-lg);
   }

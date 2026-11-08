@@ -3,10 +3,13 @@ import { Image } from 'astro:assets';
 import type { ArtKind } from '../data/projects/types';
 import ExtractorysMark from './case/ExtractorysMark.astro';
 import EfiplaMark from './case/EfiplaMark.astro';
+import CrohneaseMark from './case/CrohneaseMark.astro';
 import efiplaCombate from '../assets/images/projetos/efipla/combate-depois.webp';
 import efiplaLoja from '../assets/images/projetos/efipla/loja.webp';
 import beeEntrada from '../assets/images/projetos/bee-sense/app-entrada.webp';
 import beeIscas from '../assets/images/projetos/bee-sense/app-iscas.webp';
+import crLogin from '../assets/images/projetos/crohnease/v2-login.webp';
+import crRemedios from '../assets/images/projetos/crohnease/v2-remedios.webp';
 import telaClara from '../assets/images/projetos/extractorys/tela-inicial-clara.webp';
 import telaEscura from '../assets/images/projetos/extractorys/tela-inicial-escura.webp';
 import siteClaro from '../assets/images/projetos/portfolio/depois-claro.webp';
@@ -124,11 +127,11 @@ const cells = Array.from({ length: 15 }, (_, i) => ({ x: 26 + (i % 5) * 17, y: 3
     kind === 'extractorys' && (
       <>
         <div class="ex-glow" />
-        <div class="ex-phones">
-          <div class="ex-phone ex-phone-a">
+        <div class="art-phones">
+          <div class="art-phone art-phone-a">
             <Image src={telaEscura} alt="" widths={phoneWidths} sizes={phoneSizes} quality={70} loading={hero ? 'eager' : 'lazy'} />
           </div>
-          <div class="ex-phone ex-phone-b">
+          <div class="art-phone art-phone-b">
             <Image src={telaClara} alt="" widths={phoneWidths} sizes={phoneSizes} quality={70} loading={hero ? 'eager' : 'lazy'} />
           </div>
         </div>
@@ -150,11 +153,11 @@ const cells = Array.from({ length: 15 }, (_, i) => ({ x: 26 + (i % 5) * 17, y: 3
             </span>
           ))}
         </div>
-        <div class="ef-phones">
-          <div class="ef-phone ef-phone-a">
+        <div class="art-phones">
+          <div class="art-phone art-phone-a">
             <Image src={efiplaCombate} alt="" widths={phoneWidths} sizes={phoneSizes} quality={70} loading={hero ? 'eager' : 'lazy'} />
           </div>
-          <div class="ef-phone ef-phone-b">
+          <div class="art-phone art-phone-b">
             <Image src={efiplaLoja} alt="" widths={phoneWidths} sizes={phoneSizes} quality={70} loading={hero ? 'eager' : 'lazy'} />
           </div>
         </div>
@@ -193,13 +196,30 @@ const cells = Array.from({ length: 15 }, (_, i) => ({ x: 26 + (i % 5) * 17, y: 3
             </g>
           </g>
         </svg>
-        <div class="bs-phones">
+        <div class="art-phones">
           {/* a tela de entrada (o logo) e a lista de iscas */}
-          <div class="bs-phone bs-phone-a">
+          <div class="art-phone art-phone-a">
             <Image src={beeEntrada} alt="" widths={phoneWidths} sizes={phoneSizes} quality={70} loading={hero ? 'eager' : 'lazy'} />
           </div>
-          <div class="bs-phone bs-phone-b">
+          <div class="art-phone art-phone-b">
             <Image src={beeIscas} alt="" widths={phoneWidths} sizes={phoneSizes} quality={70} loading={hero ? 'eager' : 'lazy'} />
+          </div>
+        </div>
+      </>
+    )
+  }
+
+  {
+    kind === 'crohnease' && (
+      <>
+        <CrohneaseMark class="cr-art-mark" />
+        {/* duas telas do redesenho: a entrada e a lista de remédios */}
+        <div class="art-phones">
+          <div class="art-phone art-phone-a">
+            <Image src={crLogin} alt="" widths={phoneWidths} sizes={phoneSizes} quality={70} loading={hero ? 'eager' : 'lazy'} />
+          </div>
+          <div class="art-phone art-phone-b">
+            <Image src={crRemedios} alt="" widths={phoneWidths} sizes={phoneSizes} quality={70} loading={hero ? 'eager' : 'lazy'} />
           </div>
         </div>
       </>
@@ -393,8 +413,69 @@ const cells = Array.from({ length: 15 }, (_, i) => ({ x: 26 + (i % 5) * 17, y: 3
     height: auto;
   }
 
+  /* ---------- celulares das ilustrações (Extractorys, EFIPLA, Bee Sense, Crohnease) ---------- */
+  /* o mesmo arranjo em todas; cada uma ajusta largura, borda, giro e altura no topo da página */
+  .art-phones {
+    position: absolute;
+    right: 3cqw;
+    top: 9cqw;
+    width: var(--phones-w, 50cqw);
+    height: 100%;
+  }
+
+  .art-phone {
+    position: absolute;
+    width: var(--phone-w, 26cqw);
+    overflow: hidden;
+    border: 0.9cqw solid var(--phone-edge, #0b0a12);
+    border-radius: 4cqw;
+    background: var(--phone-edge, #0b0a12);
+    box-shadow: 0 3cqw 6cqw -2cqw rgb(11 7 16 / 0.72);
+  }
+
+  .art-phone-a {
+    left: 0;
+    top: 6cqw;
+    rotate: var(--phone-a-rot, -8deg);
+  }
+
+  .art-phone-b {
+    right: 0;
+    top: 0;
+    rotate: 7deg;
+  }
+
+  .art-hero .art-phones {
+    left: 50%;
+    right: auto;
+    top: var(--phones-hero-top, 41cqw);
+    width: 74cqw;
+    translate: -50% 0;
+  }
+
+  .art-hero .art-phone {
+    width: 34cqw;
+  }
+
+  :global(:root[data-motion='full']) .art-phone-a {
+    animation: ex-float 7s ease-in-out infinite;
+  }
+
+  :global(:root[data-motion='full']) .art-phone-b {
+    animation: ex-float 7s ease-in-out -3.5s infinite;
+  }
+
+  @keyframes ex-float {
+    50% {
+      translate: 0 -1.6cqw;
+    }
+  }
+
   /* ---------- Extractorys ---------- */
   .art-extractorys {
+    --phone-edge: #0b0710;
+    --phone-a-rot: -9deg;
+    --phones-hero-top: 36cqw;
     background: linear-gradient(135deg, #2a0048 0%, #560072 34%, #800080 58%, #a90072 82%, #d50048 100%);
   }
 
@@ -414,36 +495,6 @@ const cells = Array.from({ length: 15 }, (_, i) => ({ x: 26 + (i % 5) * 17, y: 3
     filter: drop-shadow(0 1.5cqw 2.5cqw rgb(11 7 16 / 0.45));
   }
 
-  .ex-phones {
-    position: absolute;
-    right: 3cqw;
-    top: 9cqw;
-    width: 50cqw;
-    height: 100%;
-  }
-
-  .ex-phone {
-    position: absolute;
-    width: 26cqw;
-    overflow: hidden;
-    border: 0.9cqw solid #0b0710;
-    border-radius: 4cqw;
-    background: #0b0710;
-    box-shadow: 0 3cqw 6cqw -2cqw rgb(11 7 16 / 0.7);
-  }
-
-  .ex-phone-a {
-    left: 0;
-    top: 6cqw;
-    rotate: -9deg;
-  }
-
-  .ex-phone-b {
-    right: 0;
-    top: 0;
-    rotate: 7deg;
-  }
-
   .art-hero :global(.ex-mark) {
     left: 50%;
     top: 7cqw;
@@ -451,37 +502,12 @@ const cells = Array.from({ length: 15 }, (_, i) => ({ x: 26 + (i % 5) * 17, y: 3
     translate: -50% 0;
   }
 
-  .art-hero .ex-phones {
-    left: 50%;
-    right: auto;
-    top: 36cqw;
-    width: 74cqw;
-    translate: -50% 0;
-  }
-
-  .art-hero .ex-phone {
-    width: 34cqw;
-  }
 
 
 
 
-  :global(:root[data-motion='full']) .ex-phone-a {
-    animation: ex-float 7s ease-in-out infinite;
-  }
-
-  :global(:root[data-motion='full']) .ex-phone-b {
-    animation: ex-float 7s ease-in-out -3.5s infinite;
-  }
 
 
-
-
-  @keyframes ex-float {
-    50% {
-      translate: 0 -1.6cqw;
-    }
-  }
 
   /* ---------- EFIPLA ---------- */
   .art-efipla {
@@ -526,61 +552,11 @@ const cells = Array.from({ length: 15 }, (_, i) => ({ x: 26 + (i % 5) * 17, y: 3
     filter: drop-shadow(0 1.5cqw 2.5cqw rgb(11 7 16 / 0.5));
   }
 
-  .ef-phones {
-    position: absolute;
-    right: 3cqw;
-    top: 9cqw;
-    width: 50cqw;
-    height: 100%;
-  }
-
-  .ef-phone {
-    position: absolute;
-    width: 26cqw;
-    overflow: hidden;
-    border: 0.9cqw solid #0b0a12;
-    border-radius: 4cqw;
-    background: #0b0a12;
-    box-shadow: 0 3cqw 6cqw -2cqw rgb(11 7 16 / 0.75);
-  }
-
-  .ef-phone-a {
-    left: 0;
-    top: 6cqw;
-    rotate: -8deg;
-  }
-
-  .ef-phone-b {
-    right: 0;
-    top: 0;
-    rotate: 7deg;
-  }
-
   .art-hero :global(.ef-art-mark) {
     left: 50%;
     top: 4cqw;
     width: 36cqw;
     translate: -50% 0;
-  }
-
-  .art-hero .ef-phones {
-    left: 50%;
-    right: auto;
-    top: 41cqw;
-    width: 74cqw;
-    translate: -50% 0;
-  }
-
-  .art-hero .ef-phone {
-    width: 34cqw;
-  }
-
-  :global(:root[data-motion='full']) .ef-phone-a {
-    animation: ex-float 7s ease-in-out infinite;
-  }
-
-  :global(:root[data-motion='full']) .ef-phone-b {
-    animation: ex-float 7s ease-in-out -3.5s infinite;
   }
 
   :global(:root[data-motion='full']) .ef-leaf {
@@ -609,6 +585,10 @@ const cells = Array.from({ length: 15 }, (_, i) => ({ x: 26 + (i % 5) * 17, y: 3
 
   /* ---------- Bee Sense: a mata de fundo, como no último slide, e as cores do logo ---------- */
   .art-bee-sense {
+    --phones-w: 46cqw;
+    --phone-w: 24cqw;
+    --phone-edge: #0b0d08;
+    --phones-hero-top: 49cqw;
     background:
       radial-gradient(70% 60% at 22% 30%, rgb(237 176 57 / 0.2), transparent 70%),
       linear-gradient(150deg, #161d0e 0%, #26331a 48%, #46552d 100%);
@@ -697,61 +677,11 @@ const cells = Array.from({ length: 15 }, (_, i) => ({ x: 26 + (i % 5) * 17, y: 3
     transform: translate(53px, 24px);
   }
 
-  .bs-phones {
-    position: absolute;
-    right: 3cqw;
-    top: 9cqw;
-    width: 46cqw;
-    height: 100%;
-  }
-
-  .bs-phone {
-    position: absolute;
-    width: 24cqw;
-    overflow: hidden;
-    border: 0.9cqw solid #0b0d08;
-    border-radius: 4cqw;
-    background: #0b0d08;
-    box-shadow: 0 3cqw 6cqw -2cqw rgb(5 8 3 / 0.75);
-  }
-
-  .bs-phone-a {
-    left: 0;
-    top: 6cqw;
-    rotate: -8deg;
-  }
-
-  .bs-phone-b {
-    right: 0;
-    top: 0;
-    rotate: 7deg;
-  }
-
   .art-hero .bs-scene {
     left: 50%;
     top: 2cqw;
     width: 44cqw;
     translate: -50% 0;
-  }
-
-  .art-hero .bs-phones {
-    left: 50%;
-    right: auto;
-    top: 49cqw;
-    width: 74cqw;
-    translate: -50% 0;
-  }
-
-  .art-hero .bs-phone {
-    width: 34cqw;
-  }
-
-  :global(:root[data-motion='full']) .bs-phone-a {
-    animation: ex-float 7s ease-in-out infinite;
-  }
-
-  :global(:root[data-motion='full']) .bs-phone-b {
-    animation: ex-float 7s ease-in-out -3.5s infinite;
   }
 
   :global(:root[data-motion='full']) .bs-bee {
@@ -873,6 +803,30 @@ const cells = Array.from({ length: 15 }, (_, i) => ({ x: 26 + (i % 5) * 17, y: 3
       opacity: 0;
       transform: scale(1.6);
     }
+  }
+
+  /* ---------- Crohnease: o petróleo e o turquesa da marca ---------- */
+  .art-crohnease {
+    --phone-edge: #04252a;
+    background:
+      radial-gradient(60% 55% at 22% 42%, rgb(79 209 197 / 0.38), transparent 70%),
+      linear-gradient(150deg, #005a66 0%, #007f8f 50%, #00a9b8 100%);
+  }
+
+  .art :global(.cr-art-mark) {
+    position: absolute;
+    left: 8cqw;
+    top: 50%;
+    width: 32cqw;
+    translate: 0 -50%;
+    filter: drop-shadow(0 1.5cqw 2.5cqw rgb(0 30 35 / 0.45));
+  }
+
+  .art-hero :global(.cr-art-mark) {
+    left: 50%;
+    top: 7cqw;
+    width: 27cqw;
+    translate: -50% 0;
   }
 
   /* ---------- Agende Aí ---------- */

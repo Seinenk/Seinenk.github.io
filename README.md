@@ -71,8 +71,9 @@ Para incluir um projeto:
 2. Acrescente o projeto à lista de `src/data/projects/index.ts`, na posição em que deve aparecer.
 3. Imagens vão em `src/assets/images/projetos/<nome>/` e entram em `visual.gallery` com texto
    alternativo e legenda. A moldura (`frame`) é `'phone'` para prints de celular, `'browser'`
-   para telas largas, `'square'` para ícones e `'photo'` para fotos, que ficam todas na mesma
-   altura, cada uma na sua proporção.
+   para telas largas, `'square'` para ícones, `'photo'` para fotos, que ficam todas na mesma
+   altura, cada uma na sua proporção, e `'poster'` para imagens em pé sem moldura de aparelho
+   (telas de loja, por exemplo).
 4. A ilustração do cartão (`art`) e o diagrama de "Por dentro" ficam em
    `src/components/ProjectArt.astro` e `src/components/case/ProjectDiagram.astro`; o desenho
    da marca, quando existe, fica em `src/components/case/` (como `EfiplaMark.astro`).

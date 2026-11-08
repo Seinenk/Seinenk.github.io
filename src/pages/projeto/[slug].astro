@@ -11,6 +11,7 @@ import Gallery from '../../components/case/Gallery.astro';
 import ExtractorysMark from '../../components/case/ExtractorysMark.astro';
 import EfiplaMark from '../../components/case/EfiplaMark.astro';
 import BeeSenseMark from '../../components/case/BeeSenseMark.astro';
+import CrohneaseMark from '../../components/case/CrohneaseMark.astro';
 import ThemePlayground from '../../components/case/ThemePlayground.astro';
 import DinoGame from '../../components/case/DinoGame.astro';
 import BeforeAfter from '../../components/case/BeforeAfter.astro';
@@ -41,7 +42,7 @@ const emphasizeLast = (title: string) => {
   return words.length > 1 ? `${words.slice(0, -1).join(' ')} *${words.at(-1)}*` : `*${title}*`;
 };
 /* desenho da marca, por projeto (o texto vem dos dados) */
-const marks = { extractorys: ExtractorysMark, efipla: EfiplaMark, 'bee-sense': BeeSenseMark } as const;
+const marks = { extractorys: ExtractorysMark, efipla: EfiplaMark, 'bee-sense': BeeSenseMark, crohnease: CrohneaseMark } as const;
 const Mark = p.art in marks ? marks[p.art as keyof typeof marks] : null;
 const hasVisual = Boolean(p.visual && (p.visual.palette || p.visual.appThemes || p.visual.typography || p.visual.tokens || p.visual.gallery || p.visual.mark));
 type TabId = 'resumo' | 'pesquisa' | 'ux-ui' | 'construcao' | 'aprendizado';
@@ -432,7 +433,7 @@ const titleWords = p.title.split(' ');
                           </div>
                         )}
                         {p.visual.mark && (
-                          <div class="cs-block cs-mark" data-reveal style={p.visual.markBackground ? `--mark-bg:${p.visual.markBackground}` : undefined}>
+                          <div class:list={['cs-block', 'cs-mark', { 'cs-mark-art-on': Mark }]} data-reveal style={p.visual.markBackground ? `--mark-bg:${p.visual.markBackground}` : undefined}>
                             {Mark && (
                               <div class="cs-mark-art" aria-hidden="true">
                                 <Mark />
@@ -1469,6 +1470,7 @@ const titleWords = p.title.split(' ');
   }
 
   .cs-mark p {
+    max-width: 44rem;
     color: #f3f1ea;
   }
 
@@ -1476,8 +1478,9 @@ const titleWords = p.title.split(' ');
     color: #fff;
   }
 
+  /* a coluna do desenho só existe quando o projeto tem um desenho da marca */
   @media (min-width: 40rem) {
-    .cs-mark {
+    .cs-mark-art-on {
       grid-template-columns: 9rem minmax(0, 1fr);
     }
   }

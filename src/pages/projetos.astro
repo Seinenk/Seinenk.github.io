@@ -8,6 +8,7 @@ import { projects, type ProjectType } from '../data/projects';
 
 const filterKey: Record<ProjectType, string> = {
   Desenvolvimento: 'desenvolvimento',
+  Design: 'design',
   Pesquisa: 'pesquisa',
   'Produção técnica': 'producao',
   Web: 'web',
@@ -15,6 +16,7 @@ const filterKey: Record<ProjectType, string> = {
 
 const filterLabel: Record<ProjectType, string> = {
   Desenvolvimento: 'Desenvolvimento',
+  Design: 'Design',
   Pesquisa: 'Pesquisa',
   'Produção técnica': 'Produção técnica',
   Web: 'Web',
@@ -25,7 +27,7 @@ const types = (Object.keys(filterKey) as ProjectType[]).filter((t) => projects.s
 
 <BaseLayout
   title="Projetos · Carlos Michael da Silva Sousa"
-  description="Projetos de Carlos Michael, cada um com estudo de caso: EFIPLA (ficha digital de D&D 5e), Extractorys (app Flutter para Android), Agende Aí (SaaS), Bee Sense (IoT para abelhas sem ferrão), Dino Runner, INCLUA, pesquisa sobre pytest e este portfólio."
+  description="Projetos de Carlos Michael, cada um com estudo de caso: EFIPLA (ficha digital de D&D 5e), Extractorys (app Flutter para Android), Crohnease (design de app de saúde), Agende Aí (SaaS), Bee Sense (IoT para abelhas sem ferrão), Dino Runner, INCLUA, pesquisa sobre pytest e este portfólio."
   current="projetos"
 >
   <PageHero

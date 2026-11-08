@@ -9,7 +9,7 @@ import type { IconName } from '../../components/icons';
  * Nos textos, `código` vira <code> e **destaque** vira <strong>.
  */
 
-export type ProjectType = 'Desenvolvimento' | 'Pesquisa' | 'Produção técnica' | 'Web';
+export type ProjectType = 'Desenvolvimento' | 'Design' | 'Pesquisa' | 'Produção técnica' | 'Web';
 export type ProjectStatus = 'Concluído' | 'Em andamento';
 
 /** Ilustração do projeto (cartão e topo da página), desenhada em ProjectArt.astro. */
@@ -22,10 +22,11 @@ export type ArtKind =
   | 'pytest'
   | 'portfolio'
   | 'layout-simples'
-  | 'efipla';
+  | 'efipla'
+  | 'crohnease';
 
 /** Diagrama de "Por dentro", desenhado em ProjectDiagram.astro. */
-export type DiagramKind = 'extractorys' | 'bee-sense' | 'dino-runner' | 'portfolio' | 'efipla' | 'pytest';
+export type DiagramKind = 'extractorys' | 'bee-sense' | 'dino-runner' | 'portfolio' | 'efipla' | 'pytest' | 'crohnease';
 
 /** Demonstração interativa na página. */
 export type DemoKind = 'dino-game' | 'before-after' | 'layout-boxes' | 'pytest-run';
@@ -88,8 +89,11 @@ export interface Shot {
   src: ImageMetadata;
   alt: string;
   caption: string;
-  /** 'phone' e 'browser' para telas, 'square' para ícones, 'photo' para fotos (na proporção delas). */
-  frame: 'phone' | 'browser' | 'square' | 'photo';
+  /**
+   * 'phone' e 'browser' para telas, 'square' para ícones, 'photo' para fotos (na proporção
+   * delas) e 'poster' para imagens em pé sem moldura de aparelho, como telas de loja.
+   */
+  frame: 'phone' | 'browser' | 'square' | 'photo' | 'poster';
 }
 
 export interface Metric {

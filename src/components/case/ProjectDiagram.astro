@@ -15,6 +15,16 @@ const { kind } = Astro.props;
 
 type Node = { icon: IconName; title: string; text: string; tone?: 'accent' | 'ink' };
 const flows: Record<Exclude<DiagramKind, 'extractorys' | 'efipla' | 'bee-sense' | 'pytest'>, { label: string; nodes: Node[]; branch?: Node[] }> = {
+  crohnease: {
+    label: 'Fluxo do Crohnease, da entrada ao acompanhamento do tratamento',
+    nodes: [
+      { icon: 'user', title: 'Entrada', text: 'E-mail e senha, ou Google' },
+      { icon: 'list-checks', title: 'Cadastro', text: 'A condição primeiro, depois os dados', tone: 'ink' },
+      { icon: 'notebook-pen', title: 'Início', text: 'Check-in do dia e o resumo' },
+      { icon: 'calendar', title: 'Tratamento', text: 'Remédios, sintomas e aplicações', tone: 'accent' },
+      { icon: 'message-circle', title: 'Apoio', text: 'Comunidade, banheiros e assistente' },
+    ],
+  },
   'dino-runner': {
     label: 'Fluxo do Dino Runner, dos botões aos LEDs e à tela',
     nodes: [
