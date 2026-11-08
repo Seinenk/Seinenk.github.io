@@ -1,9 +1,10 @@
 import type { AppTheme, CaseStudy } from './types';
-import criacaoRaca from '../../assets/images/projetos/efipla/criacao-raca.webp';
-import combateNivel8 from '../../assets/images/projetos/efipla/combate-nivel-8.webp';
-import combateNivel9 from '../../assets/images/projetos/efipla/combate-nivel-9.webp';
-import campanhaDiario from '../../assets/images/projetos/efipla/campanha-diario.webp';
+import criacao from '../../assets/images/projetos/efipla/criacao.webp';
+import atributos from '../../assets/images/projetos/efipla/atributos.webp';
+import combate from '../../assets/images/projetos/efipla/combate.webp';
+import conjuracao from '../../assets/images/projetos/efipla/conjuracao.webp';
 import loja from '../../assets/images/projetos/efipla/loja.webp';
+import diario from '../../assets/images/projetos/efipla/diario.webp';
 import icone from '../../assets/images/projetos/efipla/icone.webp';
 import combateAntes from '../../assets/images/projetos/efipla/combate-antes.webp';
 import combateDepois from '../../assets/images/projetos/efipla/combate-depois.webp';
@@ -280,33 +281,39 @@ export const efipla: CaseStudy = {
     markBackground: 'radial-gradient(120% 100% at 30% 15%, #4d3d75 0%, #2a2440 38%, #1d192e 68%, #151221 100%)',
     gallery: [
       {
-        src: criacaoRaca,
-        alt: 'Etapa Raça da criação: escolha de gênero, busca, botões Tabela e Comparar e o card do Humano selecionado, com as sub-raças Humano e Humano Variante; ao lado, o card do Elfo.',
+        src: criacao,
+        alt: 'Etapa Raça da criação: gênero Masculino marcado, busca por "Tiefling", botões Tabela e Comparar e o card do Tiefling, com a descrição e as 11 sub-raças, das linhagens de Asmodeus a Zariel, mais o Tiefling Feroz e o Voador; embaixo, o botão "Próximo: Classe".',
         caption: 'Criação: a etapa Raça, com busca, tabela e comparação',
         frame: 'phone',
       },
       {
-        src: combateNivel8,
-        alt: 'Aba Combate da Ceris Toph no nível 8: CA 19, iniciativa +2, proficiência +3 e percepção passiva 15, pontos de vida 64 de 69 e a barra de experiência.',
-        caption: 'Combate no nível 8, com CA, iniciativa, proficiência e percepção à vista',
+        src: atributos,
+        alt: 'Aba Atributos da Ceris Toph: os seis atributos em placas chanfradas, FOR +3, DES +1, CON +2, INT +0, SAB +0 e CAR +5, com os valores 16, 12, 14, 11, 10 e 20, e os testes de resistência, com proficiência em Força (+8) e Constituição (+7).',
+        caption: 'Atributos: modificadores, valores e testes de resistência',
         frame: 'phone',
       },
       {
-        src: combateNivel9,
-        alt: 'A mesma aba no nível 9: pontos de vida 45 de 78, experiência com "Level Up disponível!", os recursos Retomar Fôlego, Surto de Ação e Forma do Pavor e o botão amarelo "Subiu de Nível!".',
-        caption: 'Nível 9, com a subida disponível e os recursos de classe',
+        src: combate,
+        alt: 'Aba Combate da Kara Silvanis na Forma Selvagem: o card Vitais com "PV: Tigre" 34 de 44, CA 12, a linha "Kara ao voltar: 45 / 45", iniciativa, caminhada de 12 m, proficiência, percepção passiva, a experiência do nível 6 e o chip "Tigre · até 3 h"; abaixo, o card Recursos com a Forma Selvagem em uso, o botão Reverter e os espaços de magia.',
+        caption: 'Combate na Forma Selvagem: a vida do tigre, a da druida por baixo e os recursos',
         frame: 'phone',
       },
       {
-        src: campanhaDiario,
-        alt: 'Aba Campanha, sub-aba Jornada: o Diário de Aventura com o botão Nova Sessão e a sessão 1, de 30/05/2026, com 4h53min.',
-        caption: 'Campanha › Jornada: o diário, com uma sessão de 4h53min',
+        src: conjuracao,
+        alt: 'Folha da Conjuração sobre a ficha da Ceris Toph: o card da Fome de Hadar, magia de 3º círculo, com o botão Conjurar, o gasto de 1 espaço de pacto do 4º círculo, o dano gélido de 2d6 (média 7) no início do turno, o dano ácido com teste de Destreza CD 17 no fim do turno e os componentes verbal, somático e material, com a fala da magia e o tentáculo de polvo em conserva.',
+        caption: 'Conjuração: custo, dano médio, teste e componentes de cada magia',
         frame: 'phone',
       },
       {
         src: loja,
-        alt: 'Aba Itens, sub-aba Loja: a bolsa com 47 peças de ouro, 8 de prata e 1 de cobre e seis lojas: Ferreiro, Loja Geral, Loja Mágica, Taverna, Estábulos e Transporte e Artigos de Luxo.',
-        caption: 'Itens › Loja: seis lojas e a bolsa em PO, PP e PC',
+        alt: 'Aba Itens, sub-aba Loja: o Histórico, a bolsa com 277 peças de ouro e 5 de prata e seis lojas com a contagem de itens: Ferreiro (189), Loja Geral (262), Loja Mágica (645), Taverna (25), Estábulos e Transporte (32) e Artigos de Luxo (45).',
+        caption: 'Itens › Loja: seis lojas, cada uma com a sua contagem de itens',
+        frame: 'phone',
+      },
+      {
+        src: diario,
+        alt: 'Diário da sessão "A Torre Partida", em andamento: uma anotação sobre a torre selada com runas e as linhas que o app registrou sozinho às 02:37 e 02:38, com a iniciativa, o ataque de Espada Longa que acertou, o dano, o dano recebido (52 para 48), os PV temporários e o teste de concentração da Imobilizar Pessoa; no pé, o botão vermelho de parar, o microfone do ditado e os de anexar imagem e fotografar.',
+        caption: 'Diário: cada rolagem anotada sozinha, com a hora',
         frame: 'phone',
       },
       {
@@ -317,7 +324,7 @@ export const efipla: CaseStudy = {
       },
     ],
     galleryNote:
-      'Prints feitos no celular antes de outubro de 2026, ainda com os ícones do Material e a aba Combate antiga. O comparador acima mostra a de hoje.',
+      'Telas de 04/11/2026, gravadas no emulador Android pelo roteiro de teste da vitrine, as mesmas da landing page. A aba Combate de antes do redesenho aparece só no comparador acima.',
   },
   tech: [
     { group: 'App', items: ['Flutter 3.47', 'Dart 3.13', 'Riverpod 2.6', 'Hive 2.2', 'Material 3'] },
