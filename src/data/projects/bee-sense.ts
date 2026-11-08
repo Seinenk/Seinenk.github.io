@@ -1,5 +1,10 @@
 import type { CaseStudy } from './types';
 import appEntrada from '../../assets/images/projetos/bee-sense/app-entrada.webp';
+import appInicio from '../../assets/images/projetos/bee-sense/app-inicio.webp';
+import appMenu from '../../assets/images/projetos/bee-sense/app-menu.webp';
+import appLista from '../../assets/images/projetos/bee-sense/app-lista.webp';
+import appCronometro from '../../assets/images/projetos/bee-sense/app-cronometro.webp';
+import appIscaVazia from '../../assets/images/projetos/bee-sense/app-isca-vazia.webp';
 import appIscas from '../../assets/images/projetos/bee-sense/app-iscas.webp';
 import appIsca from '../../assets/images/projetos/bee-sense/app-isca.webp';
 import appConteudo from '../../assets/images/projetos/bee-sense/app-conteudo.webp';
@@ -18,7 +23,8 @@ import testeCaixa from '../../assets/images/projetos/bee-sense/teste-caixa.webp'
  * Teste de 27/12/2025, apresentação final (PDF e DOCX), diagramas de arquitetura e de
  * pareamento, telas do app, Currículo Lattes e o repositório público
  * EmilenyRochaLeal/beeSense. Os nomes da equipe vêm do slide de contato da
- * apresentação; os e-mails dele não vão para o site.
+ * apresentação; os e-mails dele não vão para o site. O papel (idealização, gerência de
+ * projeto e design UX/UI) foi informado pelo próprio Carlos.
  */
 export const beeSense: CaseStudy = {
   slug: 'bee-sense',
@@ -27,15 +33,15 @@ export const beeSense: CaseStudy = {
   period: '2025 — 2026',
   status: 'Concluído',
   summary:
-    'Isca inteligente para a captura voluntária de abelhas sem ferrão: um microfone numa placa BitDogLab escuta a isca, um backend guarda as leituras e um app em Flutter mostra o histórico de cada isca.',
+    'Isca inteligente para a captura de abelhas sem ferrão: um microfone na isca percebe a colônia e um app mostra o que acontece em cada isca. Atuei na idealização, na gerência do projeto e no design UX/UI.',
   tagline: 'Isca inteligente para detectar a captura voluntária de abelhas sem ferrão.',
   tags: ['IoT', 'BitDogLab', 'Flutter', 'Meliponicultura'],
   note: 'Projeto final da Residência Tecnológica em Sistemas Embarcados.',
   featured: true,
   art: 'bee-sense',
   facts: [
+    { label: 'Papel', value: 'Idealização, gerência de projeto e design UX/UI' },
     { label: 'Contexto', value: 'Projeto final da Residência Tecnológica em Sistemas Embarcados (EmbarcaTech · IFPI)' },
-    { label: 'Período', value: '2025 — 2026' },
     { label: 'Equipe', value: 'Carlos Michael, Emileny Rocha Leal e Francisco da Costa' },
     { label: 'Plataforma', value: 'BitDogLab (Raspberry Pi Pico W), microfone, backend e app em Flutter' },
   ],
@@ -44,6 +50,7 @@ export const beeSense: CaseStudy = {
     'A meliponicultura é a criação de abelhas sem ferrão, nativas do Brasil, o país com a maior diversidade delas no mundo: mais de 300 espécies. Em setembro e outubro, com as floradas, as colônias **enxameiam**: as operárias procuram um novo oco, e uma nova rainha sai para fundar outra colônia. É nessa época que é permitido usar **iscas** para a captura voluntária, evitando a retirada predatória de ninhos da natureza.',
     'A parte difícil vem depois. Da enxameação até a nova colônia ficar independente passam-se de 60 a 90 dias, e só então ela pode ir para uma caixa definitiva. Sem ver o que acontece dentro da isca, quem cria transfere cedo ou tarde demais e o enxame vai embora. Abrir a isca para olhar também não resolve: estressa as abelhas.',
     'O **Bee Sense** é uma isca inteligente: uma placa com microfone escuta a isca, um backend guarda as leituras e um app mostra a quem cuida dela o que está acontecendo. Foi o projeto final da Residência Tecnológica em Sistemas Embarcados e é do mesmo universo do **BeeCerrado**, plataforma gamificada de apoio à captura de abelhas nativas do Cerrado, exposta no Web Summit Lisboa 2025.',
+    'Na equipe, minha atuação ficou principalmente na **idealização** do produto, na **gerência do projeto** e no **design UX/UI** do app.',
   ],
   challenge: {
     problem:
@@ -76,7 +83,7 @@ export const beeSense: CaseStudy = {
     {
       date: 'Out — dez 2025',
       title: 'O app',
-      text: 'O app em Flutter, de Emileny Rocha Leal, ganhou a navegação entre Início, Isca e Perfil, a lista de iscas com o código de pareamento, o histórico de cada isca e artigos sobre o manejo.',
+      text: 'Do design UX/UI das telas saiu o app em Flutter, no repositório de Emileny Rocha Leal: a navegação entre Início, Isca e Perfil, a lista de iscas com o código de pareamento, o histórico e o cronômetro de cada isca e os informativos sobre o manejo.',
     },
     {
       date: '27/12/2025',
@@ -108,17 +115,17 @@ export const beeSense: CaseStudy = {
     {
       icon: 'bell',
       title: 'Histórico e avisos',
-      text: 'Cada isca guarda seus eventos com data e hora: presença detectada, abelha identificada depois da análise e invasor, com limpeza necessária.',
+      text: 'Cada isca guarda seus eventos com data e hora: presença detectada, abelha identificada depois da análise e invasor, com limpeza necessária. O menu lateral reúne as notificações, com contador.',
     },
     {
       icon: 'timer',
       title: 'Dias de campo',
-      text: 'A tela da isca mostra há quantos dias ela está instalada e tem uma aba de cronômetro. A colônia precisa de 60 a 90 dias antes da transferência.',
+      text: 'A tela da isca mostra há quantos dias ela está instalada, e o cronômetro marca no calendário um período de 30, 45 ou 60 dias. A colônia precisa de 60 a 90 dias antes da transferência.',
     },
     {
       icon: 'book-open',
       title: 'Conteúdo sobre o manejo',
-      text: 'Artigos como “Caixa de abelha sem ferrão”, “Montagem da isca” e “Saúde das abelhas”, com itens relacionados e opção de salvar.',
+      text: 'Na tela inicial, destaques em carrossel e informativos como “Mel de melhor qualidade”, “Montagem da isca” e “Saúde das abelhas”, com favoritos e artigos relacionados.',
     },
   ],
   inside: {
@@ -131,6 +138,10 @@ export const beeSense: CaseStudy = {
     diagram: 'bee-sense',
   },
   decisions: [
+    {
+      title: 'Telas para quem não é da tecnologia',
+      why: 'O requisito de usabilidade (RNF06) pede uma interface clara para um público diverso, do iniciante ao produtor comercial, e a visão pede um cadastro e um pareamento simples e guiados. No app, a lista mostra o último estado e a distância de cada isca, o pareamento acontece numa janela com o código, o histórico usa um ícone por tipo de evento e o cronômetro oferece períodos prontos de 30, 45 ou 60 dias.',
+    },
     {
       title: 'O som como sinal de vida',
       why: 'Um microfone percebe a colônia sem abrir a isca, e abrir é justamente o que estressa as abelhas e atrapalha a temperatura do ninho. A média, os picos e os silêncios do nível sonoro já separam uma caixa vazia de uma caixa com abelhas.',
@@ -169,7 +180,7 @@ export const beeSense: CaseStudy = {
   ],
   visual: {
     intro:
-      'Duas camadas visuais: o logo, com as cores da abelha, do sinal e do favo, e o app, no Material 3 do Flutter, com um verde vivo para as ações, cartões claros de borda fina e fotos reais das iscas.',
+      'O design UX/UI do app foi a minha frente principal: telas no Material 3 do Flutter, pensadas para quem tem pouca familiaridade com tecnologia, com um verde vivo para as ações, cartões claros de borda fina e fotos reais das iscas. O logo traz as cores da abelha, do sinal e do favo.',
     palette: [
       { name: 'Azul', hex: '#1B9DDA', role: 'Asas e sinal de Wi-Fi do logo' },
       { name: 'Marrom', hex: '#9B5633', role: 'Corpo da abelha no logo' },
@@ -199,9 +210,27 @@ export const beeSense: CaseStudy = {
         frame: 'phone',
       },
       {
+        src: appInicio,
+        alt: 'Tela inicial: “Bem vindo à BeeSense!”, um carrossel com o destaque “Caixa de abelha sem ferrão”, uma frase sobre conhecer as abelhas sem ferrão e a lista Informativos (Mel de melhor qualidade, Montagem da isca e Saúde das abelhas), com a barra Início, Isca e Perfil.',
+        caption: 'O início: destaques em carrossel e os informativos.',
+        frame: 'phone',
+      },
+      {
+        src: appMenu,
+        alt: 'Menu lateral aberto sobre a tela inicial: Notificações, com 24, Favoritos, Equipe, Contato e a chave do modo escuro.',
+        caption: 'O menu: notificações com contador, favoritos, equipe, contato e modo escuro.',
+        frame: 'phone',
+      },
+      {
+        src: appLista,
+        alt: 'Aba Isca com três iscas, cada uma com foto, o último estado e a distância: Isca 1, nenhum retorno, 1,2 km; Isca 2, presença detectada, 1,1 km; Isca 3, nenhum retorno, 0,8 km.',
+        caption: 'A aba Isca: cada isca com o último estado e a distância.',
+        frame: 'phone',
+      },
+      {
         src: appIscas,
-        alt: 'Aba Isca com a lista de iscas, cada uma com foto e distância (Isca 1, nenhum retorno, 1,2 km; Isca 2, presença detectada, 1,1 km), e a janela “Código de pareamento” com o código 54194685.',
-        caption: 'A lista de iscas e o código de pareamento de uma isca nova.',
+        alt: 'Janela “Código de pareamento” sobre a lista de iscas, com o texto “Insira esse código na sua isca para executar o pareamento” e o código 54194685.',
+        caption: 'Isca nova: o app gera o código de pareamento que vai para a placa.',
         frame: 'phone',
       },
       {
@@ -211,9 +240,21 @@ export const beeSense: CaseStudy = {
         frame: 'phone',
       },
       {
+        src: appCronometro,
+        alt: 'Isca 2 na aba Cronômetro: “Selecione um período” com as opções 30, 45 e 60, o 30 escolhido, e o calendário de agosto de 2025 marcando o período a partir do dia 5.',
+        caption: 'O cronômetro: um período de 30, 45 ou 60 dias marcado no calendário.',
+        frame: 'phone',
+      },
+      {
+        src: appIscaVazia,
+        alt: 'Tela da Isca 1, com 32 dias totais e 1,2 km de distância, na aba Atividade, com o aviso “Nenhuma atividade detectada”.',
+        caption: 'Sem atividade: o estado vazio da Isca 1.',
+        frame: 'phone',
+      },
+      {
         src: appConteudo,
         alt: 'Artigo “Caixa de abelha sem ferrão”, de 12/10/2025, com foto de abelhas na entrada de uma caixa, o texto do artigo e a lista Relacionados: Mel de melhor qualidade, Montagem da isca e Saúde das abelhas.',
-        caption: 'Conteúdo sobre o manejo, com artigos relacionados.',
+        caption: 'Um informativo aberto, com artigos relacionados.',
         frame: 'phone',
       },
       {
@@ -224,7 +265,7 @@ export const beeSense: CaseStudy = {
       },
     ],
     galleryTitle: 'Telas e modelo 3D',
-    galleryNote: 'Telas do app em Flutter e o modelo 3D, da apresentação final do projeto.',
+    galleryNote: 'Telas do app em Flutter, de versões diferentes (a aba Histórico aparece como Atividade numa delas), e o modelo 3D da isca, da apresentação final.',
   },
   fieldwork: {
     text: 'Em 27/12/2025, no Sítio Salvador, a equipe instalou três iscas para a abelha Manduri, dentro do raio de até 300 metros em que ela enxameia, e deixou a placa gravando perto de um enxame ativo.',
@@ -291,20 +332,23 @@ export const beeSense: CaseStudy = {
     },
   ],
   skills: [
-    { title: 'Embarcados com propósito', text: 'Levar microcontrolador e sensores para um problema real do campo, fora do laboratório.' },
-    { title: 'Internet das Coisas', text: 'Pensar o caminho do dado: do microfone na isca ao backend, ao banco de dados e ao app.' },
     {
-      title: 'Visão e requisitos',
-      text: 'Escrever a visão do produto, os perfis de quem usa e 20 requisitos que guiaram hardware, software e interface.',
+      title: 'Idealização de produto',
+      text: 'Transformar a dor de quem cria abelhas sem ferrão em produto: do curso de ideação no Inova Cerrado à visão, com perfis de usuário e os pilares Monitorar, Educar e Conectar.',
     },
+    {
+      title: 'Gerência de projeto',
+      text: 'Organizar a equipe e as entregas, dos requisitos ao teste de campo e à apresentação final, e levar o projeto a eventos como o congresso organizado na Investe Piauí.',
+    },
+    {
+      title: 'Design UX/UI',
+      text: 'Desenhar o app para quem tem pouca familiaridade com tecnologia: a lista de iscas com o último estado, o pareamento por código, o cronômetro e os informativos.',
+    },
+    { title: 'Internet das Coisas', text: 'Entender o caminho do dado, do microfone na isca ao backend, ao banco de dados e ao app, para que as telas mostrem o que a placa sabe.' },
+    { title: 'Conhecer o domínio', text: 'Entender enxameação, iscas, atrativos e colônias antes de propor a tecnologia.' },
     {
       title: 'Experimento de campo',
       text: 'Planejar, instalar e documentar um teste fora do laboratório, com fotos, dados e os problemas encontrados.',
-    },
-    { title: 'Conhecer o domínio', text: 'Entender enxameação, iscas, atrativos e colônias antes de propor a tecnologia.' },
-    {
-      title: 'Equipe e apresentação',
-      text: 'Dividir o sistema entre placa e app e apresentar o projeto, como no congresso organizado na Investe Piauí.',
     },
   ],
   results: {
