@@ -8,12 +8,15 @@ import Palette from '../../components/case/Palette.astro';
 import TypeSpecimens from '../../components/case/TypeSpecimens.astro';
 import Gallery from '../../components/case/Gallery.astro';
 import ExtractorysMark from '../../components/case/ExtractorysMark.astro';
+import EfiplaMark from '../../components/case/EfiplaMark.astro';
+import ThemePlayground from '../../components/case/ThemePlayground.astro';
 import DinoGame from '../../components/case/DinoGame.astro';
 import BeforeAfter from '../../components/case/BeforeAfter.astro';
 import LayoutBoxes from '../../components/case/LayoutBoxes.astro';
 import PytestRun from '../../components/case/PytestRun.astro';
 import { projects, nextProject, projectHref, type CaseStudy } from '../../data/projects';
 import { plain, readingMinutes, rich } from '../../utils/rich';
+import { pageFontCss } from '../../utils/page-fonts';
 
 export function getStaticPaths() {
   return projects.map((project) => ({ params: { slug: project.slug }, props: { project } }));
@@ -25,6 +28,7 @@ interface Props {
 
 const { project: p } = Astro.props;
 const next = nextProject(p.slug);
+const pageFonts = p.fonts ? pageFontCss(p.fonts) : null;
 const live = p.status === 'Em andamento';
 
 /* Seções presentes, na ordem da página. O número entra no sobretítulo. */
@@ -33,7 +37,10 @@ const emphasizeLast = (title: string) => {
   const words = title.split(' ');
   return words.length > 1 ? `${words.slice(0, -1).join(' ')} *${words.at(-1)}*` : `*${title}*`;
 };
-const hasVisual = Boolean(p.visual && (p.visual.palette || p.visual.typography || p.visual.tokens || p.visual.gallery || p.visual.mark));
+/* desenho da marca, por projeto (o texto vem dos dados) */
+const marks = { extractorys: ExtractorysMark, efipla: EfiplaMark } as const;
+const Mark = p.art in marks ? marks[p.art as keyof typeof marks] : null;
+const hasVisual = Boolean(p.visual && (p.visual.palette || p.visual.appThemes || p.visual.typography || p.visual.tokens || p.visual.gallery || p.visual.mark));
 const all = [
   { id: 'contexto', label: 'Contexto', title: 'De onde *veio*', on: true },
   { id: 'desafio', label: 'Desafio', title: 'O *problema*', on: Boolean(p.challenge) },
@@ -67,7 +74,9 @@ const texts = [
   ...(p.inside?.text ?? []),
   ...(p.decisions ?? []).flatMap((d) => [d.title, d.why, d.tradeoff ?? '']),
   p.visual?.intro ?? '',
+  p.visual?.appThemesText ?? '',
   p.visual?.mark ?? '',
+  p.visual?.galleryNote ?? '',
   ...(p.skills ?? []).flatMap((s) => [s.title, s.text]),
   ...(p.results?.highlights ?? []),
   ...(p.lessons ?? []).flatMap((l) => [l.title, l.text]),
@@ -78,6 +87,18 @@ const titleWords = p.title.split(' ');
 ---
 
 <BaseLayout title={`${p.title} · Projetos · Carlos Michael`} description={plain(p.summary)} current="projetos">
+  {
+    pageFonts && (
+      <Fragment slot="head">
+        <style is:inline set:html={pageFonts.vars} />
+        {/* desligada (media="print") até a seção visual chegar perto; sem JavaScript, carrega já */}
+        <style is:inline media="print" data-lazy-fonts set:html={pageFonts.faces} />
+        <noscript>
+          <style is:inline set:html={pageFonts.faces} />
+        </noscript>
+      </Fragment>
+    )
+  }
   <article class="cs" data-case>
     <header class="cs-hero" data-tilt-area data-ambient>
       <div class="cs-aura" aria-hidden="true"></div>
@@ -283,7 +304,7 @@ const titleWords = p.title.split(' ');
               <SectionHead {...head('na-pratica')} size="md" text={p.demo.text} />
               <div class="cs-wide" data-reveal>
                 {p.demo.kind === 'dino-game' && <DinoGame />}
-                {p.demo.kind === 'before-after' && <BeforeAfter />}
+                {p.demo.kind === 'before-after' && p.demo.compare && <BeforeAfter compare={p.demo.compare} />}
                 {p.demo.kind === 'layout-boxes' && <LayoutBoxes />}
                 {p.demo.kind === 'pytest-run' && <PytestRun />}
               </div>
@@ -303,6 +324,17 @@ const titleWords = p.title.split(' ');
                   <Palette swatches={p.visual.palette} gradient={p.visual.gradient} note={p.visual.paletteNote} />
                 </div>
               )}
+              {p.visual.appThemes && (
+                <div class="cs-block">
+                  <h3 class="cs-sub" data-reveal>
+                    <Icon name="swatch-book" size={18} /> Destaques e peles
+                  </h3>
+                  {p.visual.appThemesText && <p class="cs-block-text" data-reveal set:html={rich(p.visual.appThemesText)} />}
+                  <div data-reveal>
+                    <ThemePlayground themes={p.visual.appThemes} />
+                  </div>
+                </div>
+              )}
               {p.visual.typography && (
                 <div class="cs-block">
                   <h3 class="cs-sub" data-reveal>
@@ -320,10 +352,12 @@ const titleWords = p.title.split(' ');
                 </div>
               )}
               {p.visual.mark && (
-                <div class="cs-block cs-mark" data-reveal>
-                  <div class="cs-mark-art" aria-hidden="true">
-                    <ExtractorysMark />
-                  </div>
+                <div class="cs-block cs-mark" data-reveal style={p.visual.markBackground ? `--mark-bg:${p.visual.markBackground}` : undefined}>
+                  {Mark && (
+                    <div class="cs-mark-art" aria-hidden="true">
+                      <Mark />
+                    </div>
+                  )}
                   <div>
                     <h3 class="cs-sub">
                       <Icon name="sparkles" size={18} /> Marca
@@ -338,6 +372,12 @@ const titleWords = p.title.split(' ');
                     <Icon name="monitor" size={18} /> Telas
                   </h3>
                   <Gallery shots={p.visual.gallery} label={`Telas do projeto ${p.title}`} />
+                  {p.visual.galleryNote && (
+                    <p class="cs-gallery-note" data-reveal>
+                      <Icon name="clock" size={15} />
+                      <span set:html={rich(p.visual.galleryNote)} />
+                    </p>
+                  )}
                 </div>
               )}
             </section>
@@ -393,7 +433,7 @@ const titleWords = p.title.split(' ');
                     <li class="cs-metric" data-reveal style={`--i:${i}`}>
                       <span class="cs-metric-value">
                         {m.prefix}
-                        <span data-count={m.value}>{m.value}</span>
+                        <span data-count={m.value}>{m.value.toLocaleString('pt-BR')}</span>
                         {m.suffix}
                       </span>
                       <span class="cs-metric-label">{m.label}</span>
@@ -1082,7 +1122,7 @@ const titleWords = p.title.split(' ');
     align-items: center;
     padding: clamp(1.25rem, 1rem + 1.5vw, 2rem);
     border-radius: var(--radius-xl);
-    background: linear-gradient(135deg, #2a0048, #800080 45%, #d50048);
+    background: var(--mark-bg, linear-gradient(135deg, #2a0048, #800080 45%, #d50048));
     color: #f3f1ea;
   }
 
@@ -1094,6 +1134,10 @@ const titleWords = p.title.split(' ');
     color: #f3f1ea;
   }
 
+  .cs-mark :global(strong) {
+    color: #fff;
+  }
+
   @media (min-width: 40rem) {
     .cs-mark {
       grid-template-columns: 9rem minmax(0, 1fr);
@@ -1103,6 +1147,27 @@ const titleWords = p.title.split(' ');
   .cs-mark-art {
     width: 9rem;
     justify-self: center;
+  }
+
+  .cs-block-text {
+    max-width: 44rem;
+    margin-bottom: 1.25rem;
+    color: var(--c-body);
+  }
+
+  .cs-gallery-note {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    max-width: 44rem;
+    margin-top: 1rem;
+    color: var(--c-muted);
+    font-size: var(--fs-caption);
+  }
+
+  .cs-gallery-note :global(svg) {
+    flex: none;
+    margin-top: 0.2em;
   }
 
   /* ---------- tecnologias ---------- */

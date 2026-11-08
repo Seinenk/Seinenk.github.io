@@ -54,12 +54,36 @@ Para incluir um projeto:
 3. Imagens vão em `src/assets/images/projetos/<nome>/` e entram em `visual.gallery` com texto
    alternativo e legenda.
 4. A ilustração do cartão (`art`) e o diagrama de "Por dentro" ficam em
-   `src/components/ProjectArt.astro` e `src/components/case/ProjectDiagram.astro`.
+   `src/components/ProjectArt.astro` e `src/components/case/ProjectDiagram.astro`; o desenho
+   da marca, quando existe, fica em `src/components/case/` (como `EfiplaMark.astro`).
+5. Para um "antes e depois", use `demo.kind: 'before-after'` com as duas imagens em
+   `demo.compare` (`frame: 'phone'` para prints de celular, `'browser'` para telas largas).
+
+Recursos opcionais da construção visual:
+
+- `visual.appThemes`: as cores de destaque de um app, com os papéis do Material 3. Liga a
+  miniatura interativa (`ThemePlayground.astro`), que hoje reproduz a aba Combate do EFIPLA.
+- `visual.markBackground` (fundo do bloco da marca) e `visual.galleryNote` (observação sobre
+  as telas da galeria).
+- `fonts`: fontes que só a página usa, para as amostras de tipografia do projeto. Os arquivos
+  são declarados em `astro.config.mjs`, e o `@font-face` sai de `src/utils/page-fonts.ts` numa
+  folha que só liga quando a seção visual chega perto da tela, para quem não rola até lá não
+  baixar nada a mais.
+
+As fontes do EFIPLA em `src/assets/fonts/efipla/` são recortes das fontes do Google Fonts
+(licença OFL, arquivos latinos do @fontsource) com só os caracteres que a página usa: a Rubik
+Distressed inteira tem 196 KB, o recorte tem 9 KB. Se mudar os textos das amostras ou da
+miniatura, gere de novo com o `pyftsubset` (fonttools), por exemplo:
+
+```bash
+pyftsubset rubik-distressed-latin-400-normal.woff2 --text="EFIPLAa" --flavor=woff2 --layout-features='*' --output-file=src/assets/fonts/efipla/rubik-distressed.woff2
+```
 
 Efeitos das páginas: transição do cartão para o topo da página (View Transitions), sumário que
 acompanha a leitura, linha do tempo que se preenche ao rolar, cores que se copiam com um clique,
-amostras de fonte variável, galeria com caixa de luz, comparação antes/depois e o Dino Runner
-jogável. Tudo funciona com teclado e fica parado quando o movimento está desligado.
+amostras de fonte variável, galeria com caixa de luz, comparação antes/depois, o Dino Runner
+jogável e a miniatura de temas do EFIPLA. Tudo funciona com teclado e fica parado quando o
+movimento está desligado.
 
 ## Design system
 

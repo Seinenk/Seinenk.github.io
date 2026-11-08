@@ -22,7 +22,11 @@ const { specimens = [], tokens = [] } = Astro.props;
             <p class="specimen-family">{s.family}</p>
             <p class="specimen-role">{s.role}</p>
           </div>
-          <p class:list={['specimen-aa', { 'is-variable': s.variable }]} style={`font-family:${s.css};font-weight:${s.weight ?? 400}`} aria-hidden="true">
+          <p
+            class:list={['specimen-aa', { 'is-variable': s.variable }]}
+            style={`font-family:${s.css};font-weight:${s.weight ?? 400}${s.range ? `;--wght-from:${s.range[0]};--wght-to:${s.range[1]};--wght:${s.range[0]}` : ''}`}
+            aria-hidden="true"
+          >
             Aa
             {s.variable && <span class="specimen-weight">peso </span>}
           </p>
@@ -44,11 +48,15 @@ const { specimens = [], tokens = [] } = Astro.props;
           <h4 class="token-title">{group.title}</h4>
           <ul class="list-reset token-list" role="list">
             {group.items.map((t) => {
-              const radius = group.title === 'Raios' ? t.value.replace(/[^\d.]/g, '') : null;
-              const duration = /^\d+ ms$/.test(t.value) ? Number.parseInt(t.value, 10) : null;
+              const size = /^(Raios|Chanfros)$/.test(group.title) ? t.value.replace(/[^\d.]/g, '') : null;
+              const bevel = group.title === 'Chanfros';
+              // durações curtas (o toque de um botão) não viram bolinha: piscaria
+              const ms = /^\d+ ms$/.test(t.value) ? Number.parseInt(t.value, 10) : null;
+              const duration = ms && ms >= 150 ? ms : null;
               return (
                 <li class="token">
-                  {radius && <span class="token-radius" style={`--r:${radius}px`} aria-hidden="true" />}
+                  {size && !bevel && <span class="token-radius" style={`--r:${size}px`} aria-hidden="true" />}
+                  {size && bevel && <span class="token-bevel" style={`--r:${size}px`} aria-hidden="true" />}
                   {duration && <span class="token-motion" style={`--d:${duration}ms`} aria-hidden="true"><span /></span>}
                   <span class="token-name">{t.name}</span>
                   <span class="token-value">{t.value}</span>
@@ -147,10 +155,10 @@ const { specimens = [], tokens = [] } = Astro.props;
 
   @keyframes wght {
     from {
-      --wght: 100;
+      --wght: var(--wght-from, 100);
     }
     to {
-      --wght: 900;
+      --wght: var(--wght-to, 900);
     }
   }
 
@@ -211,6 +219,16 @@ const { specimens = [], tokens = [] } = Astro.props;
     border-radius: var(--r);
     border-bottom-color: transparent;
     border-left-color: transparent;
+  }
+
+  /* canto chanfrado (cortado em diagonal), na escala do token */
+  .token-bevel {
+    --c: calc(var(--r) * 0.7);
+    width: 1.6rem;
+    height: 1.6rem;
+    flex: none;
+    background: var(--c-accent);
+    clip-path: polygon(var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c));
   }
 
   .token-motion {

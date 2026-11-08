@@ -2,6 +2,9 @@
 import { Image } from 'astro:assets';
 import type { ArtKind } from '../data/projects/types';
 import ExtractorysMark from './case/ExtractorysMark.astro';
+import EfiplaMark from './case/EfiplaMark.astro';
+import efiplaCombate from '../assets/images/projetos/efipla/combate-depois.webp';
+import efiplaLoja from '../assets/images/projetos/efipla/loja.webp';
 import telaClara from '../assets/images/projetos/extractorys/tela-inicial-clara.webp';
 import telaEscura from '../assets/images/projetos/extractorys/tela-inicial-escura.webp';
 import siteClaro from '../assets/images/projetos/portfolio/depois-claro.webp';
@@ -23,8 +26,23 @@ interface Props {
 }
 
 const { kind, size = 'card', class: className, vt } = Astro.props;
+
+/* ---------- EFIPLA: folhas caindo, como no fundo da tela inicial do app ---------- */
+const leaves = [
+  { x: 8, s: 1, d: 11, delay: -2 },
+  { x: 24, s: 0.75, d: 14, delay: -9 },
+  { x: 41, s: 0.9, d: 12, delay: -5 },
+  { x: 57, s: 0.7, d: 15, delay: -12 },
+  { x: 71, s: 1.1, d: 13, delay: -7 },
+  { x: 86, s: 0.8, d: 10, delay: -1 },
+  { x: 94, s: 0.65, d: 16, delay: -14 },
+];
 const uid = `${kind}-${size}-${Math.random().toString(36).slice(2, 7)}`;
 const hero = size === 'hero';
+// prints nos celulares da ilustração: o celular ocupa 26 % do cartão (uns 100 px) e
+// 34 % do topo da página (até 190 px); a imagem baixa no tamanho em que aparece
+const phoneWidths = [200, 260, 320];
+const phoneSizes = hero ? '(min-width: 64rem) 12rem, 32vw' : '6.5rem';
 
 /* ---------- Dino Runner: quadros da matriz 5×5 (as mesmas poses do código) ---------- */
 const FRAME = 330;
@@ -105,13 +123,39 @@ const cells = Array.from({ length: 15 }, (_, i) => ({ x: 26 + (i % 5) * 17, y: 3
         <div class="ex-glow" />
         <div class="ex-phones">
           <div class="ex-phone ex-phone-a">
-            <Image src={telaEscura} alt="" widths={[180, 320]} sizes={hero ? '(min-width: 64rem) 16rem, 34vw' : '9rem'} loading={hero ? 'eager' : 'lazy'} />
+            <Image src={telaEscura} alt="" widths={phoneWidths} sizes={phoneSizes} loading={hero ? 'eager' : 'lazy'} />
           </div>
           <div class="ex-phone ex-phone-b">
-            <Image src={telaClara} alt="" widths={[180, 320]} sizes={hero ? '(min-width: 64rem) 16rem, 34vw' : '9rem'} loading={hero ? 'eager' : 'lazy'} />
+            <Image src={telaClara} alt="" widths={phoneWidths} sizes={phoneSizes} loading={hero ? 'eager' : 'lazy'} />
           </div>
         </div>
         <ExtractorysMark class="ex-mark" />
+      </>
+    )
+  }
+
+  {
+    kind === 'efipla' && (
+      <>
+        <div class="ef-leaves">
+          {leaves.map((l) => (
+            <span class="ef-leaf" style={`--x:${l.x}%;--s:${l.s};--d:${l.d}s;--delay:${l.delay}s`}>
+              <svg viewBox="0 0 24 24">
+                <path d="M4 20C4 10.5 10.5 4 20 4C20 13.5 13.5 20 4 20Z" />
+                <path class="ef-vein" d="M4 20L14.5 9.5" />
+              </svg>
+            </span>
+          ))}
+        </div>
+        <div class="ef-phones">
+          <div class="ef-phone ef-phone-a">
+            <Image src={efiplaCombate} alt="" widths={phoneWidths} sizes={phoneSizes} loading={hero ? 'eager' : 'lazy'} />
+          </div>
+          <div class="ef-phone ef-phone-b">
+            <Image src={efiplaLoja} alt="" widths={phoneWidths} sizes={phoneSizes} loading={hero ? 'eager' : 'lazy'} />
+          </div>
+        </div>
+        <EfiplaMark class="ef-art-mark" />
       </>
     )
   }
@@ -416,6 +460,130 @@ const cells = Array.from({ length: 15 }, (_, i) => ({ x: 26 + (i % 5) * 17, y: 3
   @keyframes ex-float {
     50% {
       translate: 0 -1.6cqw;
+    }
+  }
+
+  /* ---------- EFIPLA ---------- */
+  .art-efipla {
+    background: radial-gradient(120% 95% at 24% 22%, #4d3d75 0%, #2a2440 36%, #1d192e 66%, #151221 100%);
+  }
+
+  .ef-leaves {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  /* a folha cai (fora) e balança (dentro), como no fundo animado do app; parada,
+     fica espalhada pelo quadro */
+  .ef-leaf {
+    position: absolute;
+    top: calc(12% + var(--x) * 0.6);
+    left: var(--x);
+    width: calc(3.2cqw * var(--s));
+  }
+
+  .ef-leaf svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    fill: rgb(207 189 254 / 0.25);
+    stroke: rgb(207 189 254 / 0.35);
+    stroke-width: 1.2;
+  }
+
+  .ef-leaf .ef-vein {
+    fill: none;
+  }
+
+  .art :global(.ef-art-mark) {
+    position: absolute;
+    left: 4cqw;
+    top: 50%;
+    width: 42cqw;
+    translate: 0 -50%;
+    filter: drop-shadow(0 1.5cqw 2.5cqw rgb(11 7 16 / 0.5));
+  }
+
+  .ef-phones {
+    position: absolute;
+    right: 3cqw;
+    top: 9cqw;
+    width: 50cqw;
+    height: 100%;
+  }
+
+  .ef-phone {
+    position: absolute;
+    width: 26cqw;
+    overflow: hidden;
+    border: 0.9cqw solid #0b0a12;
+    border-radius: 4cqw;
+    background: #0b0a12;
+    box-shadow: 0 3cqw 6cqw -2cqw rgb(11 7 16 / 0.75);
+  }
+
+  .ef-phone-a {
+    left: 0;
+    top: 6cqw;
+    rotate: -8deg;
+  }
+
+  .ef-phone-b {
+    right: 0;
+    top: 0;
+    rotate: 7deg;
+  }
+
+  .art-hero :global(.ef-art-mark) {
+    left: 50%;
+    top: 4cqw;
+    width: 36cqw;
+    translate: -50% 0;
+  }
+
+  .art-hero .ef-phones {
+    left: 50%;
+    right: auto;
+    top: 41cqw;
+    width: 74cqw;
+    translate: -50% 0;
+  }
+
+  .art-hero .ef-phone {
+    width: 34cqw;
+  }
+
+  :global(:root[data-motion='full']) .ef-phone-a {
+    animation: ex-float 7s ease-in-out infinite;
+  }
+
+  :global(:root[data-motion='full']) .ef-phone-b {
+    animation: ex-float 7s ease-in-out -3.5s infinite;
+  }
+
+  :global(:root[data-motion='full']) .ef-leaf {
+    top: -8cqw;
+    animation: ef-fall var(--d) linear var(--delay) infinite;
+  }
+
+  :global(:root[data-motion='full']) .ef-leaf svg {
+    animation: ef-sway calc(var(--d) / 3) ease-in-out var(--delay) infinite alternate;
+  }
+
+  @keyframes ef-fall {
+    to {
+      translate: 0 95cqw;
+    }
+  }
+
+  @keyframes ef-sway {
+    from {
+      transform: translateX(-2.5cqw) rotate(-34deg);
+    }
+    to {
+      transform: translateX(2.5cqw) rotate(34deg);
     }
   }
 

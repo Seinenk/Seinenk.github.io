@@ -223,7 +223,7 @@ document.querySelectorAll<HTMLElement>('[data-count]').forEach((el) => {
   const holder = el.closest('[data-reveal]') ?? el;
   const run = () => {
     if (!motionOn() || !Number.isFinite(target)) {
-      el.textContent = String(target);
+      el.textContent = target.toLocaleString('pt-BR');
       return;
     }
     const duration = 1400;
@@ -231,7 +231,7 @@ document.querySelectorAll<HTMLElement>('[data-count]').forEach((el) => {
     const tick = (now: number) => {
       const t = Math.min(1, (now - start) / duration);
       const eased = 1 - Math.pow(1 - t, 4);
-      el.textContent = String(Math.round(target * eased));
+      el.textContent = Math.round(target * eased).toLocaleString('pt-BR');
       if (t < 1) requestAnimationFrame(tick);
     };
     el.textContent = '0';

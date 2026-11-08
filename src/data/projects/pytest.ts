@@ -11,7 +11,6 @@ export const pytest: CaseStudy = {
     'Revisão sistemática da literatura sobre melhores práticas e desafios dos testes de unidade em Python com o framework pytest, selecionada em edital de pesquisa do IFPI.',
   tagline: 'O que a literatura diz sobre testar bem em Python.',
   tags: ['Python', 'pytest', 'Revisão sistemática'],
-  featured: true,
   art: 'pytest',
   facts: [
     { label: 'Tipo', value: 'Revisão sistemática da literatura' },

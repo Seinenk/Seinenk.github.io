@@ -14,7 +14,7 @@ interface Props {
 const { kind } = Astro.props;
 
 type Node = { icon: IconName; title: string; text: string; tone?: 'accent' | 'ink' };
-const flows: Record<Exclude<DiagramKind, 'extractorys'>, { label: string; nodes: Node[]; branch?: Node[] }> = {
+const flows: Record<Exclude<DiagramKind, 'extractorys' | 'efipla'>, { label: string; nodes: Node[]; branch?: Node[] }> = {
   'bee-sense': {
     label: 'Fluxo do Bee Sense, da isca ao app',
     nodes: [
@@ -48,7 +48,7 @@ const flows: Record<Exclude<DiagramKind, 'extractorys'>, { label: string; nodes:
     ],
   },
 };
-const flow = kind === 'extractorys' ? null : flows[kind];
+const flow = kind === 'extractorys' || kind === 'efipla' ? null : flows[kind];
 ---
 
 {
@@ -113,6 +113,62 @@ const flow = kind === 'extractorys' ? null : flows[kind];
         </ul>
       </div>
       <figcaption class="dg-caption">As telas só falam com a ApkService; o trabalho pesado fica no Kotlin.</figcaption>
+    </figure>
+  )
+}
+
+{
+  kind === 'efipla' && (
+    <figure class="dg dg-stack" data-ambient>
+      <div class="dg-layer" data-reveal>
+        <p class="dg-tag">Telas · Flutter</p>
+        <ul class="list-reset dg-row" role="list">
+          {['Criação em 19 etapas', 'Ficha em 8 abas', 'Subida de nível', 'Compêndios e loja'].map((t) => (
+            <li class="dg-node">{t}</li>
+          ))}
+        </ul>
+        <p class="dg-note">Cor e forma só pelos helpers de pele: cs.primary, skinRadius, skinIcon</p>
+      </div>
+      <span class="dg-link" aria-hidden="true">
+        <i />
+      </span>
+      <div class="dg-layer dg-seam" data-reveal>
+        <p class="dg-tag">O estado da ficha · Riverpod</p>
+        <p class="dg-big">activeCharacterProvider</p>
+        <p class="dg-note">Toda mudança passa por ele e é salva 2 s depois da última</p>
+      </div>
+      <div class="dg-split" aria-hidden="true">
+        <span class="dg-link">
+          <i />
+        </span>
+        <span class="dg-link">
+          <i />
+        </span>
+      </div>
+      <div class="dg-pair">
+        <div class="dg-layer" data-reveal>
+          <p class="dg-tag">Regras de D&D</p>
+          <p class="dg-mid">utils/ puros, sem Flutter</p>
+          <p class="dg-note">Testados com dado de semente fixa: Random(7)</p>
+        </div>
+        <div class="dg-layer dg-ghost" data-reveal style="--i:1">
+          <p class="dg-tag">Tradução</p>
+          <p class="dg-mid">tr() na exibição</p>
+          <p class="dg-note">A ficha guarda chaves em inglês; o português é só da tela</p>
+        </div>
+      </div>
+      <span class="dg-link dg-link-left" aria-hidden="true">
+        <i />
+      </span>
+      <div class="dg-layer dg-ink" data-reveal>
+        <p class="dg-tag">Hive · no aparelho</p>
+        <ul class="list-reset dg-row" role="list">
+          {['Caixa characters', 'Formato v6 com migrações', 'Backup antes de apagar', 'Boot que não quebra'].map((t) => (
+            <li class="dg-node">{t}</li>
+          ))}
+        </ul>
+      </div>
+      <figcaption class="dg-caption">A tela não faz conta: lê o provider, que guarda a ficha e chama as regras puras. Nada sai do aparelho.</figcaption>
     </figure>
   )
 }
@@ -232,6 +288,10 @@ const flow = kind === 'extractorys' ? null : flows[kind];
   .dg-seam .dg-tag {
     color: var(--c-on-primary);
     opacity: 0.8;
+  }
+
+  .dg-seam .dg-note {
+    color: var(--c-on-primary);
   }
 
   .dg-big {

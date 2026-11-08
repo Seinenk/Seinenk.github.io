@@ -21,10 +21,11 @@ export type ArtKind =
   | 'inclua'
   | 'pytest'
   | 'portfolio'
-  | 'layout-simples';
+  | 'layout-simples'
+  | 'efipla';
 
 /** Diagrama de "Por dentro", desenhado em ProjectDiagram.astro. */
-export type DiagramKind = 'extractorys' | 'bee-sense' | 'dino-runner' | 'portfolio';
+export type DiagramKind = 'extractorys' | 'bee-sense' | 'dino-runner' | 'portfolio' | 'efipla';
 
 /** Demonstração interativa na página. */
 export type DemoKind = 'dino-game' | 'before-after' | 'layout-boxes' | 'pytest-run';
@@ -73,6 +74,8 @@ export interface Specimen {
   weight?: number;
   /** Fonte variável: a amostra passeia pelos pesos. */
   variable?: boolean;
+  /** Pesos que a fonte variável cobre (padrão: 100 a 900). */
+  range?: [number, number];
   note?: string;
 }
 
@@ -116,8 +119,53 @@ export interface Visual {
   tokens?: { title: string; items: Token[] }[];
   /** Explicação da marca/logo, quando existe. */
   mark?: string;
+  /** Fundo do bloco da marca (qualquer valor de `background`), com o texto claro. */
+  markBackground?: string;
+  /** Destaques de cor do app para a miniatura interativa (ThemePlayground). */
+  appThemes?: AppTheme[];
+  /** Texto que apresenta a miniatura. */
+  appThemesText?: string;
   gallery?: Shot[];
+  /** Observação sobre as telas da galeria (de quando são, por exemplo). */
+  galleryNote?: string;
 }
+
+/**
+ * Um destaque de cor de um app, com os papéis do Material 3 que a miniatura usa.
+ * Os valores são os que o app calcula, não aproximações.
+ */
+export interface AppTheme {
+  name: string;
+  seed: string;
+  primary: string;
+  surface: string;
+  surfaceHigh: string;
+  outline: string;
+  outlineVariant: string;
+  onSurface: string;
+  onSurfaceVariant: string;
+}
+
+/** Um lado do comparador "antes e depois". */
+export interface CompareSide {
+  src: ImageMetadata;
+  alt: string;
+  /** Etiqueta curta no canto da imagem ("2023"). */
+  tag: string;
+  /** Como o leitor de tela chama esse lado ("a versão de 2023"). */
+  name: string;
+}
+
+export interface Compare {
+  before: CompareSide;
+  after: CompareSide;
+  /** 'browser' para telas largas; 'phone' para prints de celular, numa moldura estreita. */
+  frame: 'browser' | 'phone';
+  caption: string;
+}
+
+/** Fontes que só a página do projeto carrega (configuradas em astro.config.mjs). */
+export type PageFont = '--font-efipla-logo' | '--font-efipla-title' | '--font-efipla-text' | '--font-efipla-pixel';
 
 export interface CaseStudy {
   slug: string;
@@ -142,7 +190,7 @@ export interface CaseStudy {
   features?: Feature[];
   inside?: { title: string; text: string[]; diagram?: DiagramKind };
   decisions?: Decision[];
-  demo?: { kind: DemoKind; title: string; text: string };
+  demo?: { kind: DemoKind; title: string; text: string; compare?: Compare };
   visual?: Visual;
   tech?: { group: string; items: string[] }[];
   skills?: Lesson[];
@@ -152,4 +200,6 @@ export interface CaseStudy {
   credits?: Credit[];
   /** De onde vêm as informações da página. */
   sources?: string;
+  /** Fontes extras que a página precisa (amostras de tipografia do projeto). */
+  fonts?: PageFont[];
 }

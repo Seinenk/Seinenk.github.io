@@ -88,6 +88,8 @@ const person = {
     <Font cssVariable="--font-sans" preload />
     <Font cssVariable="--font-display" preload={[{ style: 'normal' }]} />
     <Font cssVariable="--font-mono" />
+    <!-- fontes que só uma página usa (as do design system de um projeto, por exemplo) -->
+    <slot name="head" />
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />

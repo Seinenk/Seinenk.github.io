@@ -1,28 +1,44 @@
 ---
 import { Image } from 'astro:assets';
-import antes from '../../assets/images/projetos/portfolio/antes-2023.webp';
-import depois from '../../assets/images/projetos/portfolio/depois-claro.webp';
+import type { Compare } from '../../data/projects/types';
 
 /*
- * Comparação 2023 × 2026 com um controle deslizante de verdade (input range):
- * funciona com mouse, toque e teclado (setas), e o valor é anunciado.
+ * Comparação "antes e depois" com um controle deslizante de verdade (input range):
+ * funciona com mouse, toque e teclado (setas), e o valor é anunciado. Com
+ * frame="phone", o palco vira um celular estreito, para prints de app.
  */
+interface Props {
+  compare: Compare;
+}
+
+const { before, after, frame, caption } = Astro.props.compare;
+const phone = frame === 'phone';
+const ratio = `${after.src.width} / ${after.src.height}`;
+const sizes = phone ? '(min-width: 40rem) 22rem, 82vw' : '(min-width: 64rem) 52rem, 92vw';
+const widthsFor = (w: number) => (phone ? [Math.min(w, 360), w] : [Math.min(w, 640), w]).filter((v, i, a) => a.indexOf(v) === i);
 ---
 
-<figure class="ba" data-before-after style="--pos:50%">
-  <div class="ba-stage">
-    <Image src={depois} alt="Página inicial de 2026: fundo claro, nome em serifa e retrato em preto e branco." widths={[640, 1328]} sizes="(min-width: 64rem) 52rem, 92vw" class="ba-img" />
+<figure
+  class:list={['ba', { 'ba-phone': phone }]}
+  data-before-after
+  data-only-after={`Só ${after.name}`}
+  data-only-before={`Só ${before.name}`}
+  data-partial={`{n}% mostrando ${before.name}, à esquerda`}
+  style="--pos:50%"
+>
+  <div class="ba-stage" style={`aspect-ratio:${ratio}`}>
+    <Image src={after.src} alt={after.alt} widths={widthsFor(after.src.width)} sizes={sizes} class="ba-img" />
     <div class="ba-before">
-      <Image src={antes} alt="Página inicial de 2023: fundo escuro em degradê, nome em cinza e uma ilustração de panda." widths={[664]} sizes="(min-width: 64rem) 52rem, 92vw" class="ba-img" />
+      <Image src={before.src} alt={before.alt} widths={widthsFor(before.src.width)} sizes={sizes} class="ba-img" />
     </div>
-    <span class="ba-tag ba-tag-before" aria-hidden="true">2023</span>
-    <span class="ba-tag ba-tag-after" aria-hidden="true">2026</span>
+    <span class="ba-tag ba-tag-before" aria-hidden="true">{before.tag}</span>
+    <span class="ba-tag ba-tag-after" aria-hidden="true">{after.tag}</span>
     <span class="ba-handle" aria-hidden="true">
       <span class="ba-knob">‹ ›</span>
     </span>
-    <input class="ba-range" type="range" min="0" max="100" value="50" step="1" aria-label="Comparar a versão de 2023 com a de 2026" aria-valuetext="Metade de cada versão" data-ba-range />
+    <input class="ba-range" type="range" min="0" max="100" value="50" step="1" aria-label={`Comparar ${before.name} com ${after.name}`} aria-valuetext="Metade de cada versão" data-ba-range />
   </div>
-  <figcaption class="ba-caption">À esquerda, 2023; à direita, 2026. Arraste a divisória ou use as setas do teclado.</figcaption>
+  <figcaption class="ba-caption">{caption}</figcaption>
 </figure>
 
 <style>
@@ -36,8 +52,33 @@ import depois from '../../assets/images/projetos/portfolio/depois-claro.webp';
     border: 1px solid var(--c-hairline);
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-md);
-    aspect-ratio: 1328 / 808;
     background: var(--c-surface-card);
+  }
+
+  /* prints de celular: um aparelho estreito no centro, com moldura escura */
+  .ba-phone .ba-stage {
+    width: min(100%, 22rem);
+    margin-inline: auto;
+    border: 0.55rem solid #0b0a12;
+    border-radius: 2.4rem;
+    background: #0b0a12;
+    box-shadow:
+      0 0 0 1px var(--c-hairline),
+      var(--shadow-lg);
+  }
+
+  .ba-phone .ba-stage :global(.ba-img) {
+    object-position: top center;
+  }
+
+  .ba-phone .ba-tag {
+    top: 1.1rem;
+  }
+
+  .ba-phone .ba-caption {
+    max-width: 34rem;
+    margin-inline: auto;
+    text-align: center;
   }
 
   .ba-stage :global(.ba-img) {

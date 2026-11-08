@@ -108,6 +108,22 @@ export const portfolio: CaseStudy = {
     kind: 'before-after',
     title: 'Antes e depois',
     text: 'Arraste para comparar a página inicial de 2023 com a de 2026.',
+    compare: {
+      before: {
+        src: antes,
+        alt: 'Página inicial de 2023: fundo escuro em degradê, nome em cinza e uma ilustração de panda.',
+        tag: '2023',
+        name: 'a versão de 2023',
+      },
+      after: {
+        src: depoisClaro,
+        alt: 'Página inicial de 2026: fundo claro, nome em serifa e retrato em preto e branco.',
+        tag: '2026',
+        name: 'a versão de 2026',
+      },
+      frame: 'browser',
+      caption: 'À esquerda, 2023; à direita, 2026. Arraste a divisória ou use as setas do teclado.',
+    },
   },
   visual: {
     intro:
@@ -178,7 +194,7 @@ export const portfolio: CaseStudy = {
     metrics: [
       { value: 100, label: 'de acessibilidade no Lighthouse, em todas as páginas medidas' },
       { value: 96, suffix: '+', label: 'de desempenho no celular, no Lighthouse' },
-      { value: 0, label: 'violações de WCAG 2.2 AA no axe, em 11 páginas e nos dois temas' },
+      { value: 0, label: 'violações de WCAG 2.2 AA no axe, em 12 páginas e nos dois temas' },
       { value: 200, prefix: '< ', suffix: ' KB', label: 'por página, com imagens e fontes' },
     ],
     highlights: [

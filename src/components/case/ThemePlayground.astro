@@ -1,0 +1,612 @@
+---
+import Icon from '../Icon.astro';
+import type { AppTheme } from '../../data/projects/types';
+
+/*
+ * Miniatura interativa dos temas do EFIPLA: a aba Combate de hoje (card Vitais), com
+ * as 11 cores de destaque e as duas peles do app. A troca é só CSS (:has() nos
+ * rádios), então funciona sem JavaScript e com teclado. Como no app, a pele muda
+ * fonte, canto, borda e sombra, e nunca a cor; a cor muda tudo, menos a paleta
+ * semântica (vida, temporário e ouro da XP).
+ */
+interface Props {
+  themes: AppTheme[];
+}
+
+const { themes } = Astro.props;
+const id = `tp${Math.random().toString(36).slice(2, 7)}`;
+const color = `${id}-cor`;
+const skin = `${id}-pele`;
+
+// as variáveis de um destaque (papéis do Material 3 que a miniatura usa)
+const vars = (t: AppTheme) =>
+  `--tp-primary:${t.primary};--tp-surface:${t.surface};--tp-card:${t.surfaceHigh};--tp-outline:${t.outline};--tp-outline-variant:${t.outlineVariant};--tp-ink:${t.onSurface};--tp-ink-soft:${t.onSurfaceVariant}`;
+// o primeiro é o padrão; depois, uma regra por destaque: o rádio marcado troca as
+// variáveis. Nada disso pode ir no style do elemento, que venceria as regras.
+const css =
+  `.${id}{${vars(themes[0])}}.${id} .tp-name[data-i="0"]{display:inline}` +
+  `.${id}:has(input[name="${color}"]:checked) .tp-name{display:none}` +
+  themes
+    .map(
+      (t, i) =>
+        `.${id}:has(input[name="${color}"][value="${i}"]:checked){${vars(t)}}` +
+        `.${id}:has(input[name="${color}"][value="${i}"]:checked) .tp-name[data-i="${i}"]{display:inline}`,
+    )
+    .join('');
+---
+
+<div class:list={['tp', id]} data-ambient>
+  <style is:inline set:html={css} />
+  <div class="tp-controls">
+    <fieldset class="tp-field">
+      <legend class="tp-legend">
+        Cor de destaque
+        <span class="tp-current" aria-hidden="true">
+          {
+            themes.map((t, i) => (
+              <span class="tp-name" data-i={i}>
+                {t.name}
+                {i === 0 && ' (padrão)'}
+              </span>
+            ))
+          }
+        </span>
+      </legend>
+      <div class="tp-swatches">
+        {
+          themes.map((t, i) => (
+            <label class="tp-swatch" style={`--sw:${t.seed};--sw-on:${t.primary}`}>
+              <input class="tp-radio" type="radio" name={color} value={i} checked={i === 0} />
+              <span class="tp-dot" aria-hidden="true" />
+              <span class="sr-only">{t.name}</span>
+            </label>
+          ))
+        }
+      </div>
+    </fieldset>
+    <fieldset class="tp-field">
+      <legend class="tp-legend">Pele</legend>
+      <div class="tp-skins">
+        <label class="tp-skin">
+          <input class="tp-radio" type="radio" name={skin} value="fantasia" checked />
+          <span class="tp-skin-face">Fantasia</span>
+        </label>
+        <label class="tp-skin">
+          <input class="tp-radio" type="radio" name={skin} value="pixel" />
+          <span class="tp-skin-face">8/16 bits</span>
+        </label>
+      </div>
+    </fieldset>
+    <p class="tp-hint">
+      <Icon name="sparkles" size={15} />
+      A miniatura repete a aba Combate do app, com os mesmos números do print de hoje.
+    </p>
+  </div>
+
+  <div class="tp-device" aria-hidden="true">
+    <div class="tp-screen">
+      <div class="tp-appbar">
+        <Icon name="arrow-left" size={16} />
+        <span class="tp-title">Ceris Toph</span>
+        <span class="tp-star">★</span>
+      </div>
+      <div class="tp-tabs">
+        <span>Atributos</span>
+        <span class="is-on">Combate</span>
+        <span>Itens</span>
+      </div>
+      <div class="tp-box tp-card">
+        <div class="tp-in tp-vitals">
+          <div class="tp-row">
+            <span class="tp-hp-label"><span class="tp-heart">♥</span> Pontos de Vida</span>
+            <span class="tp-ca-label"><span class="tp-amp">CA &amp; RES</span><span class="tp-plus">CA + RES</span></span>
+          </div>
+          <div class="tp-row tp-row-big">
+            <span class="tp-hp"><span class="tp-hp-now"></span> / 69</span>
+            <span class="tp-temp">+6 temp</span>
+            <span class="tp-ca"><Icon name="shield-check" size={15} /> 18 ›</span>
+          </div>
+          <div class="tp-bar">
+            <span class="tp-bar-fill"></span>
+            <span class="tp-bar-temp"></span>
+          </div>
+          <div class="tp-tiles">
+            <span class="tp-box tp-tile"><span class="tp-in"><Icon name="zap" size={13} /> Iniciativa <b>+1</b></span></span>
+            <span class="tp-box tp-tile"><span class="tp-in"><Icon name="compass" size={13} /> Caminhada <b>9 m</b></span></span>
+            <span class="tp-box tp-tile"><span class="tp-in"><Icon name="award" size={13} /> Proficiência <b>+4</b></span></span>
+            <span class="tp-box tp-tile"><span class="tp-in"><Icon name="search" size={13} /> Percepção Passiva <b>14</b></span></span>
+          </div>
+          <div class="tp-row tp-xp-row">
+            <span class="tp-xp"><span class="tp-xp-star">★</span> Nível 9 · 57.300 / 64.000 XP</span>
+            <span class="tp-xp-left">faltam 6.700</span>
+          </div>
+          <div class="tp-xpbar"><span></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* a vida que cai com um golpe e volta com a cura, número e barra juntos */
+  @property --tp-hp {
+    syntax: '<integer>';
+    inherits: true;
+    initial-value: 52;
+  }
+
+  .tp {
+    /* pele fantasia (padrão) */
+    --tp-display: var(--font-efipla-title);
+    --tp-text: var(--font-efipla-text);
+    --tp-scale: 1;
+    --tp-cut: 10px;
+    --tp-cut-sm: 6px;
+    --tp-bw: 1.2px;
+    --tp-border: var(--tp-outline-variant);
+    --tp-shadow: 0 2px 6px rgb(0 0 0 / 0.45);
+    --tp-heal: #66bb6a;
+    --tp-temp-c: #64b5f6;
+    --tp-gold: #ffd700;
+    --tp-hit: #e57373;
+    display: grid;
+    gap: 1.5rem 2.5rem;
+    align-items: center;
+  }
+
+  @media (min-width: 52rem) {
+    .tp {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 20rem);
+    }
+  }
+
+  /* pele 8/16 bits: fonte de pixel, canto reto, borda grossa e sombra sem blur */
+  .tp:has(input[value='pixel']:checked) {
+    --tp-display: var(--font-efipla-pixel);
+    --tp-text: var(--font-efipla-pixel);
+    --tp-scale: 0.78;
+    --tp-cut: 0px;
+    --tp-cut-sm: 0px;
+    --tp-bw: 2px;
+    --tp-border: var(--tp-outline);
+    --tp-shadow: 4px 4px 0 rgb(0 0 0 / 0.55);
+  }
+
+  /* ---------- controles ---------- */
+  .tp-controls {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .tp-field {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+  }
+
+  .tp-legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.6rem;
+    margin-bottom: 0.7rem;
+    padding: 0;
+    color: var(--c-muted);
+    font-size: var(--fs-caption-upper);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .tp-current {
+    color: var(--c-ink);
+    font-size: var(--fs-body-sm);
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .tp-name {
+    display: none;
+  }
+
+  .tp-radio {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .tp-swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+
+  .tp-swatch {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .tp-dot {
+    width: 1.95rem;
+    height: 1.95rem;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, var(--sw-on), var(--sw) 62%);
+    box-shadow:
+      0 0 0 1px rgb(var(--c-shadow-rgb) / 0.25),
+      0 2px 6px rgb(var(--c-shadow-rgb) / 0.25);
+    transition:
+      transform 0.35s var(--ease-spring),
+      box-shadow 0.3s var(--ease-out),
+      border-radius 0.3s var(--ease-out);
+  }
+
+  .tp-swatch:hover .tp-dot {
+    transform: scale(1.08);
+  }
+
+  .tp-radio:checked + .tp-dot {
+    transform: scale(1.06);
+    box-shadow:
+      0 0 0 2px var(--c-canvas),
+      0 0 0 4px var(--c-ink);
+  }
+
+  .tp-radio:focus-visible + .tp-dot,
+  .tp-radio:focus-visible + .tp-skin-face {
+    outline: 3px solid var(--c-focus);
+    outline-offset: 3px;
+  }
+
+  /* na pele 8/16 bits até a amostra de cor vira bloco, como no app */
+  .tp:has(input[value='pixel']:checked) .tp-dot {
+    border-radius: 0;
+  }
+
+  .tp-skins {
+    display: inline-flex;
+    padding: 0.25rem;
+    border: 1px solid var(--c-hairline);
+    border-radius: var(--radius-pill);
+    background: var(--c-surface-soft);
+  }
+
+  .tp-skin {
+    position: relative;
+  }
+
+  .tp-skin-face {
+    display: block;
+    padding: 0.55rem 1.1rem;
+    border-radius: var(--radius-pill);
+    color: var(--c-muted);
+    font-weight: 600;
+    transition:
+      background-color 0.3s var(--ease-out),
+      color 0.3s var(--ease-out);
+  }
+
+  .tp-skin:last-child .tp-skin-face {
+    font-family: var(--font-efipla-pixel);
+    font-size: 0.85em;
+    font-weight: 400;
+  }
+
+  .tp-radio:checked + .tp-skin-face {
+    background: var(--c-ink);
+    color: var(--c-canvas);
+  }
+
+  .tp-hint {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    color: var(--c-muted);
+    font-size: var(--fs-caption);
+  }
+
+  .tp-hint :global(svg) {
+    flex: none;
+    margin-top: 0.15em;
+    color: var(--c-accent);
+  }
+
+  /* ---------- a miniatura ---------- */
+  .tp-device {
+    justify-self: center;
+    width: min(100%, 20rem);
+    padding: 0.55rem;
+    border-radius: 2.2rem;
+    background: #0b0a12;
+    box-shadow:
+      0 0 0 1px var(--c-hairline),
+      var(--shadow-lg);
+  }
+
+  .tp-screen {
+    overflow: hidden;
+    padding: 0.9rem 0.8rem 1.1rem;
+    border-radius: 1.7rem;
+    background: var(--tp-surface);
+    color: var(--tp-ink);
+    font-family: var(--tp-text);
+    font-size: calc(0.8rem * var(--tp-scale));
+    line-height: 1.35;
+    transition: background-color 0.45s var(--ease-out);
+  }
+
+  .tp-appbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--tp-ink);
+  }
+
+  .tp-title {
+    font-family: var(--tp-display);
+    font-size: calc(1rem * var(--tp-scale));
+    font-weight: 700;
+  }
+
+  .tp-star {
+    color: var(--tp-primary);
+    transition: color 0.45s var(--ease-out);
+  }
+
+  .tp-tabs {
+    display: flex;
+    justify-content: space-around;
+    margin: 0.7rem -0.8rem 0.8rem;
+    border-bottom: 1px solid var(--tp-outline-variant);
+    color: var(--tp-ink-soft);
+  }
+
+  .tp-tabs span {
+    padding: 0.2rem 0.3rem 0.45rem;
+  }
+
+  .tp-tabs .is-on {
+    color: var(--tp-primary);
+    box-shadow: inset 0 -3px 0 var(--tp-primary);
+    transition:
+      color 0.45s var(--ease-out),
+      box-shadow 0.45s var(--ease-out);
+  }
+
+  /* chanfro com borda: a camada de fora é a borda, a de dentro é o preenchimento */
+  .tp-box {
+    --cut: var(--tp-cut);
+    display: block;
+    padding: var(--tp-bw);
+    background: var(--tp-border);
+    clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 calc(100% - var(--cut)), 0 var(--cut));
+    transition: background-color 0.45s var(--ease-out);
+  }
+
+  .tp-in {
+    --cut-in: max(0px, calc(var(--cut) - var(--tp-bw) * 0.42));
+    display: block;
+    background: var(--tp-card);
+    clip-path: polygon(var(--cut-in) 0, calc(100% - var(--cut-in)) 0, 100% var(--cut-in), 100% calc(100% - var(--cut-in)), calc(100% - var(--cut-in)) 100%, var(--cut-in) 100%, 0 calc(100% - var(--cut-in)), 0 var(--cut-in));
+    transition: background-color 0.45s var(--ease-out);
+  }
+
+  .tp-card {
+    filter: drop-shadow(var(--tp-shadow));
+  }
+
+  .tp-vitals {
+    padding: 0.75rem 0.7rem 0.8rem;
+  }
+
+  .tp-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .tp-hp-label {
+    color: var(--tp-ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 0.92em;
+  }
+
+  .tp-heart {
+    color: var(--tp-heal);
+  }
+
+  .tp-ca-label {
+    color: var(--tp-ink-soft);
+    font-size: 0.92em;
+  }
+
+  .tp-plus {
+    display: none;
+  }
+
+  /* a Silkscreen não tem "&": o app troca por "+" na pele 8/16 bits */
+  .tp:has(input[value='pixel']:checked) .tp-amp {
+    display: none;
+  }
+
+  .tp:has(input[value='pixel']:checked) .tp-plus {
+    display: inline;
+  }
+
+  .tp-row-big {
+    align-items: center;
+    margin-top: 0.15rem;
+  }
+
+  .tp-hp {
+    color: var(--tp-ink);
+    font-size: calc(1.6rem * var(--tp-scale));
+    line-height: 1.1;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+
+  .tp-hp-now {
+    color: var(--tp-heal);
+    counter-reset: hp var(--tp-hp);
+  }
+
+  .tp-hp-now::before {
+    content: counter(hp);
+  }
+
+  .tp-temp {
+    margin-inline-end: auto;
+    color: var(--tp-temp-c);
+  }
+
+  .tp-ca {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    color: var(--tp-primary);
+    font-size: calc(1.15rem * var(--tp-scale));
+    transition: color 0.45s var(--ease-out);
+  }
+
+  .tp-bar {
+    position: relative;
+    display: flex;
+    height: 0.55rem;
+    margin: 0.55rem 0 0.75rem;
+    overflow: hidden;
+    border-radius: calc(var(--tp-cut-sm) * 0.5);
+    background: rgb(255 255 255 / 0.1);
+  }
+
+  .tp-bar-fill {
+    width: calc(var(--tp-hp) * 100% / 75);
+    background: var(--tp-heal);
+  }
+
+  .tp-bar-temp {
+    width: calc(6 * 100% / 75);
+    background: var(--tp-temp-c);
+  }
+
+  .tp-tiles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+  }
+
+  .tp-tile {
+    --cut: var(--tp-cut-sm);
+  }
+
+  .tp-tile .tp-in {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    min-height: 2.3rem;
+    padding: 0.35rem 0.45rem;
+    color: var(--tp-ink);
+    font-size: 0.9em;
+    line-height: 1.15;
+  }
+
+  .tp-tile :global(svg) {
+    flex: none;
+    color: var(--tp-primary);
+    transition: color 0.45s var(--ease-out);
+  }
+
+  .tp-tile b {
+    margin-inline-start: auto;
+    font-weight: 400;
+    white-space: nowrap;
+  }
+
+  .tp-xp-row {
+    margin-top: 0.7rem;
+    font-size: 0.9em;
+  }
+
+  .tp-xp-star {
+    color: var(--tp-gold);
+  }
+
+  .tp-xp-left {
+    color: var(--tp-outline);
+    white-space: nowrap;
+    transition: color 0.45s var(--ease-out);
+  }
+
+  .tp-xpbar {
+    height: 0.3rem;
+    margin-top: 0.35rem;
+    overflow: hidden;
+    background: rgb(255 255 255 / 0.1);
+  }
+
+  .tp-xpbar span {
+    display: block;
+    width: 89.5%;
+    height: 100%;
+    background: var(--tp-gold);
+  }
+
+  /* pele 8/16 bits: nada de blur, nem na barra */
+  .tp:has(input[value='pixel']:checked) .tp-screen {
+    border-radius: 0.5rem;
+  }
+
+  .tp:has(input[value='pixel']:checked) .tp-hp-label {
+    letter-spacing: 0;
+  }
+
+  /* ---------- movimento: um golpe de 11 e a cura logo depois ---------- */
+  :global(:root[data-motion='full']) .tp-vitals {
+    animation: tp-hp 7s var(--ease-in-out) infinite;
+  }
+
+  :global(:root[data-motion='full']) .tp-card {
+    animation: tp-glow 7s var(--ease-in-out) infinite;
+  }
+
+  @keyframes tp-hp {
+    0%,
+    38% {
+      --tp-hp: 52;
+    }
+    46%,
+    66% {
+      --tp-hp: 41;
+    }
+    82%,
+    100% {
+      --tp-hp: 52;
+    }
+  }
+
+  @keyframes tp-glow {
+    0%,
+    38%,
+    100% {
+      filter: drop-shadow(var(--tp-shadow));
+    }
+    44% {
+      filter: drop-shadow(0 0 10px rgb(229 115 115 / 0.85));
+    }
+    56%,
+    66% {
+      filter: drop-shadow(var(--tp-shadow));
+    }
+    76% {
+      filter: drop-shadow(0 0 10px rgb(102 187 106 / 0.8));
+    }
+  }
+</style>

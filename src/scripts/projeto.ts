@@ -129,13 +129,12 @@ document.querySelectorAll<HTMLElement>('[data-gallery]').forEach((gallery) => {
 document.querySelectorAll<HTMLElement>('[data-before-after]').forEach((figure) => {
   const range = figure.querySelector<HTMLInputElement>('[data-ba-range]');
   if (!range) return;
+  // os textos anunciados vêm do componente, com o nome de cada lado
+  const { onlyAfter = '', onlyBefore = '', partial = '{n}%' } = figure.dataset;
   const apply = () => {
     const value = Number(range.value);
     figure.style.setProperty('--pos', `${value}%`);
-    range.setAttribute(
-      'aria-valuetext',
-      value <= 5 ? 'Só a versão de 2026' : value >= 95 ? 'Só a versão de 2023' : `${value}% da versão de 2023 à esquerda`,
-    );
+    range.setAttribute('aria-valuetext', value <= 5 ? onlyAfter : value >= 95 ? onlyBefore : partial.replace('{n}', String(value)));
   };
   range.addEventListener('input', () => {
     figure.classList.remove('is-hinting');
@@ -369,5 +368,26 @@ document.querySelectorAll<HTMLElement>('[data-dino]').forEach((game) => {
   draw();
   enemy = [4, -1];
 });
+
+/* ---------- fontes da página: só quando a seção visual chega perto ---------- */
+const lazyFonts = document.querySelector<HTMLStyleElement>('style[data-lazy-fonts]');
+if (lazyFonts) {
+  const enable = () => {
+    lazyFonts.media = 'all';
+  };
+  const visual = document.getElementById('visual');
+  if (!visual || !('IntersectionObserver' in window)) enable();
+  else {
+    const near = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        near.disconnect();
+        enable();
+      },
+      { rootMargin: '1500px 0px' },
+    );
+    near.observe(visual);
+  }
+}
 
 export {};
