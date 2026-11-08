@@ -14,7 +14,7 @@ interface Props {
 const { kind } = Astro.props;
 
 type Node = { icon: IconName; title: string; text: string; tone?: 'accent' | 'ink' };
-const flows: Record<Exclude<DiagramKind, 'extractorys' | 'efipla' | 'bee-sense'>, { label: string; nodes: Node[]; branch?: Node[] }> = {
+const flows: Record<Exclude<DiagramKind, 'extractorys' | 'efipla' | 'bee-sense' | 'pytest'>, { label: string; nodes: Node[]; branch?: Node[] }> = {
   'dino-runner': {
     label: 'Fluxo do Dino Runner, dos botões aos LEDs e à tela',
     nodes: [
@@ -39,7 +39,15 @@ const flows: Record<Exclude<DiagramKind, 'extractorys' | 'efipla' | 'bee-sense'>
     ],
   },
 };
-const flow = kind === 'extractorys' || kind === 'efipla' || kind === 'bee-sense' ? null : flows[kind];
+const flow = kind === 'extractorys' || kind === 'efipla' || kind === 'bee-sense' || kind === 'pytest' ? null : flows[kind];
+
+/* pytest: a seleção dos estudos, da Tabela 2 do artigo (cada barra na proporção dos 706) */
+const selection = [
+  { name: 'Registros nas três bases', n: 706, note: 'IEEE Xplore 299 · ACM Digital Library 201 · Web of Science 206' },
+  { name: 'Únicos, sem as duplicatas', n: 523, note: '183 repetidos entre as bases' },
+  { name: 'Relevantes pelo título e pelo resumo', n: 132, note: '391 descartados na triagem' },
+  { name: 'Incluídos depois da leitura completa', n: 60, note: '72 descartados na leitura' },
+];
 ---
 
 {
@@ -329,6 +337,31 @@ const flow = kind === 'extractorys' || kind === 'efipla' || kind === 'bee-sense'
         <figcaption class="dg-caption">Redesenhado do fluxograma de pareamento do projeto.</figcaption>
       </figure>
     </div>
+  )
+}
+
+{
+  kind === 'pytest' && (
+    <figure class="dg sl" data-ambient>
+      <p class="dg-head" id="sl-titulo">Da busca à revisão</p>
+      <ol class="list-reset sl-rows" aria-labelledby="sl-titulo">
+        {selection.map((st, i) => (
+          <li
+            class:list={['sl-row', { 'sl-final': i === selection.length - 1 }]}
+            data-reveal
+            style={`--i:${i};--share:${(st.n / selection[0].n).toFixed(4)}`}
+          >
+            <p class="sl-name">{st.name}</p>
+            <div class="sl-bar">
+              <span class="sl-fill" aria-hidden="true" />
+              <span class="sl-val">{st.n}</span>
+            </div>
+            <p class="sl-note">{st.note}</p>
+          </li>
+        ))}
+      </ol>
+      <figcaption class="dg-caption">Os 60 estudos incluídos são 8,5% dos 706 registros. Dados da Tabela 2 do artigo.</figcaption>
+    </figure>
   )
 }
 
@@ -909,6 +942,61 @@ const flow = kind === 'extractorys' || kind === 'efipla' || kind === 'bee-sense'
       width: 1.4rem;
       border-top: 2px dashed var(--c-hairline);
     }
+  }
+
+  /* ---------- pytest: o funil da seleção, numa cor, da mesma base ---------- */
+  .sl-rows {
+    display: grid;
+    gap: 1.15rem;
+  }
+
+  .sl-name {
+    color: var(--c-ink);
+    font-size: var(--fs-body-sm);
+    font-weight: 600;
+  }
+
+  .sl-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 0.4rem;
+  }
+
+  /* barra de 18 px, ponta arredondada e base reta, na proporção dos 706 registros */
+  .sl-fill {
+    flex: none;
+    width: calc(var(--share) * (100% - 3.5rem));
+    min-width: 4px;
+    height: 1.125rem;
+    border-radius: 0 4px 4px 0;
+    background: var(--c-accent);
+    transform-origin: left center;
+  }
+
+  .sl-final .sl-fill {
+    background: var(--c-primary);
+  }
+
+  .sl-val {
+    color: var(--c-ink);
+    font-weight: 600;
+  }
+
+  .sl-note {
+    margin-top: 0.3rem;
+    color: var(--c-muted);
+    font-size: var(--fs-caption);
+  }
+
+  /* as barras crescem quando a linha entra na tela */
+  :global(:root[data-motion='full']) .sl-fill {
+    transform: scaleX(0);
+    transition: transform 0.9s var(--ease-out) calc(var(--i) * 0.12s + 0.15s);
+  }
+
+  :global(:root[data-motion='full']) .sl-row:global(.is-visible) .sl-fill {
+    transform: none;
   }
 
   @keyframes dg-pulse-x {

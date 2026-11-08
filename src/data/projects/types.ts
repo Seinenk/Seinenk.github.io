@@ -25,7 +25,7 @@ export type ArtKind =
   | 'efipla';
 
 /** Diagrama de "Por dentro", desenhado em ProjectDiagram.astro. */
-export type DiagramKind = 'extractorys' | 'bee-sense' | 'dino-runner' | 'portfolio' | 'efipla';
+export type DiagramKind = 'extractorys' | 'bee-sense' | 'dino-runner' | 'portfolio' | 'efipla' | 'pytest';
 
 /** Demonstração interativa na página. */
 export type DemoKind = 'dino-game' | 'before-after' | 'layout-boxes' | 'pytest-run';
