@@ -32,10 +32,13 @@ const onColor = (hex: string) => {
       swatches.map((s, i) => (
         <li class="swatch" data-reveal="scale" style={`--i:${i % 6};--sw:${s.hex};--on:${onColor(s.hex)}`}>
           <button class="swatch-color" type="button" data-copy={s.hex} aria-label={`Copiar ${s.hex} (${s.name})`}>
-            <span class="swatch-hex">{s.hex}</span>
-            <span class="swatch-copy" aria-hidden="true">
-              <Icon name="copy" size={15} />
-              <span data-copy-label>Copiar</span>
+            <span class="swatch-n" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+            <span class="swatch-bottom">
+              <span class="swatch-hex">{s.hex}</span>
+              <span class="swatch-copy" aria-hidden="true">
+                <Icon name="copy" size={15} />
+                <span data-copy-label>Copiar</span>
+              </span>
             </span>
           </button>
           <p class="swatch-name">{s.name}</p>
@@ -61,6 +64,53 @@ const onColor = (hex: string) => {
     display: grid;
     gap: 1rem;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 8.5rem), 1fr));
+  }
+
+  /*
+   * Cartões de cor em escada, cada um com o seu número num círculo (como na referência).
+   * As colunas são sempre em número par, para os pares descerem sempre na mesma coluna,
+   * e o degrau é margem (espaço de verdade), para um cartão nunca cobrir o de baixo.
+   */
+  @media (min-width: 40rem) {
+    .swatches {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      align-items: start;
+    }
+
+    .swatch:nth-child(even) {
+      margin-top: 1.75rem;
+    }
+  }
+
+  @media (min-width: 75rem) {
+    .swatches {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+  }
+
+  .swatch-n {
+    display: grid;
+    place-items: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.94);
+    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.06);
+    color: #111;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    transition: transform 0.6s var(--ease-spring);
+  }
+
+  .swatch-color:hover .swatch-n {
+    transform: rotate(-12deg) scale(1.08);
+  }
+
+  .swatch-bottom {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.4rem;
   }
 
   .swatch-color {

@@ -29,6 +29,7 @@ npm run build
 | --- | --- |
 | `src/data/profile.ts` | **O texto do site**: sobre, atuação, formação, prêmios, eventos, competências e links. A fonte é o Currículo Lattes. |
 | `src/data/projects/` | Um arquivo por projeto, com o estudo de caso completo (veja "Páginas de projeto" abaixo). |
+| `src/data/testimonials.ts` | Os depoimentos de clientes (veja "Depoimentos" abaixo). |
 | `src/pages/` | As páginas: `index` (início), `projetos` (lista), `projeto/[slug]` (uma página por projeto) e `404`. |
 | `src/components/` | Cabeçalho, rodapé, cartões e as seções da página inicial (`home/`). |
 | `src/themes/` | O sistema de temas: paletas, regras de contraste e geração das variáveis de cor. |
@@ -36,6 +37,7 @@ npm run build
 | `src/scripts/site.ts` | Interações: tema, paleta, pausa das animações, menu, animações ao rolar, contadores. |
 | `src/assets/images/` | Fotos e imagens. O Astro gera versões otimizadas (WebP em vários tamanhos). |
 | `public/` | Arquivos servidos como estão: favicon, ícones, imagem de compartilhamento, robots.txt. |
+| `ferramentas/retrato/` | Os dois scripts que geram o retrato recortado do topo da página inicial. |
 
 ## Páginas de projeto
 
@@ -111,6 +113,74 @@ amostras de fonte variável, galeria com caixa de luz, comparação antes/depois
 jogável e a miniatura de temas do EFIPLA. Tudo funciona com teclado e fica parado quando o
 movimento está desligado.
 
+Partes mais visuais, inspiradas em apresentações de portfólio:
+
+- **Topo**: os temas do projeto (`tags`) em pílulas de contorno e o resumo rápido em fichas.
+- **Funções**: mosaico em que a primeira função ocupa duas colunas.
+- **Resultados**: os números em fichas de vidro levemente inclinadas, sobre um anel que se
+  desenha quando a seção aparece.
+- **Decisões** e **cores**: cartões em escada; as cores ganham um número num círculo.
+- **Tipografia**: atrás de cada "Aa", uma cópia só de contorno tracejado.
+- **Processo**: em telas largas, um caminho tracejado no meio com as etapas em caixas
+  alternando dos dois lados.
+- **Telas** (`ScreenShowcase.astro`): antes da galeria, uma vitrine com um leque de celulares
+  (quando há 3 ou mais telas `phone`) ou janelas de navegador sobrepostas (quando há 2 ou mais
+  `browser`), com um caminho tracejado e as `tags` do projeto flutuando por cima. A vitrine é
+  decorativa; as telas, com texto alternativo e legenda, continuam na galeria logo abaixo.
+- **Depoimentos**: quando há depoimentos sobre o projeto, eles aparecem no fim do Resumo.
+
+## Depoimentos
+
+Ficam em `src/data/testimonials.ts`. Cada depoimento tem foto (opcional), nome, o que a pessoa
+faz hoje, uma forma de contato, uma nota de 0 a 10 (aceita meio ponto) e o projeto a que se
+refere (`project`, o nome do arquivo em `src/data/projects/`). Eles aparecem na página inicial,
+numa faixa que corre sozinha e para quando o ponteiro ou o foco do teclado chega nela, e na
+página do projeto correspondente.
+
+Os seis que estão lá hoje são **exemplos** (`sample: true`): aparecem com o selo "Exemplo",
+sem link de contato, e a seção avisa que são exemplos. Para publicar um depoimento real, troque
+um exemplo pelo texto que a pessoa enviou e autorizou publicar, e tire o `sample: true`. Sem
+foto, o cartão mostra as iniciais do nome; com foto, coloque o arquivo em
+`src/assets/images/depoimentos/` e importe no arquivo de dados (há um exemplo no comentário do
+topo). Quando nenhum depoimento for exemplo, o aviso some sozinho.
+
+## Como escrever os textos
+
+Os textos falam com quem não é da área (um recrutador, o dono de um pequeno negócio):
+
+- Primeira pessoa ("desenhei", "programei"), frases curtas e com verbo.
+- Termo técnico explicado na primeira vez que aparece na página, em poucas palavras:
+  "o servidor (backend) que guarda as leituras".
+- Nenhum travessão (— ou –). Períodos por extenso: "2025 a 2026", "2024 até hoje", "desde 2024".
+  Sobretítulos numerados com ponto mediano: "01 · Sobre".
+- Sem frases de efeito: nada de "do código à comunidade", "da ideia ao produto", listas de três
+  só pelo ritmo ou títulos que soam como provérbio. O título diz do que a seção trata.
+- Fatos (nomes, datas, números, códigos de requisito) nunca mudam numa revisão de texto.
+
+Para conferir travessões antes de publicar:
+
+```bash
+grep -rn "[—–]" src
+```
+
+## Retrato do topo
+
+O retrato da página inicial (`src/assets/images/carlos-recorte.webp`) é a foto original
+(`carlos-retrato.jpg`) recortada do fundo e com um duotone da paleta (sombras em grafite, luzes
+em areia clara). O recorte usa o Vision do próprio macOS, sem enviar a foto a nenhum serviço.
+Para refazer com outra foto:
+
+```bash
+swift ferramentas/retrato/mascara.swift src/assets/images/carlos-retrato.jpg /tmp/mascara
+```
+
+```bash
+node ferramentas/retrato/recorte.mjs src/assets/images/carlos-retrato.jpg /tmp/mascara src/assets/images/carlos-recorte.webp
+```
+
+O topo usa a foto original em dois lugares: no cartão "Vamos conversar" e na imagem de
+compartilhamento.
+
 ## Design system
 
 O visual segue o `DESIGN-claude.md` (tela editorial, títulos em serifa, botões na cor primária
@@ -127,6 +197,24 @@ e faixas escuras de "produto"), com a paleta de cores enviada por Carlos:
 
 Os tons intermediários (fundos de cartões, bordas, texto secundário) são misturas entre essas
 seis cores, calculadas no espaço de cor OKLab.
+
+**Acentos frios.** Para dar vida aos detalhes sem mudar a paleta, a Grafite ganhou dois acentos
+calculados a partir dela, no espaço OKLCH, com a mesma luminosidade do taupe (L ≈ 0,60), para
+pesarem o mesmo na página:
+
+| Cor | Hex | De onde vem |
+| --- | --- | --- |
+| Ciano | `#248DAA` | O complemento dos tons quentes: o taupe tem matiz de 29° e a areia, de 53°; os opostos ficam em 209° e 233°. O ciano usa 221°, o meio do caminho. |
+| Violeta | `#7E74C0` | O matiz que o grafite já carrega (289°), com mais saturação. |
+
+Eles entram só em detalhes, nunca em blocos grandes: brilhos de fundo, fios dos sobretítulos,
+barra de progresso, ícones, etiquetas, a luz que segue o ponteiro, o ponto pulsante de "em
+andamento" e os caminhos tracejados. Cada acento tem uma versão forte para texto pequeno
+(`cyanStrong`, `violetStrong`), uma de fundo suave (`cyanSoft`, `violetSoft`) e uma clara para as
+faixas escuras (`inverseCyan`, `inverseViolet`). O build confere o contraste de todas elas.
+
+**Topo da página inicial.** Os tokens `hero`, `heroDeep`, `onHero`, `onHeroSoft` e `heroAccent`
+pintam o bloco atrás do retrato: taupe no modo claro, grafite no escuro.
 
 Fontes, todas servidas pelo próprio site: **Cormorant Garamond** nos títulos, **Inter** no texto
 e **JetBrains Mono** no cartão de código. São as substitutas que o próprio documento indica

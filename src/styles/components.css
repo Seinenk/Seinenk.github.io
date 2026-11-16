@@ -201,8 +201,10 @@
   background: var(--c-accent);
 }
 
+/* projeto em andamento: ponto em ciano, pulsando */
 .status[data-live] .status-dot {
-  background: var(--c-accent-strong);
+  --pulse-rgb: var(--c-cyan-rgb);
+  background: var(--c-cyan);
 }
 
 :root[data-motion='full'] .status[data-live] .status-dot {
@@ -218,6 +220,7 @@
   padding: clamp(1.5rem, 1.2rem + 1vw, 2rem);
   transition:
     transform 0.5s var(--ease-out),
+    translate 0.5s var(--ease-out),
     box-shadow 0.5s var(--ease-out),
     border-color 0.3s ease,
     background-color 0.4s ease;
@@ -239,10 +242,13 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
+  /* a luz é quente no centro e esfria na borda, com um anel de ciano e violeta */
   background: radial-gradient(
     28rem circle at var(--mx) var(--my),
-    rgb(var(--c-accent-rgb) / 0.16),
-    transparent 62%
+    rgb(var(--c-accent-rgb) / 0.15),
+    rgb(var(--c-cyan-rgb) / 0.07) 34%,
+    rgb(var(--c-violet-rgb) / 0.05) 48%,
+    transparent 64%
   );
   opacity: 0;
   pointer-events: none;
@@ -254,8 +260,9 @@
     opacity: 1;
   }
 
+  /* sobe com translate, que não briga com o transform da animação de entrada */
   .card-lift:hover {
-    transform: translateY(-6px);
+    translate: 0 -6px;
     box-shadow: var(--shadow-md);
     border-color: var(--c-hairline);
   }

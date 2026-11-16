@@ -36,6 +36,16 @@ function declarations(tokens: ThemeTokens, scheme: 'light' | 'dark'): string {
     `--c-glow-b-rgb:${rgbTriplet(tokens.glowB)}`,
     `--c-accent-rgb:${rgbTriplet(tokens.accent)}`,
     `--c-canvas-rgb:${rgbTriplet(tokens.canvas)}`,
+    `--c-ink-rgb:${rgbTriplet(tokens.ink)}`,
+    `--c-cyan-rgb:${rgbTriplet(tokens.cyan)}`,
+    `--c-violet-rgb:${rgbTriplet(tokens.violet)}`,
+    `--c-inverse-cyan-rgb:${rgbTriplet(tokens.inverseCyan)}`,
+    `--c-inverse-violet-rgb:${rgbTriplet(tokens.inverseViolet)}`,
+    `--c-inverse-accent-rgb:${rgbTriplet(tokens.inverseAccent)}`,
+    `--c-on-inverse-rgb:${rgbTriplet(tokens.onInverse)}`,
+    `--c-hero-rgb:${rgbTriplet(tokens.hero)}`,
+    `--c-hero-deep-rgb:${rgbTriplet(tokens.heroDeep)}`,
+    `--c-on-hero-rgb:${rgbTriplet(tokens.onHero)}`,
     `color-scheme:${scheme}`,
   );
   return vars.join(';');

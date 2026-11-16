@@ -37,6 +37,21 @@ export const TOKEN_KEYS = [
   'onInverseSoft',
   'inverseAccent',
   'inverseHairline',
+  // acentos frios: só em detalhes (brilhos, fios, ícones, etiquetas), nunca em blocos grandes
+  'cyan', // ciano decorativo: fios, ícones e títulos grandes (3:1)
+  'cyanStrong', // ciano em texto pequeno (4.5:1)
+  'cyanSoft', // fundo de etiqueta em ciano
+  'violet', // violeta decorativo (3:1)
+  'violetStrong', // violeta em texto pequeno (4.5:1)
+  'violetSoft', // fundo de etiqueta em violeta
+  'inverseCyan', // ciano sobre as faixas invertidas
+  'inverseViolet', // violeta sobre as faixas invertidas
+  // bloco do topo da página inicial, atrás do retrato recortado
+  'hero', // tom mais claro do bloco
+  'heroDeep', // tom mais escuro do bloco, onde o retrato se dissolve
+  'onHero', // nome e títulos sobre o bloco
+  'onHeroSoft', // texto corrido sobre o bloco
+  'heroAccent', // itálicos e destaques sobre o bloco
   // diversos
   'focus', // anel de foco
   'selection', // seleção de texto

@@ -15,7 +15,7 @@ const { specimens = [], tokens = [] } = Astro.props;
 
 {
   specimens.length > 0 && (
-    <ul class="list-reset specimens" role="list">
+    <ul class="list-reset specimens" role="list" data-ambient>
       {specimens.map((s, i) => (
         <li class="specimen" data-reveal style={`--i:${i}`}>
           <div class="specimen-head">
@@ -27,7 +27,10 @@ const { specimens = [], tokens = [] } = Astro.props;
             style={`font-family:${s.css};font-weight:${s.weight ?? 400}${s.range ? `;--wght-from:${s.range[0]};--wght-to:${s.range[1]};--wght:${s.range[0]}` : ''}`}
             aria-hidden="true"
           >
-            Aa
+            <svg class="specimen-ghost" focusable="false">
+              <text x="100%" y="0.78em" text-anchor="end">Aa</text>
+            </svg>
+            <span class="specimen-glyph">Aa</span>
             {s.variable && <span class="specimen-weight">peso </span>}
           </p>
           <p class="specimen-sample" style={`font-family:${s.css};font-weight:${s.weight ?? 400}`}>
@@ -102,7 +105,49 @@ const { specimens = [], tokens = [] } = Astro.props;
     font-size: var(--fs-body-sm);
   }
 
+  /*
+   * Atrás do "Aa", uma cópia só de contorno tracejado, deslocada, como o esboço de
+   * tipografia da referência. Ela acompanha a fonte e o peso da amostra.
+   */
+  .specimen-ghost {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 1em;
+    overflow: visible;
+    translate: 0.09em 0.06em;
+    fill: none;
+    stroke: var(--c-cyan);
+    stroke-width: 1;
+    stroke-dasharray: 4 3;
+    pointer-events: none;
+    transition: translate 0.7s var(--ease-out);
+  }
+
+  .specimen:nth-child(even) .specimen-ghost {
+    stroke: var(--c-violet);
+  }
+
+  .specimen:hover .specimen-ghost {
+    translate: 0.16em 0.1em;
+  }
+
+  :global(:root[data-motion='full']) .specimen-ghost text {
+    animation: ghost-dash 18s linear infinite;
+  }
+
+  @keyframes ghost-dash {
+    to {
+      stroke-dashoffset: -140;
+    }
+  }
+
+  .specimen-glyph {
+    position: relative;
+  }
+
   .specimen-aa {
+    position: relative;
     grid-column: 2;
     grid-row: 1 / span 2;
     display: grid;

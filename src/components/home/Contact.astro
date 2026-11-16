@@ -7,10 +7,13 @@ import { links } from '../../data/profile';
   <div class="container">
     <div class="contact-card" data-reveal="scale" data-ambient>
       <div class="contact-glow" aria-hidden="true"></div>
-      <p class="kicker">07 — Contato</p>
+      <div class="contact-glow contact-glow-cyan" aria-hidden="true"></div>
+      <div class="contact-glow contact-glow-violet" aria-hidden="true"></div>
+      <p class="kicker">08 · Contato</p>
       <h2 id="contato-title" class="display-lg">Vamos <em>conversar?</em></h2>
       <p class="contact-text">
-        Me chame no Instagram ou conheça meus códigos no GitHub. A produção acadêmica está no Lattes e no ORCID.
+        Fale comigo pelo Instagram. O código dos meus projetos está no GitHub, e meus trabalhos acadêmicos estão no
+        Currículo Lattes e no ORCID.
       </p>
       <div class="contact-actions">
         <a class="btn btn-on-primary" href={links.instagram.href} target="_blank" rel="noopener noreferrer">
@@ -89,7 +92,43 @@ import { links } from '../../data/profile';
     background: radial-gradient(closest-side, rgb(255 255 255 / 0.16), transparent);
   }
 
+  /* luzes frias nos cantos, bem de leve */
+  .contact-glow-cyan {
+    top: auto;
+    right: auto;
+    bottom: -55%;
+    left: -12%;
+    width: 30rem;
+    height: 30rem;
+    background: radial-gradient(closest-side, rgb(var(--c-inverse-cyan-rgb) / 0.26), transparent);
+  }
+
+  .contact-glow-violet {
+    top: -30%;
+    right: 18%;
+    width: 22rem;
+    height: 22rem;
+    background: radial-gradient(closest-side, rgb(var(--c-inverse-violet-rgb) / 0.22), transparent);
+  }
+
+  /* no cartão estreito ele cairia em cima do sobretítulo branco */
+  @media (max-width: 47.99rem) {
+    .contact-glow-violet {
+      display: none;
+    }
+  }
+
   :global(:root[data-motion='full']) .contact-glow {
     animation: drift 16s ease-in-out infinite;
+  }
+
+  :global(:root[data-motion='full']) .contact-glow-cyan {
+    animation-duration: 21s;
+    animation-direction: reverse;
+  }
+
+  :global(:root[data-motion='full']) .contact-glow-violet {
+    animation-duration: 19s;
+    animation-delay: -7s;
   }
 </style>

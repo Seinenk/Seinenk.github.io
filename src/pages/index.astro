@@ -7,6 +7,7 @@ import Stats from '../components/home/Stats.astro';
 import Journey from '../components/home/Journey.astro';
 import Education from '../components/home/Education.astro';
 import FeaturedProjects from '../components/home/FeaturedProjects.astro';
+import Testimonials from '../components/home/Testimonials.astro';
 import Achievements from '../components/home/Achievements.astro';
 import Skills from '../components/home/Skills.astro';
 import Contact from '../components/home/Contact.astro';
@@ -17,6 +18,7 @@ import { profile } from '../data/profile';
   title={`${profile.name} · Front-end, UX/UI e inovação`}
   description="Portfólio de Carlos Michael da Silva Sousa, desenvolvedor front-end e designer de UX/UI formado pelo IFPI. Trajetória, formação, projetos, prêmios e eventos."
   current="inicio"
+  overlayHeader
 >
   <Hero />
   <Marquee />
@@ -25,6 +27,7 @@ import { profile } from '../data/profile';
   <Journey />
   <Education />
   <FeaturedProjects />
+  <Testimonials />
   <Achievements />
   <Skills />
   <Contact />

@@ -18,7 +18,7 @@ const groups = [
 ];
 ---
 
-<footer class="site-footer band-inverse">
+<footer class="site-footer band-inverse" data-ambient>
   <div class="container">
     <div class="footer-grid">
       <div class="footer-brand">
@@ -68,7 +68,7 @@ const groups = [
 
     <div class="footer-bottom">
       <p>© {year} {profile.name}</p>
-      <p>Conteúdo baseado no Currículo Lattes, atualizado em {profile.cvUpdatedAt}.</p>
+      <p>As informações deste site vêm do meu Currículo Lattes, que atualizei em {profile.cvUpdatedAt}.</p>
       <a class="footer-link to-top" href="#conteudo">
         Voltar ao topo
         <Icon name="arrow-up" size={15} />
@@ -81,8 +81,43 @@ const groups = [
   .site-footer {
     --monogram-bg: var(--c-on-inverse);
     --monogram-fg: var(--c-inverse);
+    position: relative;
+    isolation: isolate;
+    overflow: clip;
     padding-block: clamp(3.5rem, 2.5rem + 4vw, 5rem) 2rem;
     font-size: var(--fs-body-sm);
+  }
+
+  /* fio de luz fria no alto do rodapé e um brilho que respira no canto */
+  .site-footer::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(var(--c-inverse-cyan-rgb) / 0.55) 30%,
+      rgb(var(--c-inverse-violet-rgb) / 0.55) 70%,
+      transparent
+    );
+  }
+
+  .site-footer::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    right: -12rem;
+    bottom: -16rem;
+    width: 34rem;
+    height: 34rem;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgb(var(--c-inverse-violet-rgb) / 0.12), transparent);
+    pointer-events: none;
+  }
+
+  :global(:root[data-motion='full']) .site-footer::after {
+    animation: drift 24s ease-in-out infinite;
   }
 
   .footer-grid {

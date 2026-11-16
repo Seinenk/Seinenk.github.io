@@ -15,9 +15,11 @@ interface Props {
   title: string;
   description: string;
   current?: NavKey;
+  /** A página começa com um bloco de cor no topo e o cabeçalho fica transparente sobre ele. */
+  overlayHeader?: boolean;
 }
 
-const { title, description, current = 'inicio' } = Astro.props;
+const { title, description, current = 'inicio', overlayHeader = false } = Astro.props;
 const site = Astro.site ?? new URL('https://seinenk.github.io');
 const path = Astro.url.pathname.replace(/index\.html$/, '').replace(/\.html$/, '');
 const canonical = new URL(path, site).href;
@@ -60,6 +62,18 @@ const person = {
     <script is:inline define:vars={{ boot }}>
       // Aplica paleta, modo e preferência de movimento antes de pintar a página.
       var root = document.documentElement;
+      // Avisa o CSS que há script: é o que libera o cabeçalho transparente da página inicial.
+      // O mesmo script marca o cabeçalho quando a página rola (classe is-scrolled), para que
+      // o cabeçalho transparente nunca dependa do módulo de interações, que carrega depois.
+      root.classList.add('js');
+      var header = null;
+      var syncHeader = function () {
+        header = header || document.querySelector('[data-header]');
+        if (header) header.classList.toggle('is-scrolled', window.scrollY > 8);
+      };
+      window.addEventListener('scroll', syncHeader, { passive: true });
+      document.addEventListener('DOMContentLoaded', syncHeader);
+      window.addEventListener('pageshow', syncHeader);
       var read = function (key) {
         try {
           return localStorage.getItem(key);
@@ -115,7 +129,7 @@ const person = {
   <body>
     <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
     <div class="scroll-progress" aria-hidden="true"></div>
-    <Header current={current} />
+    <Header current={current} overlay={overlayHeader} />
     <main id="conteudo" tabindex="-1">
       <slot />
     </main>

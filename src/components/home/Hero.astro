@@ -1,9 +1,12 @@
 ---
-import { Picture } from 'astro:assets';
+import { Image, Picture, getImage } from 'astro:assets';
 import Icon from '../Icon.astro';
 import Monogram from '../Monogram.astro';
+import ProjectArt from '../ProjectArt.astro';
+import cutout from '../../assets/images/carlos-recorte.webp';
 import portrait from '../../assets/images/carlos-retrato.jpg';
-import { links, profile } from '../../data/profile';
+import { links, profile, projects } from '../../data/profile';
+import { projectHref } from '../../data/projects';
 
 const ring = 'UX/UI · Front-end · Inovação · Piauí · ';
 const social = [
@@ -16,12 +19,24 @@ const chips = [
   { icon: 'briefcase' as const, text: 'Investe Piauí', place: 'b' },
   { icon: 'presentation' as const, text: 'Web Summit Lisboa 2025', place: 'c' },
 ];
+
+// O projeto que abre a lista aparece no cartão solto ao lado do retrato.
+const featured = projects[0];
+
+// O brilho frio sobre o retrato usa o próprio recorte como máscara (só o contorno importa,
+// então basta uma versão pequena e leve).
+const tintMask = await getImage({ src: cutout, width: 420, format: 'webp', quality: 40 });
+
+// Fios verticais do fundo, nas bordas e nos terços da largura do conteúdo.
+const columns = [0, 33.333, 66.667, 100];
 ---
 
 <section class="hero" aria-labelledby="hero-title" data-tilt-area data-ambient>
   <div class="hero-backdrop" aria-hidden="true">
     <span class="aura aura-a"></span>
     <span class="aura aura-b"></span>
+    <span class="aura aura-c"></span>
+    <span class="aura aura-d"></span>
     <svg class="honeycomb" width="100%" height="100%">
       <defs>
         <pattern id="honeycomb" width="56" height="100" patternUnits="userSpaceOnUse" patternTransform="scale(1.15)">
@@ -30,28 +45,38 @@ const chips = [
       </defs>
       <rect width="100%" height="100%" fill="url(#honeycomb)"></rect>
     </svg>
+    <span class="rule rule-h rule-top"></span>
+    <span class="rule rule-h rule-name"></span>
+    <div class="container hero-rules">
+      {columns.map((x, i) => <span class="rule rule-v" style={`--x:${x}%;--r:${i}`} />)}
+      {columns.map((x, i) => <span class="mark mark-top" style={`--x:${x}%;--r:${i}`} />)}
+      <span class="mark mark-name" style="--x:0%;--r:4"></span>
+      <span class="mark mark-name mark-cool" style="--x:100%;--r:5"></span>
+    </div>
   </div>
 
-  <div class="container hero-grid">
-    <div class="hero-copy">
-      <p class="kicker hero-enter" style="--d:0">Portfólio · {profile.location}</p>
-
-      <h1 id="hero-title" class="display-xl hero-title">
+  <div class="container hero-stage">
+    <div class="hero-name">
+      <h1 id="hero-title" class="hero-title">
         <span class="hero-line"><span style="--l:0">{profile.firstName}</span></span>{' '}
         <span class="hero-line"><span style="--l:1"><em>{profile.middleName}</em></span></span>{' '}
         <span class="hero-line hero-line-sm"><span style="--l:2">{profile.lastNames}</span></span>
       </h1>
+    </div>
 
-      <p class="hero-role hero-enter" style="--d:520" data-typewriter data-words={JSON.stringify(profile.roles)}>
+    <div class="hero-copy">
+      <p class="kicker hero-enter" style="--d:0">Portfólio · {profile.location}</p>
+
+      <p class="hero-role hero-enter" style="--d:420" data-typewriter data-words={JSON.stringify(profile.roles)}>
         <span class="sr-only">{profile.roles.join(', ')}.</span>
         <span aria-hidden="true">
           <span data-typewriter-text>{profile.roles[0]}</span><span class="caret"></span>
         </span>
       </p>
 
-      <p class="body-lg hero-lead hero-enter" style="--d:620">{profile.lead}</p>
+      <p class="hero-lead hero-enter" style="--d:520">{profile.lead}</p>
 
-      <div class="hero-actions hero-enter" style="--d:720">
+      <div class="hero-actions hero-enter" style="--d:620">
         <a class="btn btn-primary" href="#projetos">
           Ver projetos
           <Icon name="arrow-right" size={18} class="icon-trail" />
@@ -63,7 +88,7 @@ const chips = [
         </a>
       </div>
 
-      <ul class="list-reset hero-social hero-enter" style="--d:820" aria-label="Perfis">
+      <ul class="list-reset hero-social hero-enter" style="--d:720" aria-label="Perfis">
         {
           social.map((s) => (
             <li>
@@ -77,22 +102,24 @@ const chips = [
       </ul>
     </div>
 
-    <div class="hero-visual">
-      <figure class="portrait" data-tilt>
-        <div class="portrait-stage">
+    <figure class="hero-scene" data-tilt>
+      <div class="scene-stage">
+        <p class="hero-ghost" aria-hidden="true">{profile.firstName}</p>
+
         <div class="portrait-frame">
           <Picture
-            src={portrait}
+            src={cutout}
             alt="Retrato em preto e branco de Carlos Michael, de terno e camisa escuros, olhando para o lado."
-            widths={[360, 480, 640, 800, 960, 1200]}
-            sizes="(min-width: 64rem) 30rem, (min-width: 48rem) 42vw, 88vw"
+            widths={[360, 480, 640, 800, 960, 1200, cutout.width]}
+            sizes="(min-width: 64rem) 46rem, (min-width: 48rem) 58vw, 94vw"
             formats={['webp']}
-            fallbackFormat="jpg"
-            quality={60}
+            fallbackFormat="webp"
+            quality={74}
             loading="eager"
             fetchpriority="high"
             class="portrait-img"
           />
+          <span class="portrait-tint" style={`--mask:url('${tintMask.src}')`} aria-hidden="true"></span>
         </div>
 
         <div class="portrait-badge" aria-hidden="true">
@@ -104,19 +131,57 @@ const chips = [
           </svg>
           <Monogram size={46} class="badge-mark" />
         </div>
-        </div>
+      </div>
 
-        <ul class="list-reset portrait-chips" aria-label="Destaques">
-          {
-            chips.map((c, i) => (
-              <li class={`chip-float chip-${c.place}`} style={`--c:${i}`}>
-                <Icon name={c.icon} size={16} />
-                {c.text}
-              </li>
-            ))
-          }
-        </ul>
-      </figure>
+      <ul class="list-reset portrait-chips" aria-label="Destaques">
+        {
+          chips.map((c, i) => (
+            <li class={`chip-float chip-${c.place}`} style={`--c:${i}`}>
+              <Icon name={c.icon} size={16} />
+              {c.text}
+            </li>
+          ))
+        }
+      </ul>
+    </figure>
+
+    <div class="hero-cards">
+      <a class="hero-card hero-project hero-enter" style="--d:900" href={projectHref(featured.slug)}>
+        <span class="hero-project-art">
+          <ProjectArt kind={featured.art} />
+        </span>
+        <span class="hero-project-caption">
+          <span class="hero-project-name">
+            <Icon name="sparkles" size={14} />
+            {featured.title}
+          </span>
+          <span class="hero-project-kind">/{featured.type}</span>
+        </span>
+        <span class="sr-only">Projeto em destaque: ver o estudo de caso</span>
+      </a>
+
+      <a class="hero-card hero-talk hero-enter" style="--d:1020" href="#contato">
+        <Image
+          src={portrait}
+          alt=""
+          width={172}
+          height={172}
+          position="top"
+          fit="cover"
+          quality={70}
+          loading="eager"
+          class="hero-talk-photo"
+        />
+        <span class="hero-talk-text">
+          <span class="hero-talk-label">Vamos conversar</span>
+          <span class="hero-talk-name">{profile.shortName}</span>
+          <span class="hero-talk-role">Front-end e UX/UI</span>
+        </span>
+        <span class="hero-talk-go" aria-hidden="true">
+          <Icon name="arrow-up-right" size={18} class="icon-diagonal" />
+        </span>
+        <Icon name="sparkles" size={13} class="hero-talk-spark" />
+      </a>
     </div>
   </div>
 
@@ -127,18 +192,40 @@ const chips = [
 </section>
 
 <style>
+  /*
+   * Topo da página inicial: um bloco na cor da paleta (taupe no claro, grafite no escuro)
+   * com o retrato recortado no meio. Atrás dele, o primeiro nome em tamanho gigante;
+   * na frente, o nome completo. Por cima, fios e cruzes de registro, como numa prancheta.
+   */
   .hero {
+    --c-focus: var(--c-on-hero);
     position: relative;
     isolation: isolate;
     overflow: clip;
-    padding-block: clamp(2.5rem, 1.5rem + 4vw, 5rem) clamp(4rem, 3rem + 4vw, 6rem);
+    display: grid;
+    /* o cabeçalho fica transparente por cima do bloco */
+    margin-top: calc(-1 * var(--nav-h));
+    /* medidas que o nome, o fio acima dele e o retrato compartilham */
+    --hero-pad-b: clamp(2.25rem, 1.8rem + 2vw, 3.25rem);
+    --hero-name-size: clamp(3.5rem, 17.2vw, 7.25rem);
+    --hero-shift: 0rem;
+    padding-block: calc(var(--nav-h) + clamp(1.25rem, 0.8rem + 2vw, 2.75rem)) var(--hero-pad-b);
+    background: linear-gradient(180deg, var(--c-hero) 0%, var(--c-hero-deep) 100%);
+    color: var(--c-on-hero-soft);
   }
 
-  @media (min-width: 48rem) and (min-height: 40rem) {
+  @media (min-width: 48rem) {
     .hero {
-      min-height: min(calc(100svh - var(--nav-h)), 62rem);
-      display: grid;
-      align-items: center;
+      --hero-name-size: clamp(5.5rem, 13.4vw, 8.75rem);
+    }
+  }
+
+  @media (min-width: 72rem) and (min-height: 40rem) {
+    .hero {
+      --hero-name-size: clamp(6.25rem, 10.2vw, 10rem);
+      /* o retrato fica um pouco à direita do centro, e o nome de fundo compensa */
+      --hero-shift: clamp(1.5rem, 4vw, 4.5rem);
+      min-height: min(100svh, 62rem);
     }
   }
 
@@ -159,15 +246,48 @@ const chips = [
   }
 
   .aura-a {
-    top: -18vmax;
-    right: -14vmax;
-    background: radial-gradient(closest-side, rgb(var(--c-glow-a-rgb) / 0.55), transparent);
+    top: -20vmax;
+    right: -10vmax;
+    background: radial-gradient(closest-side, rgb(var(--c-glow-a-rgb) / var(--aura-a-alpha, 0.42)), transparent);
+  }
+
+  /*
+   * No modo claro o bloco é taupe e o texto é claro: o brilho de areia e o nome fantasma
+   * ficam mais fracos para o texto por cima manter o contraste AA (4,5:1).
+   */
+  :global(:root[data-mode='light']) .hero {
+    --aura-a-alpha: 0.16;
+    --ghost-alpha: 0.07;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :global(:root:not([data-mode])) .hero {
+      --aura-a-alpha: 0.16;
+      --ghost-alpha: 0.07;
+    }
   }
 
   .aura-b {
-    bottom: -26vmax;
+    bottom: -28vmax;
     left: -20vmax;
-    background: radial-gradient(closest-side, rgb(var(--c-glow-b-rgb) / 0.22), transparent);
+    background: radial-gradient(closest-side, rgb(var(--c-glow-b-rgb) / 0.26), transparent);
+  }
+
+  /* luz fria, bem de leve: ciano de um lado, violeta do outro */
+  .aura-c {
+    width: 38vmax;
+    height: 38vmax;
+    top: 8%;
+    left: -12vmax;
+    background: radial-gradient(closest-side, rgb(var(--c-inverse-violet-rgb) / 0.16), transparent);
+  }
+
+  .aura-d {
+    width: 34vmax;
+    height: 34vmax;
+    bottom: -8vmax;
+    right: -6vmax;
+    background: radial-gradient(closest-side, rgb(var(--c-inverse-cyan-rgb) / 0.17), transparent);
   }
 
   :global(:root[data-motion='full']) .aura-a {
@@ -178,44 +298,302 @@ const chips = [
     animation: drift 24s ease-in-out infinite reverse;
   }
 
+  :global(:root[data-motion='full']) .aura-c {
+    animation: drift 21s ease-in-out infinite;
+    animation-delay: -6s;
+  }
+
+  :global(:root[data-motion='full']) .aura-d {
+    animation: drift 27s ease-in-out infinite reverse;
+    animation-delay: -11s;
+  }
+
   .honeycomb {
     position: absolute;
     inset: 0;
-    color: var(--c-hairline);
-    opacity: 0.7;
-    -webkit-mask-image: radial-gradient(ellipse 55% 60% at 72% 45%, #000 10%, transparent 70%);
-    mask-image: radial-gradient(ellipse 55% 60% at 72% 45%, #000 10%, transparent 70%);
+    color: rgb(var(--c-on-hero-rgb) / 0.13);
+    -webkit-mask-image: radial-gradient(ellipse 46% 56% at 58% 44%, #000 8%, transparent 70%);
+    mask-image: radial-gradient(ellipse 46% 56% at 58% 44%, #000 8%, transparent 70%);
   }
 
-  /* ---------- grade ---------- */
-  .hero-grid {
-    display: grid;
-    gap: clamp(2.5rem, 2rem + 3vw, 4rem);
-    align-items: center;
+  /* ---------- fios e cruzes de registro ---------- */
+  .hero-rules {
+    position: absolute;
+    inset: 0;
+    margin-inline: auto;
   }
 
-  @media (min-width: 48rem) {
-    .hero-grid {
-      grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  .rule {
+    position: absolute;
+    background: rgb(var(--c-on-hero-rgb) / 0.13);
+  }
+
+  .rule-v {
+    top: 0;
+    bottom: 0;
+    left: var(--x);
+    width: 1px;
+    transform-origin: 50% 0;
+  }
+
+  .rule-h {
+    left: 0;
+    right: 0;
+    height: 1px;
+    transform-origin: 0 50%;
+  }
+
+  .rule-top {
+    top: calc(var(--nav-h) + 0.5rem);
+  }
+
+  /* fio logo acima do nome, só nas telas largas (onde o nome fica na base do bloco) */
+  .rule-name,
+  .mark-name {
+    display: none;
+  }
+
+  @media (min-width: 72rem) and (min-height: 40rem) {
+    .rule-name,
+    .mark-name {
+      display: block;
+      top: auto;
+      bottom: calc(var(--hero-pad-b) + var(--hero-name-size) * 0.9 + 4.5rem);
+    }
+
+    .mark.mark-name {
+      translate: -50% 50%;
     }
   }
 
-  .hero-copy {
-    display: grid;
-    justify-items: start;
-    gap: 1.4rem;
+  .mark {
+    position: absolute;
+    left: var(--x);
+    width: 0.875rem;
+    height: 0.875rem;
+    translate: -50% -50%;
+    color: rgb(var(--c-on-hero-rgb) / 0.78);
+    background:
+      linear-gradient(currentColor, currentColor) center / 100% 1px no-repeat,
+      linear-gradient(currentColor, currentColor) center / 1px 100% no-repeat;
   }
 
-  .hero-title {
+  .mark-top {
+    top: calc(var(--nav-h) + 0.5rem);
+  }
+
+  .mark-cool {
+    color: var(--c-inverse-cyan);
+  }
+
+  @media (max-width: 47.99rem) {
+    .rule-v:nth-child(2),
+    .rule-v:nth-child(3),
+    .mark-top:nth-child(6),
+    .mark-top:nth-child(7) {
+      display: none;
+    }
+  }
+
+  :global(:root[data-motion='full']) .rule-v {
+    animation: grow-y 1.5s var(--ease-out) both;
+    animation-delay: calc(var(--r) * 110ms + 100ms);
+  }
+
+  :global(:root[data-motion='full']) .rule-h {
+    animation: grow-x 1.6s var(--ease-out) both 0.25s;
+  }
+
+  :global(:root[data-motion='full']) .mark {
+    animation: mark-in 0.9s var(--ease-spring) both;
+    animation-delay: calc(var(--r) * 110ms + 700ms);
+  }
+
+  :global(:root[data-motion='full']) .mark-cool {
+    animation:
+      mark-in 0.9s var(--ease-spring) both,
+      mark-spin 9s var(--ease-in-out) infinite;
+    animation-delay:
+      calc(var(--r) * 110ms + 700ms),
+      2.6s;
+  }
+
+  @keyframes mark-in {
+    from {
+      opacity: 0;
+      transform: rotate(-90deg) scale(0.3);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes mark-spin {
+    0%,
+    78% {
+      rotate: 0deg;
+    }
+    100% {
+      rotate: 180deg;
+    }
+  }
+
+  /* ---------- grade ---------- */
+  .hero-stage {
     display: grid;
-    margin-top: 0.25rem;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'scene'
+      'name'
+      'copy'
+      'chips'
+      'cards';
+    row-gap: clamp(1.5rem, 1.1rem + 2vw, 2.25rem);
+  }
+
+  .hero-name {
+    grid-area: name;
+    position: relative;
+    z-index: 4;
+    margin-top: clamp(-6.5rem, -22vw, -3.75rem);
+    pointer-events: none;
+  }
+
+  .hero-copy {
+    grid-area: copy;
+    position: relative;
+    z-index: 4;
+    display: grid;
+    justify-items: start;
+    gap: 1.1rem;
+  }
+
+  .hero-scene {
+    grid-area: scene;
+    position: relative;
+    z-index: 1;
+    width: min(100%, 27rem);
+    margin: 0;
+    justify-self: center;
+  }
+
+  .hero-cards {
+    grid-area: cards;
+    position: relative;
+    z-index: 4;
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  @media (min-width: 34rem) and (max-width: 71.99rem) {
+    .hero-cards {
+      grid-template-columns: minmax(0, 13rem) minmax(0, 1fr);
+      align-items: end;
+    }
+  }
+
+  /* tablets: texto à esquerda, retrato à direita, nome embaixo */
+  @media (min-width: 48rem) {
+    .hero-stage {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-areas:
+        'copy scene'
+        'name name'
+        'cards cards';
+      align-items: start;
+      column-gap: 1.5rem;
+    }
+
+    .hero-scene {
+      width: min(100%, 30rem);
+    }
+
+    .hero-name {
+      margin-top: clamp(-5.5rem, -9vw, -3.5rem);
+    }
+
+    /* o nome sobe por cima da linha anterior: a coluna de texto reserva esse espaço */
+    .hero-copy {
+      padding-bottom: 2.5rem;
+    }
+  }
+
+  /* telas largas: retrato no centro, texto à esquerda, cartões à direita, nome por cima */
+  @media (min-width: 72rem) and (min-height: 40rem) {
+    .hero-stage {
+      grid-template-columns: minmax(0, 23rem) minmax(0, 1fr) minmax(0, 20.5rem);
+      grid-template-rows: minmax(0, 1fr) auto;
+      grid-template-areas:
+        'copy . cards'
+        'name name cards';
+      align-items: stretch;
+      row-gap: 0;
+    }
+
+    .hero-copy {
+      align-self: start;
+      padding-top: clamp(1.5rem, 9svh, 6rem);
+      padding-bottom: 0;
+    }
+
+    .hero-name {
+      align-self: end;
+      margin-top: 2.5rem;
+    }
+
+    .hero-cards {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 1.5rem;
+      padding-top: clamp(2.5rem, 15svh, 9.5rem);
+    }
+
+    /*
+     * O retrato sai da grade e se prende à base do bloco. Como o bloco (.hero) também é
+     * uma grade, a área precisa voltar a "auto": sem isso, o navegador procura a área
+     * "scene" na grade do bloco, não acha, e o retrato fica com tamanho zero.
+     */
+    .hero-scene {
+      grid-area: auto;
+      justify-self: auto;
+      position: absolute;
+      bottom: 0;
+      left: calc(50% + var(--hero-shift));
+      translate: -50% 0;
+      width: auto;
+      height: min(calc(100% - var(--nav-h) - 1rem), 54rem);
+    }
+  }
+
+  /* ---------- nome ---------- */
+  .hero-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 0.2em;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: var(--hero-name-size);
+    line-height: 0.9;
+    letter-spacing: -0.035em;
+    color: var(--c-on-hero);
+    text-wrap: nowrap;
+    text-shadow: 0 0.04em 0.6em rgb(var(--c-hero-deep-rgb) / 0.45);
+  }
+
+  .hero-title em {
+    font-style: italic;
+    color: var(--c-hero-accent);
   }
 
   .hero-line {
     display: block;
     overflow: clip;
-    padding: 0.14em 0.12em 0.08em;
-    margin: -0.14em -0.12em -0.08em;
+    padding: 0.14em 0.12em 0.1em;
+    margin: -0.14em -0.12em -0.1em;
   }
 
   .hero-line > span {
@@ -223,10 +601,18 @@ const chips = [
   }
 
   .hero-line-sm {
-    margin-top: 0.4rem;
-    font-size: var(--fs-display-sm);
+    flex-basis: 100%;
+    margin-top: 0.35rem;
+    font-size: clamp(1.25rem, 1.05rem + 1vw, 1.875rem);
+    line-height: 1.1;
     letter-spacing: -0.01em;
-    color: var(--c-muted);
+    color: var(--c-on-hero-soft);
+    text-shadow: none;
+  }
+
+  /* ---------- texto ---------- */
+  .hero-copy .kicker {
+    color: var(--c-on-hero);
   }
 
   .hero-role {
@@ -236,7 +622,7 @@ const chips = [
     font-family: var(--font-display);
     font-size: var(--fs-display-sm);
     font-style: italic;
-    color: var(--c-accent-strong);
+    color: var(--c-hero-accent);
   }
 
   .caret {
@@ -253,14 +639,47 @@ const chips = [
   }
 
   .hero-lead {
-    max-width: 34rem;
+    max-width: 30rem;
+    font-size: var(--fs-body-lg);
+    line-height: 1.6;
+    color: var(--c-on-hero);
   }
 
   .hero-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
-    margin-top: 0.4rem;
+    margin-top: 0.25rem;
+  }
+
+  @media (max-width: 26rem) {
+    .hero-actions {
+      gap: 0.5rem;
+    }
+
+    .hero-actions :global(.btn) {
+      padding-inline: 1rem;
+    }
+  }
+
+  /* botões sobre o bloco: o principal em claro, o secundário só no contorno */
+  .hero :global(.btn-primary) {
+    --btn-bg: var(--c-on-hero);
+    --btn-fg: var(--c-hero-deep);
+  }
+
+  .hero :global(.btn-primary:is(:hover, :focus-visible)) {
+    --btn-bg: var(--c-hero-accent);
+  }
+
+  .hero :global(.btn-secondary) {
+    --btn-fg: var(--c-on-hero);
+    --btn-border: rgb(var(--c-on-hero-rgb) / 0.5);
+  }
+
+  .hero :global(.btn-secondary:is(:hover, :focus-visible)) {
+    --btn-bg: rgb(var(--c-on-hero-rgb) / 0.12);
+    --btn-border: var(--c-on-hero);
   }
 
   .hero-social {
@@ -268,64 +687,137 @@ const chips = [
     gap: 0.5rem;
   }
 
-  /* ---------- retrato ---------- */
-  .hero-visual {
-    display: grid;
-    justify-items: center;
+  .hero-social :global(.icon-btn) {
+    border-color: rgb(var(--c-on-hero-rgb) / 0.34);
+    background: rgb(var(--c-on-hero-rgb) / 0.06);
+    color: var(--c-on-hero);
   }
 
-  .portrait {
-    position: relative;
-    width: min(100%, 30rem);
-    margin: 0;
+  .hero-social :global(.icon-btn:hover) {
+    border-color: var(--c-on-hero);
+    background: rgb(var(--c-on-hero-rgb) / 0.16);
+  }
+
+  /* ---------- retrato recortado ---------- */
+  .hero-scene {
     transform: perspective(1400px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
     transition: transform 0.8s var(--ease-out);
     transform-style: preserve-3d;
   }
 
-  .portrait-stage {
+  .scene-stage {
     position: relative;
+    height: 100%;
     transform-style: preserve-3d;
+  }
+
+  /* o primeiro nome em caixa alta atrás da cabeça, como o título de uma capa de revista */
+  .hero-ghost {
+    position: absolute;
+    left: 50%;
+    top: 3%;
+    z-index: -1;
+    translate: calc(-50% - var(--hero-shift)) 0;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(4.75rem, 25vw, 9.5rem);
+    line-height: 0.8;
+    letter-spacing: -0.045em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: rgb(var(--c-on-hero-rgb) / var(--ghost-alpha, 0.12));
+    transform: translateZ(-150px);
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  @media (min-width: 48rem) {
+    .hero-ghost {
+      /* na coluna da direita: recua meia coluna para ficar no centro do conteúdo */
+      left: -0.75rem;
+      top: -3%;
+      translate: -50% 0;
+      font-size: clamp(11rem, 24vw, 15rem);
+    }
+  }
+
+  @media (min-width: 72rem) and (min-height: 40rem) {
+    .hero-ghost {
+      left: 50%;
+      top: 0.5%;
+      translate: calc(-50% - var(--hero-shift)) 0;
+      font-size: clamp(15rem, 23.6vw, 23.5rem);
+    }
   }
 
   .portrait-frame {
     position: relative;
-    overflow: hidden;
-    border-radius: var(--radius-xl);
-    background: var(--c-inverse);
-    box-shadow: var(--shadow-lg);
-    aspect-ratio: 1508 / 2000;
+    isolation: isolate;
+    height: 100%;
+    aspect-ratio: 1508 / 1691;
+    /* o corpo se dissolve no fundo, como na foto original */
+    -webkit-mask-image: linear-gradient(180deg, #000 60%, transparent 97%);
+    mask-image: linear-gradient(180deg, #000 60%, transparent 97%);
   }
 
-  .portrait-frame::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
-    background: linear-gradient(180deg, transparent 55%, rgb(var(--c-glow-b-rgb) / 0.22));
-    mix-blend-mode: soft-light;
-    pointer-events: none;
+  .portrait-frame :global(picture) {
+    display: block;
+    height: 100%;
   }
 
   .portrait-frame :global(img) {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    object-position: 50% 100%;
+    filter: drop-shadow(0 2.5rem 3rem rgb(var(--c-shadow-rgb) / 0.35));
+  }
+
+  /* luz fria sobre o retrato, recortada pelo próprio contorno */
+  .portrait-tint {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      rgb(var(--c-inverse-cyan-rgb) / 0.62) 0%,
+      transparent 42%,
+      transparent 58%,
+      rgb(var(--c-inverse-violet-rgb) / 0.58) 100%
+    );
+    background-size: 160% 100%;
+    background-position: 50% 0;
+    mix-blend-mode: soft-light;
+    -webkit-mask: var(--mask) center / 100% 100% no-repeat;
+    mask: var(--mask) center / 100% 100% no-repeat;
+    pointer-events: none;
+  }
+
+  :global(:root[data-motion='full']) .portrait-tint {
+    animation: tint-sway 14s ease-in-out infinite alternate;
+  }
+
+  @keyframes tint-sway {
+    from {
+      background-position: 0% 0;
+    }
+    to {
+      background-position: 100% 0;
+    }
   }
 
   .portrait-badge {
     position: absolute;
-    left: clamp(-2.75rem, -4vw, -1rem);
-    bottom: clamp(1.5rem, 4vw, 3rem);
-    width: clamp(6rem, 5rem + 2.5vw, 7.5rem);
-    height: clamp(6rem, 5rem + 2.5vw, 7.5rem);
+    left: clamp(-0.5rem, 3%, 2rem);
+    bottom: 33%;
+    z-index: 2;
+    width: clamp(5.5rem, 4.75rem + 2.4vw, 7.25rem);
+    height: clamp(5.5rem, 4.75rem + 2.4vw, 7.25rem);
     display: grid;
     place-items: center;
     border-radius: 50%;
     background: var(--c-canvas);
     box-shadow: var(--shadow-md);
-    transform: translateZ(40px);
+    translate: 0 0 50px;
   }
 
   .ring {
@@ -343,15 +835,34 @@ const chips = [
     animation: spin 26s linear infinite;
   }
 
+  /* a partir do tablet o selo fica no alto, à esquerda da cabeça, longe do texto */
+  @media (min-width: 48rem) {
+    .portrait-badge {
+      left: 1%;
+      top: 3%;
+      bottom: auto;
+    }
+  }
+
+  @media (min-width: 72rem) and (min-height: 40rem) {
+    .portrait-badge {
+      left: 18%;
+      top: 1%;
+    }
+  }
+
   .portrait-chips {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: 0.5rem;
-    margin-top: 1.25rem;
+    margin-top: -1.25rem;
+    position: relative;
+    z-index: 5;
   }
 
   .chip-float {
+    flex: none;
     display: inline-flex;
     align-items: center;
     gap: 0.45rem;
@@ -367,33 +878,65 @@ const chips = [
   }
 
   .chip-float :global(.icon) {
+    flex: none;
+    color: var(--c-cyan-strong);
+  }
+
+  .chip-b :global(.icon) {
+    color: var(--c-violet-strong);
+  }
+
+  .chip-c :global(.icon) {
     color: var(--c-accent-strong);
+  }
+
+  @media (max-width: 47.99rem) {
+    .hero-scene {
+      /* no celular os selos ficam depois do nome, não em cima dele */
+      display: contents;
+    }
+
+    .scene-stage {
+      grid-area: scene;
+      width: min(100%, 27rem);
+      justify-self: center;
+    }
+
+    .portrait-chips {
+      grid-area: chips;
+      justify-content: flex-start;
+      margin-top: 0;
+    }
   }
 
   @media (min-width: 48rem) {
     .portrait-chips {
       display: block;
       margin: 0;
+      position: static;
+      transform-style: preserve-3d;
     }
 
+    /* a profundidade vai em translate, que soma com as animações de transform */
     .chip-float {
       position: absolute;
-      transform: translateZ(60px);
+      z-index: 5;
+      translate: 0 0 70px;
     }
 
     .chip-a {
-      top: 7%;
-      right: -0.75rem;
+      top: 9%;
+      right: 2%;
     }
 
     .chip-b {
-      top: 38%;
-      left: -2.25rem;
+      top: 43%;
+      left: -3%;
     }
 
     .chip-c {
-      bottom: 7%;
-      right: -0.75rem;
+      top: 63%;
+      right: -2%;
     }
 
     :global(:root[data-motion='full']) .chip-float {
@@ -406,17 +949,183 @@ const chips = [
     }
   }
 
+  @media (min-width: 72rem) and (min-height: 40rem) {
+    .chip-a {
+      top: 7%;
+      right: 9%;
+    }
+
+    /* nas telas largas os três selos ficam do lado direito do rosto, longe do texto */
+    .chip-b {
+      top: 47%;
+      left: auto;
+      right: 12%;
+    }
+
+    .chip-c {
+      top: 61%;
+      right: 3%;
+    }
+  }
+
+  /* ---------- cartões soltos ---------- */
+  .hero-card {
+    position: relative;
+    display: block;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    box-shadow: 0 2rem 3.5rem -2rem rgb(var(--c-shadow-rgb) / 0.75);
+    transition:
+      transform 0.6s var(--ease-out),
+      box-shadow 0.6s var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .hero-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 2.6rem 4rem -2rem rgb(var(--c-shadow-rgb) / 0.85);
+    }
+
+    .hero-project:hover {
+      transform: translateY(-5px) rotate(-1.2deg);
+    }
+  }
+
+  /* o projeto em destaque, como uma foto presa na prancheta */
+  .hero-project {
+    width: min(100%, 13rem);
+    padding: 0.55rem 0.55rem 0.7rem;
+    background: var(--c-surface-raised);
+    color: var(--c-ink);
+    rotate: 2.2deg;
+  }
+
+  .hero-project-art {
+    display: block;
+    overflow: hidden;
+    border-radius: 3px;
+    aspect-ratio: 1;
+  }
+
+  .hero-project-art :global(.art) {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+  }
+
+  .hero-project-caption {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+    padding-inline: 0.15rem;
+    font-size: var(--fs-caption);
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  .hero-project-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-width: 0;
+  }
+
+  .hero-project-name :global(.icon) {
+    flex: none;
+    color: var(--c-violet-strong);
+  }
+
+  .hero-project-kind {
+    color: var(--c-muted);
+    white-space: nowrap;
+  }
+
+  /* convite para conversar: sempre no tom oposto ao do bloco */
+  .hero-talk {
+    width: min(100%, 20.5rem);
+    display: grid;
+    grid-template-columns: 5.375rem minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 0.9rem;
+    padding: 0.6rem;
+    background: var(--c-ink);
+    color: var(--c-canvas);
+  }
+
+  .hero-talk :global(.hero-talk-photo) {
+    width: 5.375rem;
+    height: 5.375rem;
+    border-radius: 3px;
+    object-fit: cover;
+  }
+
+  .hero-talk-text {
+    align-self: stretch;
+    display: grid;
+    align-content: space-between;
+    padding-block: 0.15rem;
+    min-width: 0;
+  }
+
+  .hero-talk-label {
+    font-size: var(--fs-caption);
+    opacity: 0.72;
+  }
+
+  .hero-talk-name {
+    font-size: var(--fs-body-md);
+    font-weight: 600;
+    line-height: 1.25;
+  }
+
+  .hero-talk-role {
+    font-size: var(--fs-caption);
+    opacity: 0.72;
+  }
+
+  .hero-talk-go {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 3px;
+    background: var(--c-canvas);
+    color: var(--c-ink);
+  }
+
+  .hero-talk :global(.icon) {
+    transition: transform 0.45s var(--ease-out);
+  }
+
+  .hero-talk:hover :global(.icon-diagonal) {
+    transform: translate(2px, -2px);
+  }
+
+  .hero-talk :global(.hero-talk-spark) {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    opacity: 0.6;
+  }
+
+  :global(:root[data-motion='full']) .hero-talk :global(.hero-talk-spark) {
+    animation: spin 14s linear infinite;
+  }
+
   /* ---------- seta para rolar ---------- */
   .scroll-cue {
     position: absolute;
     left: 50%;
-    bottom: 1.25rem;
+    bottom: 1.1rem;
+    z-index: 4;
     translate: -50% 0;
     display: none;
     flex-direction: column;
     align-items: center;
     gap: 0.6rem;
-    color: var(--c-muted);
+    color: var(--c-on-hero-soft);
     font-size: var(--fs-caption);
     text-decoration: none;
   }
@@ -424,16 +1133,16 @@ const chips = [
   .scroll-cue-line {
     position: relative;
     width: 1px;
-    height: 2.75rem;
+    height: 2.5rem;
     overflow: hidden;
-    background: var(--c-hairline);
+    background: rgb(var(--c-on-hero-rgb) / 0.3);
   }
 
   .scroll-cue-line::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: var(--c-ink);
+    background: var(--c-on-hero);
     transform: translateY(-100%);
   }
 
@@ -441,7 +1150,7 @@ const chips = [
     animation: scroll-cue 2.4s var(--ease-in-out) infinite;
   }
 
-  @media (min-width: 48rem) and (min-height: 46rem) {
+  @media (min-width: 72rem) and (min-height: 53rem) {
     .scroll-cue {
       display: flex;
     }
@@ -449,53 +1158,52 @@ const chips = [
 
   /* ---------- entrada da página ---------- */
   :global(:root[data-motion='full']) .hero-enter {
-    animation: fade-up 1s var(--ease-out) both;
+    animation: fade-up 1s var(--ease-out) backwards;
     animation-delay: calc(var(--d) * 1ms + 80ms);
   }
 
   :global(:root[data-motion='full']) .hero-line > span {
     animation: rise 1.15s var(--ease-out) both;
-    animation-delay: calc(var(--l) * 110ms + 150ms);
+    animation-delay: calc(var(--l) * 110ms + 350ms);
   }
 
-  :global(:root[data-motion='full']) .portrait-stage {
-    animation: portrait-in 1.3s var(--ease-out) both 0.1s;
+  :global(:root[data-motion='full']) .portrait-frame {
+    animation: portrait-in 1.4s var(--ease-out) both 0.1s;
   }
 
   @keyframes portrait-in {
     from {
-      transform: translate3d(0, 2rem, 0) scale(0.97);
+      opacity: 0;
+      transform: translate3d(0, 2.5rem, 0) scale(0.97);
     }
     to {
+      opacity: 1;
       transform: none;
     }
   }
 
+  /* a foto assenta com um leve zoom, como antes, agora a partir da base do recorte */
   :global(:root[data-motion='full']) .portrait-frame :global(img) {
+    transform-origin: 50% 100%;
     animation: settle 2.4s var(--ease-out) both 0.1s;
   }
 
-  :global(:root[data-motion='full']) .portrait-badge {
-    animation: fade-up 1s var(--ease-out) both 0.9s;
+  :global(:root[data-motion='full']) .hero-ghost {
+    animation: ghost-in 1.8s var(--ease-out) both 0.15s;
   }
 
-  /* celulares deitados: retrato menor ao lado do texto */
-  @media (orientation: landscape) and (max-height: 32rem) {
-    .hero-grid {
-      grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.7fr);
+  @keyframes ghost-in {
+    from {
+      opacity: 0;
+      letter-spacing: 0.04em;
     }
+    to {
+      opacity: 1;
+      letter-spacing: -0.045em;
+    }
+  }
 
-    .portrait {
-      width: min(100%, 15rem);
-    }
-
-    .portrait-badge {
-      width: 5.5rem;
-      height: 5.5rem;
-    }
-
-    .portrait-chips {
-      display: none;
-    }
+  :global(:root[data-motion='full']) .portrait-badge {
+    animation: fade-up 1s var(--ease-out) backwards 0.9s;
   }
 </style>

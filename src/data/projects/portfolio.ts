@@ -12,31 +12,31 @@ export const portfolio: CaseStudy = {
   slug: 'portfolio',
   title: 'Portfólio',
   type: 'Web',
-  period: '2023 — 2026',
+  period: '2023 a 2026',
   status: 'Em andamento',
   summary:
-    'Este site: nasceu em 2023 como atividade de Web, em HTML e CSS, e foi refeito em 2026 em Astro, com design system, temas claro e escuro e animações que respeitam quem prefere menos movimento.',
-  tagline: 'Do primeiro HTML da faculdade a um site com design system, temas e movimento acessível.',
+    'Fiz a primeira versão deste site em 2023, em HTML e CSS, numa atividade da disciplina de Web. Em 2026, refiz tudo em Astro, com design system, temas claro e escuro e animações que respeitam quem prefere menos movimento.',
+  tagline: 'Comecei este site em HTML, na faculdade. Hoje ele tem design system, temas e animações acessíveis.',
   tags: ['Astro', 'Design system', 'Acessibilidade'],
   art: 'portfolio',
   facts: [
     { label: 'Papel', value: 'Direção de design, conteúdo e desenvolvimento' },
-    { label: 'Versões', value: 'Março de 2023 · novembro de 2026' },
+    { label: 'Versões', value: 'Março de 2023 e novembro de 2026' },
     { label: 'Stack', value: 'Astro 7, TypeScript e CSS' },
-    { label: 'Publicação', value: 'GitHub Pages, por GitHub Actions' },
+    { label: 'Publicação', value: 'GitHub Pages, pelo GitHub Actions' },
   ],
   links: [
     { label: 'Código no GitHub', href: 'https://github.com/Seinenk/Seinenk.github.io', icon: 'github' },
   ],
   context: [
-    'A primeira versão nasceu em março de 2023, como a segunda atividade da disciplina de Web: uma página de portfólio em HTML e CSS, com foco no design. Fundo escuro em degradê, nome em destaque e ícones das habilidades.',
-    'Em novembro de 2026, o site foi refeito, no mesmo endereço, para contar a trajetória de hoje: a Investe Piauí, o Vale do Mel, a formação no IFPI e os projetos. O trabalho foi feito com o Claude Code, um agente de IA, a partir das minhas escolhas de design system, paleta, foto e conteúdo.',
+    'Fiz a primeira versão em março de 2023, na segunda atividade da disciplina de Web. Era uma página de portfólio em HTML e CSS (as linguagens básicas da web), com foco no design. Tinha fundo escuro em degradê, o nome em destaque e ícones das habilidades.',
+    'Em novembro de 2026, refiz o site no mesmo endereço. Nele, conto minha trajetória de hoje: a Investe Piauí, o Vale do Mel, a formação no Instituto Federal do Piauí (IFPI) e os projetos. Fiz o trabalho com o Claude Code, um agente de inteligência artificial (IA). As escolhas de design system (as regras visuais do site), paleta, foto e conteúdo foram minhas.',
   ],
   challenge: {
     problem:
-      'O site é a primeira impressão de um desenvolvedor front-end e designer de UX/UI. Precisava ser bonito e cheio de vida, mas também acessível a todos, rápido em qualquer aparelho e fácil de manter e de ganhar novas paletas.',
+      'O site é a primeira impressão que se tem de mim como desenvolvedor front-end e designer de UX/UI, alguém que programa e desenha telas. Precisava ser bonito e cheio de animação, acessível a todos, rápido em qualquer aparelho e fácil de manter e de ganhar paletas novas.',
     goals: [
-      'Migrar de HTML e CSS puros para Astro sem perder nada do original',
+      'Migrar de HTML e CSS puros para o Astro, ferramenta que gera sites, sem perder nada do original',
       'Adotar um design system editorial com a paleta Grafite',
       'Ter temas claro e escuro e permitir paletas novas com pouco esforço',
       'Encher de movimento sem excluir quem prefere menos animação',
@@ -47,61 +47,61 @@ export const portfolio: CaseStudy = {
     {
       date: 'Março de 2023',
       title: 'A primeira versão',
-      text: 'HTML e CSS puros, em nove commits ao longo de três semanas, de 12 a 31 de março, passando por responsividade, redução de código e o rodapé.',
+      text: 'Fiz tudo em HTML e CSS puros, com nove commits (registros de mudança) em três semanas, de 12 a 31 de março. Adaptei a página a vários tamanhos de tela, enxuguei o código e ajustei o rodapé.',
     },
     {
       date: '02/11/2026',
-      title: 'Migração fiel',
-      text: 'Antes de mudar qualquer visual, o site antigo foi portado para Astro e comparado tela a tela com o original. Só depois de validado, o projeto antigo foi removido.',
+      title: 'Migração para o Astro',
+      text: 'Antes de mexer no visual, passei o site antigo para o Astro e comparei tela a tela com o original. Só depois de conferir, removi o projeto antigo.',
     },
     {
       date: '02/11/2026',
       title: 'Novo design system',
-      text: 'Paleta Grafite, Cormorant Garamond nos títulos, Inter no texto e JetBrains Mono no código, com o conteúdo reescrito a partir do Currículo Lattes e do LinkedIn.',
+      text: 'Adotei a paleta Grafite, Cormorant Garamond nos títulos, Inter no texto e JetBrains Mono no código. Reescrevi o conteúdo a partir do Currículo Lattes e do LinkedIn.',
     },
     {
       date: '03/11/2026',
       title: 'O cartão carlos.ts',
-      text: 'O resumo do perfil virou um pequeno estúdio animado, que alterna entre código, quadro de design, documento e slides.',
+      text: 'Transformei o resumo do perfil num cartão animado, que alterna entre código, quadro de design, documento e slides.',
     },
     {
       date: 'Novembro de 2026',
       title: 'Estudos de caso',
-      text: 'Cada projeto ganhou uma página própria, como esta, organizada em tópicos por área (resumo, pesquisa e estruturação, UX/UI, construção e aprendizado), com uma barra de abas que leva direto a cada um.',
+      text: 'Cada projeto ganhou uma página própria, como esta, dividida em tópicos por área (resumo, pesquisa e estruturação, UX/UI, construção e aprendizado). Uma barra de abas leva direto a cada um.',
     },
   ],
   features: [
-    { icon: 'sun', title: 'Temas claro e escuro', text: 'Segue o aparelho ou a escolha da pessoa, com uma transição em círculo que parte do botão.' },
-    { icon: 'palette', title: 'Paletas extensíveis', text: 'Uma paleta nova é um arquivo de seis cores; o resto dos tons é calculado e conferido no build.' },
-    { icon: 'pause', title: 'Movimento sob controle', text: 'Um botão pausa todas as animações, e a preferência do sistema por menos movimento é respeitada.' },
-    { icon: 'code-xml', title: 'Cartão carlos.ts', text: 'O mesmo resumo em quatro visões, num cartão que pausa quando sai da tela.' },
-    { icon: 'layers', title: 'Projetos com filtro', text: 'Lista filtrável e uma página dedicada para cada projeto.' },
-    { icon: 'globe', title: 'Pronto para compartilhar', text: 'Imagem de compartilhamento, sitemap e dados estruturados para buscadores.' },
+    { icon: 'sun', title: 'Temas claro e escuro', text: 'Segue o tema do aparelho ou a escolha da pessoa, com uma transição em círculo que parte do botão.' },
+    { icon: 'palette', title: 'Paletas novas em um arquivo', text: 'Cada paleta nova é um arquivo com seis cores. O build, a etapa que gera o site, calcula e confere os outros tons.' },
+    { icon: 'pause', title: 'Movimento sob controle', text: 'Um botão pausa todas as animações, e o site respeita a opção de menos movimento do aparelho.' },
+    { icon: 'code-xml', title: 'Cartão carlos.ts', text: 'Mostra o resumo do perfil em quatro formatos e pausa quando sai da tela.' },
+    { icon: 'layers', title: 'Projetos com filtro', text: 'A lista tem filtro, e cada projeto tem sua página.' },
+    { icon: 'globe', title: 'Pronto para compartilhar', text: 'Tem imagem de prévia para links compartilhados, um mapa das páginas (sitemap) e dados estruturados para buscadores.' },
   ],
   inside: {
     title: 'Como uma paleta vira tema',
     text: [
-      'Cada paleta é um arquivo com seis cores e duas versões, clara e escura. Os tons intermediários, como fundos de cartão, bordas e texto secundário, saem de misturas entre essas cores no espaço OKLab, que mistura cores do jeito que o olho percebe.',
-      'No build, cada par de texto e fundo passa por um teste de contraste WCAG AA. Se uma combinação não passar, o build para e mostra qual. O resultado vira variáveis CSS, e um script de poucas linhas aplica tema, paleta e movimento antes da primeira pintura, sem piscar.',
+      'Cada paleta é um arquivo com seis cores, em versão clara e escura. Os tons intermediários, como fundos de cartão, bordas e texto secundário, são misturas dessas cores no espaço OKLab, que combina cores do jeito que o olho percebe.',
+      'No build, cada par de texto e fundo passa por um teste de contraste WCAG AA. Se uma combinação não passar, o build para e mostra qual. O resultado vira variáveis CSS. Um script de poucas linhas aplica tema, paleta e movimento antes de a página aparecer, sem piscar.',
     ],
     diagram: 'portfolio',
   },
   decisions: [
     {
-      title: 'Astro com saída estática',
-      why: 'Páginas prontas em HTML, sem framework no navegador. O pouco de JavaScript é um módulo só, para tema, menu e animações.',
+      title: 'Páginas prontas, geradas pelo Astro',
+      why: 'As páginas chegam prontas em HTML, sem framework no navegador para montá-las. O pouco de JavaScript fica num módulo só, para tema, menu e animações.',
     },
     {
       title: 'Contraste conferido no build',
-      why: 'Acessibilidade não pode depender de lembrar de testar. Uma paleta que falha no contraste nem chega a ser publicada.',
+      why: 'Não quis que a acessibilidade dependesse de alguém lembrar de testar. Uma paleta que falha no contraste nem chega a ser publicada.',
     },
     {
       title: 'CSS antes de JavaScript',
-      why: 'As animações são CSS. O script só revela ao rolar, conta números e pausa o que sai da tela, poupando bateria.',
+      why: 'As animações usam CSS. O script só revela o conteúdo ao rolar, anima os números e pausa o que sai da tela, para poupar bateria.',
     },
     {
       title: 'Fontes servidas pelo próprio site',
-      why: 'Sem fontes de terceiros na hora de abrir a página: os arquivos saem dos pacotes do projeto, com pré-carregamento.',
+      why: 'A página não busca fontes de terceiros ao abrir. Os arquivos vêm dos pacotes do projeto e são pré-carregados.',
     },
   ],
   demo: {
@@ -127,7 +127,7 @@ export const portfolio: CaseStudy = {
   },
   visual: {
     intro:
-      'A versão de 2023 usava tons de cinza (#000000 a #B9B9B9), degradê escuro e as fontes Righteous, Sarala e Roboto. A de 2026 segue um design system editorial: fundo claro, títulos em serifa, texto em sans humanista e cor em blocos, com a paleta enviada por mim.',
+      'A versão de 2023 usava tons de cinza (#000000 a #B9B9B9), degradê escuro e as fontes Righteous, Sarala e Roboto. A de 2026 segue um design system editorial, com a paleta que eu enviei. Tem fundo claro, títulos com serifa (traços nas pontas das letras), texto numa fonte sem serifa de estilo humanista e cor em blocos.',
     palette: [
       { name: 'Branco', hex: '#FFFFFF', role: 'Superfícies elevadas no modo claro' },
       { name: 'Névoa', hex: '#EBEBEB', role: 'Texto de destaque no modo escuro' },
@@ -184,28 +184,28 @@ export const portfolio: CaseStudy = {
     { group: 'Publicação', items: ['GitHub Actions', 'GitHub Pages'] },
   ],
   skills: [
-    { title: 'Design system de ponta a ponta', text: 'Tokens de tipografia, espaço, raio, cor e movimento aplicados a todas as páginas.' },
-    { title: 'Acessibilidade', text: 'Contraste AA, navegação por teclado, leitores de tela e movimento opcional.' },
-    { title: 'Performance', text: 'CSS embutido, imagens em WebP no tamanho certo e animações que pausam fora da tela.' },
-    { title: 'Migrar sem regredir', text: 'Portar primeiro, comparar com o original e só então redesenhar.' },
+    { title: 'Design system no site inteiro', text: 'Aplicar tokens (valores-padrão de tipografia, espaço, raio, cor e movimento) em todas as páginas.' },
+    { title: 'Acessibilidade', text: 'Cuidar de contraste AA, navegação por teclado, leitores de tela e movimento opcional.' },
+    { title: 'Desempenho', text: 'Embutir o CSS, usar imagens em WebP (formato leve) no tamanho certo e pausar animações fora da tela.' },
+    { title: 'Migrar sem perder nada', text: 'Migrar primeiro, comparar com o original e só então redesenhar.' },
     { title: 'Direção de IA', text: 'Definir referências, paleta e critérios e revisar o resultado de um agente de IA.' },
   ],
   results: {
     metrics: [
       { value: 100, label: 'de acessibilidade no Lighthouse, em todas as páginas medidas' },
       { value: 96, suffix: '+', label: 'de desempenho no celular, no Lighthouse' },
-      { value: 0, label: 'violações de WCAG 2.2 AA no axe, em 12 páginas e nos dois temas' },
+      { value: 0, label: 'falhas nas regras de acessibilidade WCAG 2.2 AA, pelo axe-core, em 12 páginas e nos dois temas' },
       { value: 200, prefix: '< ', suffix: ' KB', label: 'por página, com imagens e fontes' },
     ],
     highlights: [
-      'Medições de 08/11/2026: Lighthouse no perfil de celular (início, projetos e páginas de projeto) e axe-core no computador e no celular, nos temas claro e escuro.',
-      'Nota 100 também em boas práticas e SEO.',
+      'As medições são de 08/11/2026. O Lighthouse, avaliador de sites do Google, rodou no perfil de celular (início, projetos e páginas de projeto). O axe-core, verificador automático de acessibilidade, rodou no computador e no celular, nos dois temas.',
+      'O site também tirou 100 em boas práticas e em SEO (como aparece nas buscas).',
     ],
   },
   lessons: [
     {
       title: 'O que mudou de 2023 para 2026',
-      text: 'De um tema escuro fixo para temas claro e escuro; de fontes carregadas de outro servidor para fontes servidas pelo próprio site; de ícones de uma biblioteca externa para SVGs embutidos; e de uma página de apresentação para um portfólio com estudos de caso.',
+      text: 'O tema escuro fixo deu lugar a temas claro e escuro. As fontes, que vinham de outro servidor, agora saem do próprio site. Os ícones de uma biblioteca externa viraram SVGs embutidos (desenhos em código). A página de apresentação virou um portfólio com estudos de caso.',
     },
   ],
   sources: 'Histórico do repositório e o código do próprio site.',

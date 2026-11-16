@@ -9,9 +9,9 @@ const years = [...new Set(events.map((e) => e.year))].sort((a, b) => b - a);
 <section id="conquistas" class="section" aria-labelledby="conquistas-title">
   <div class="container">
     <SectionHead
-      kicker="05 — Conquistas"
-      title="Prêmio, publicação e *palcos*"
-      text={`Um pitch premiado, um artigo publicado e ${events.length} participações em eventos, feiras e exposições, do Piauí a Lisboa.`}
+      kicker="06 · Conquistas"
+      title="Prêmio, artigo e *eventos*"
+      text={`Ganhei o 1º lugar em Melhor Pitch (a apresentação curta de um projeto) na Mostra Semiárido Digital. Também publiquei um artigo científico e participei de ${events.length} eventos, entre eles o Web Summit Lisboa.`}
       id="conquistas-title"
     />
 
@@ -56,7 +56,7 @@ const years = [...new Set(events.map((e) => e.year))].sort((a, b) => b - a);
     <div class="events">
       <div class="events-intro" data-reveal>
         <h3 class="display-sm">Eventos e apresentações</h3>
-        <p>Exposições, oficinas e seminários registrados no Lattes. Também organizou {organizedEvents.length} eventos:</p>
+        <p>As exposições, oficinas e seminários de que participei, do mais recente ao mais antigo. Também ajudei a organizar {organizedEvents.length} eventos:</p>
         <ul class="list-reset organized">
           {
             organizedEvents.map((e) => (

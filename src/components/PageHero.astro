@@ -12,6 +12,7 @@ const { kicker, title, lead } = Astro.props;
 
 <section class="page-hero" aria-labelledby="page-title" data-ambient>
   <div class="page-hero-aura" aria-hidden="true"></div>
+  <div class="page-hero-aura page-hero-aura-cool" aria-hidden="true"></div>
   <div class="container">
     <SectionHead kicker={kicker} title={title} text={lead} id="page-title" level="h1" size="xl" class="page-hero-head" />
     <slot />
@@ -42,7 +43,27 @@ const { kicker, title, lead } = Astro.props;
     background: radial-gradient(closest-side, rgb(var(--c-glow-a-rgb) / 0.5), transparent);
   }
 
+  /* luz fria, mais fraca, do lado oposto */
+  .page-hero-aura-cool {
+    top: auto;
+    right: auto;
+    bottom: -34vmax;
+    left: -20vmax;
+    width: 50vmax;
+    height: 50vmax;
+    background: radial-gradient(
+      closest-side,
+      rgb(var(--c-cyan-rgb) / 0.12),
+      rgb(var(--c-violet-rgb) / 0.07) 55%,
+      transparent
+    );
+  }
+
   :global(:root[data-motion='full']) .page-hero-aura {
     animation: drift 20s ease-in-out infinite;
+  }
+
+  :global(:root[data-motion='full']) .page-hero-aura-cool {
+    animation: drift 26s ease-in-out infinite reverse;
   }
 </style>

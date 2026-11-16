@@ -66,4 +66,21 @@ const items = [...marquee, ...marquee];
     fill: var(--c-accent);
     opacity: 0.7;
   }
+
+  /* um em cada três hexágonos em ciano, outro em violeta */
+  .marquee-sep:nth-of-type(3n + 1) {
+    fill: var(--c-cyan);
+  }
+
+  .marquee-sep:nth-of-type(3n + 2) {
+    fill: var(--c-violet);
+  }
+
+  :global(:root[data-motion='full']) .marquee-sep {
+    animation: spin 12s linear infinite;
+  }
+
+  :global(:root[data-motion='full']) .marquee-sep:nth-of-type(even) {
+    animation-direction: reverse;
+  }
 </style>

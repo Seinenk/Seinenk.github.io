@@ -8,9 +8,9 @@ import type { IconName } from '../icons';
 <section id="competencias" class="section band-card" aria-labelledby="competencias-title">
   <div class="container">
     <SectionHead
-      kicker="06 — Competências"
-      title="O que eu *trago* para cada projeto"
-      text="Design, código e pesquisa caminhando juntos: da interface ao hardware, da ideia ao pitch."
+      kicker="07 · Competências"
+      title="O que eu *sei fazer*"
+      text="As áreas em que trabalho e as ferramentas que uso em cada uma."
       id="competencias-title"
     />
 
@@ -65,13 +65,56 @@ import type { IconName } from '../icons';
   .skills-grid {
     display: grid;
     gap: 1rem;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13.5rem), 1fr));
   }
 
+  /*
+   * Cartões escuros, em escada: nas telas largas os pares descem, como etapas de um
+   * processo. Cada área tem o seu tom de ícone (ciano, violeta ou areia).
+   */
   .skill {
+    --skill-tone: var(--c-inverse-cyan);
+    --skill-tone-rgb: var(--c-inverse-cyan-rgb);
     display: grid;
     align-content: start;
     gap: 1rem;
+    min-height: 17rem;
+    overflow: hidden;
+    border-color: var(--c-inverse-hairline);
+    background:
+      radial-gradient(120% 70% at 0% 0%, rgb(var(--skill-tone-rgb) / 0.12), transparent 60%),
+      var(--c-inverse);
+    color: var(--c-on-inverse-soft);
+  }
+
+  .skill:nth-child(3n + 2) {
+    --skill-tone: var(--c-inverse-violet);
+    --skill-tone-rgb: var(--c-inverse-violet-rgb);
+  }
+
+  .skill:nth-child(3n) {
+    --skill-tone: var(--c-inverse-accent);
+    --skill-tone-rgb: var(--c-inverse-accent-rgb);
+  }
+
+  .skill :global(.title-lg) {
+    color: var(--c-on-inverse);
+  }
+
+  .skill :global(.chip) {
+    border-color: var(--c-inverse-hairline);
+    background: transparent;
+    color: var(--c-on-inverse-soft);
+  }
+
+  @media (min-width: 75rem) {
+    .skills-grid {
+      align-items: start;
+    }
+
+    .skill:nth-child(even) {
+      margin-top: 3.5rem;
+    }
   }
 
   .skill-icon {
@@ -80,8 +123,8 @@ import type { IconName } from '../icons';
     width: 3rem;
     height: 3rem;
     border-radius: var(--radius-md);
-    background: var(--c-surface-card);
-    color: var(--c-accent-strong);
+    background: rgb(var(--skill-tone-rgb) / 0.12);
+    color: var(--skill-tone);
     transition: transform 0.6s var(--ease-spring);
   }
 

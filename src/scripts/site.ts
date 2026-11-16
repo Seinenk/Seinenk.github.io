@@ -134,26 +134,18 @@ document.querySelectorAll<HTMLButtonElement>('[data-motion-toggle]').forEach((bt
 syncThemeUI();
 syncMotionUI();
 
-/* ---------- cabeçalho ---------- */
-const header = document.querySelector<HTMLElement>('[data-header]');
-if (header) {
-  let ticking = false;
-  const update = () => {
-    header.classList.toggle('is-scrolled', window.scrollY > 8);
-    ticking = false;
-  };
-  window.addEventListener(
-    'scroll',
-    () => {
-      if (!ticking) {
-        ticking = true;
-        requestAnimationFrame(update);
-      }
-    },
-    { passive: true },
-  );
-  update();
-}
+/* ---------- cabeçalho ----------
+ * A classe is-scrolled (borda, sombra e o fim do cabeçalho transparente da página inicial)
+ * é aplicada pelo script do <head>, em BaseLayout.astro, que roda antes da primeira pintura
+ * e não depende deste módulo. */
+
+/* ---------- depoimentos: o link com foco do teclado sempre à vista ---------- */
+document.querySelectorAll<HTMLElement>('.t-rail').forEach((rail) => {
+  rail.addEventListener('focusin', (event) => {
+    const item = (event.target as HTMLElement).closest<HTMLElement>('.t-item');
+    if (item) requestAnimationFrame(() => item.scrollIntoView({ inline: 'nearest', block: 'nearest' }));
+  });
+});
 
 /* ---------- menu do celular ---------- */
 const menu = document.querySelector<HTMLDialogElement>('#menu-mobile');

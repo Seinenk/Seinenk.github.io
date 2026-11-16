@@ -7,9 +7,11 @@ import type { NavKey } from '../layouts/BaseLayout.astro';
 
 interface Props {
   current: NavKey;
+  /** O cabeçalho começa transparente, por cima do bloco do topo da página (só na inicial). */
+  overlay?: boolean;
 }
 
-const { current } = Astro.props;
+const { current, overlay = false } = Astro.props;
 
 const nav = [
   { href: '/#sobre', label: 'Sobre', key: 'sobre' },
@@ -19,7 +21,7 @@ const nav = [
 ];
 ---
 
-<header class="site-header" data-header>
+<header class="site-header" data-header data-overlay={overlay ? '' : undefined}>
   <div class="container header-inner">
     <a class="brand" href="/" aria-label={`${profile.shortName}, página inicial`}>
       <Monogram size={38} class="brand-mark" />
@@ -130,6 +132,75 @@ const nav = [
     box-shadow: 0 10px 30px -24px rgb(var(--c-shadow-rgb) / 0.6);
   }
 
+  /* com a página rolada, um fio de luz fria corre por baixo do cabeçalho */
+  .site-header::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 -1px;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 8%,
+      rgb(var(--c-cyan-rgb) / 0.6) 40%,
+      rgb(var(--c-violet-rgb) / 0.6) 60%,
+      transparent 92%
+    );
+    opacity: 0;
+    transform: scaleX(0.4);
+    transition:
+      opacity 0.5s ease,
+      transform 0.9s var(--ease-out);
+    pointer-events: none;
+  }
+
+  .site-header.is-scrolled::after {
+    opacity: 1;
+    transform: none;
+  }
+
+  /*
+   * Na página inicial o cabeçalho começa transparente, por cima do bloco do topo, e volta
+   * ao normal assim que a página rola. Quem liga isso é o script do <head> (BaseLayout),
+   * que põe a classe "js" no <html> e também marca a rolagem: sem script, o cabeçalho
+   * fica sempre sólido.
+   */
+  :global(:root.js) .site-header[data-overlay]:not(.is-scrolled) {
+    --c-focus: var(--c-on-hero);
+    --monogram-bg: var(--c-on-hero);
+    --monogram-fg: var(--c-hero-deep);
+    background: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  :global(:root.js) .site-header[data-overlay]:not(.is-scrolled) .brand {
+    color: var(--c-on-hero);
+  }
+
+  :global(:root.js) .site-header[data-overlay]:not(.is-scrolled) .nav-link {
+    color: var(--c-on-hero);
+  }
+
+  :global(:root.js) .site-header[data-overlay]:not(.is-scrolled) .nav-link:is(:hover, [aria-current='page']) {
+    color: var(--c-on-hero);
+  }
+
+  :global(:root.js) .site-header[data-overlay]:not(.is-scrolled) :global(.icon-btn) {
+    border-color: rgb(var(--c-on-hero-rgb) / 0.34);
+    background: rgb(var(--c-on-hero-rgb) / 0.06);
+    color: var(--c-on-hero);
+  }
+
+  :global(:root.js) .site-header[data-overlay]:not(.is-scrolled) :global(.icon-btn:hover) {
+    border-color: var(--c-on-hero);
+    background: rgb(var(--c-on-hero-rgb) / 0.16);
+  }
+
+  .brand,
+  .nav-link {
+    transition: color 0.3s ease;
+  }
+
   .header-inner {
     height: 100%;
     display: flex;
@@ -180,7 +251,6 @@ const nav = [
     font-size: var(--fs-nav);
     font-weight: 500;
     text-decoration: none;
-    transition: color 0.25s ease;
   }
 
   .nav-link::after {

@@ -66,15 +66,16 @@
   }
 }
 
+/* a cor do pulso pode ser trocada por elemento com --pulse-rgb (o padrão é o destaque) */
 @keyframes pulse {
   0% {
-    box-shadow: 0 0 0 0 rgb(var(--c-accent-rgb) / 0.55);
+    box-shadow: 0 0 0 0 rgb(var(--pulse-rgb, var(--c-accent-rgb)) / 0.55);
   }
   70% {
-    box-shadow: 0 0 0 0.6rem rgb(var(--c-accent-rgb) / 0);
+    box-shadow: 0 0 0 0.6rem rgb(var(--pulse-rgb, var(--c-accent-rgb)) / 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgb(var(--c-accent-rgb) / 0);
+    box-shadow: 0 0 0 0 rgb(var(--pulse-rgb, var(--c-accent-rgb)) / 0);
   }
 }
 
@@ -126,14 +127,29 @@
   animation-play-state: paused !important;
 }
 
-/* ---------- revelar ao rolar ---------- */
+/* ---------- revelar ao rolar ----------
+ * A entrada usa opacity e transform, com atraso em cascata (--i). As outras propriedades
+ * da lista são as que os cartões usam no hover (translate para subir, rotate para
+ * endireitar, sombra e borda): ficam sem atraso, para o hover responder na hora. */
 :root[data-motion='full'] [data-reveal] {
   opacity: 0;
   transform: translate3d(0, 28px, 0);
   transition:
     opacity 0.9s var(--ease-out),
-    transform 1s var(--ease-out);
-  transition-delay: calc(var(--i, 0) * 90ms);
+    transform 1s var(--ease-out),
+    translate 0.5s var(--ease-out),
+    rotate 0.6s var(--ease-out),
+    box-shadow 0.5s var(--ease-out),
+    border-color 0.3s ease,
+    background-color 0.4s ease;
+  transition-delay:
+    calc(var(--i, 0) * 90ms),
+    calc(var(--i, 0) * 90ms),
+    0s,
+    0s,
+    0s,
+    0s,
+    0s;
   animation: reveal-failsafe 0.01s linear 4s forwards;
 }
 
@@ -186,7 +202,8 @@
   inset: 0 0 auto;
   z-index: 120;
   height: 2px;
-  background: var(--c-accent);
+  /* começa no destaque quente e termina frio, como quem chega ao fim da página */
+  background: linear-gradient(90deg, var(--c-accent), var(--c-cyan) 70%, var(--c-violet));
   transform: scaleX(0);
   transform-origin: 0 50%;
   pointer-events: none;
@@ -250,6 +267,16 @@
 }
 
 /* ---------- movimento desligado ---------- */
+/* sem JavaScript não existe data-motion: a preferência do sistema ainda desliga as transições */
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion]) *,
+  :root:not([data-motion]) *::before,
+  :root:not([data-motion]) *::after {
+    transition-duration: 0.001ms !important;
+    transition-delay: 0s !important;
+  }
+}
+
 :root[data-motion='reduce'] *,
 :root[data-motion='reduce'] *::before,
 :root[data-motion='reduce'] *::after {

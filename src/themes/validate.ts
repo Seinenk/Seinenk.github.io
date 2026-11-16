@@ -35,6 +35,17 @@ const rules: Array<{ fg: TokenKey; on: TokenKey[]; min: number }> = [
   { fg: 'focus', on: [...surfaces, 'surfaceStrong'], min: AA_LARGE },
   { fg: 'outline', on: surfaces, min: AA_LARGE },
   { fg: 'primary', on: ['canvas', 'surfaceSoft', 'surfaceCard'], min: AA_LARGE },
+  // acentos frios
+  { fg: 'cyan', on: ['canvas', 'surfaceSoft', 'surfaceCard'], min: AA_LARGE },
+  { fg: 'violet', on: ['canvas', 'surfaceSoft', 'surfaceCard'], min: AA_LARGE },
+  { fg: 'cyanStrong', on: [...surfaces, 'cyanSoft'], min: AA_TEXT },
+  { fg: 'violetStrong', on: [...surfaces, 'violetSoft'], min: AA_TEXT },
+  { fg: 'inverseCyan', on: inverseSurfaces, min: AA_TEXT },
+  { fg: 'inverseViolet', on: inverseSurfaces, min: AA_TEXT },
+  // bloco do topo da página inicial
+  { fg: 'onHero', on: ['hero', 'heroDeep'], min: AA_TEXT },
+  { fg: 'onHeroSoft', on: ['hero', 'heroDeep'], min: AA_TEXT },
+  { fg: 'heroAccent', on: ['hero', 'heroDeep'], min: AA_TEXT },
 ];
 
 export interface ContrastIssue {

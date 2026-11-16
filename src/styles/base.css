@@ -227,11 +227,12 @@ button {
   color: var(--c-accent-strong);
 }
 
+/* o fio do sobretítulo termina num toque frio, ciano para violeta */
 .kicker::before {
   content: '';
   width: 2rem;
   height: 1px;
-  background: currentColor;
+  background: linear-gradient(90deg, currentColor 35%, var(--c-cyan) 75%, var(--c-violet));
   flex: none;
 }
 
@@ -261,6 +262,11 @@ button {
 
 .band-inverse {
   --c-focus: var(--c-on-inverse);
+  /* nas faixas escuras, os acentos frios usam as versões claras */
+  --c-cyan: var(--c-inverse-cyan);
+  --c-violet: var(--c-inverse-violet);
+  --c-cyan-rgb: var(--c-inverse-cyan-rgb);
+  --c-violet-rgb: var(--c-inverse-violet-rgb);
   background: var(--c-inverse);
   color: var(--c-on-inverse-soft);
 }

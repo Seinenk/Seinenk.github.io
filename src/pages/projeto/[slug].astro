@@ -18,7 +18,10 @@ import BeforeAfter from '../../components/case/BeforeAfter.astro';
 import LayoutBoxes from '../../components/case/LayoutBoxes.astro';
 import PytestRun from '../../components/case/PytestRun.astro';
 import VideoEmbed from '../../components/case/VideoEmbed.astro';
+import ScreenShowcase from '../../components/case/ScreenShowcase.astro';
+import TestimonialCard from '../../components/TestimonialCard.astro';
 import { projects, nextProject, projectHref, type CaseStudy } from '../../data/projects';
+import { testimonialsFor } from '../../data/testimonials';
 import { plain, readingMinutes, rich } from '../../utils/rich';
 import { pageFontCss } from '../../utils/page-fonts';
 
@@ -34,6 +37,7 @@ const { project: p } = Astro.props;
 const next = nextProject(p.slug);
 const pageFonts = p.fonts ? pageFontCss(p.fonts) : null;
 const live = p.status === 'Em andamento';
+const quotes = testimonialsFor(p.slug);
 
 /* Seções presentes, na ordem da página. O número entra no sobretítulo. */
 const doVerb = p.type === 'Pesquisa' ? 'O que a pesquisa *cobre*' : p.type === 'Produção técnica' ? 'O que ela *reúne*' : 'O que ele *faz*';
@@ -55,28 +59,29 @@ const tabDefs: { id: TabId; label: string; icon: IconName }[] = [
   { id: 'aprendizado', label: 'Aprendizado', icon: 'lightbulb' },
 ];
 const defs = {
-  contexto: { label: 'Contexto', title: 'De onde *veio*', on: true },
+  contexto: { label: 'Contexto', title: 'O *contexto*', on: true },
   funcoes: { label: 'Funções', title: doVerb, on: Boolean(p.features?.length) },
-  video: { label: 'Vídeo', title: 'Funcionando de *verdade*', on: Boolean(p.video) },
-  resultados: { label: 'Resultados', title: 'O que *ficou*', on: Boolean(p.results) },
+  video: { label: 'Vídeo', title: 'O projeto *funcionando*', on: Boolean(p.video) },
+  resultados: { label: 'Resultados', title: 'Os *resultados*', on: Boolean(p.results) },
+  depoimentos: { label: 'Depoimentos', title: 'O que *disseram*', on: quotes.length > 0 },
   desafio: { label: 'Desafio', title: 'O *problema*', on: Boolean(p.challenge) },
   'por-dentro': { label: 'Por dentro', title: p.inside ? emphasizeLast(p.inside.title) : '', on: Boolean(p.inside) },
-  decisoes: { label: 'Decisões', title: 'Escolhas e *porquês*', on: Boolean(p.decisions?.length) },
+  decisoes: { label: 'Decisões', title: 'Decisões e *motivos*', on: Boolean(p.decisions?.length) },
   'na-pratica': { label: p.demo?.title ?? '', title: p.demo ? emphasizeLast(p.demo.title) : '', on: Boolean(p.demo) },
-  visual: { label: 'Visual', title: 'Construção *visual*', on: hasVisual },
+  visual: { label: 'Visual', title: 'A parte *visual*', on: hasVisual },
   processo: { label: 'Processo', title: 'Como foi *construído*', on: Boolean(p.story?.length) },
-  campo: { label: 'Em campo', title: 'Testado no *campo*', on: Boolean(p.fieldwork?.shots.length) },
-  tecnologias: { label: 'Tecnologias', title: 'Com o que foi *feito*', on: Boolean(p.tech?.length) },
-  habilidades: { label: 'Habilidades', title: 'O que o projeto *ensinou*', on: Boolean(p.skills?.length) },
-  aprendizados: { label: 'Aprendizados', title: 'Desafios e *aprendizados*', on: Boolean(p.lessons?.length) },
+  campo: { label: 'Em campo', title: 'O teste em *campo*', on: Boolean(p.fieldwork?.shots.length) },
+  tecnologias: { label: 'Tecnologias', title: 'As ferramentas *usadas*', on: Boolean(p.tech?.length) },
+  habilidades: { label: 'Habilidades', title: 'O que eu *pratiquei*', on: Boolean(p.skills?.length) },
+  aprendizados: { label: 'Aprendizados', title: 'Dificuldades e *lições*', on: Boolean(p.lessons?.length) },
   proximos: { label: 'Próximos passos', title: 'Próximos *passos*', on: Boolean(p.next?.length) },
-  creditos: { label: 'Créditos', title: 'Quem fez *junto*', on: Boolean(p.credits?.length) },
+  creditos: { label: 'Créditos', title: 'Quem fez *comigo*', on: Boolean(p.credits?.length) },
 };
 type SectionId = keyof typeof defs;
 // a demonstração do pytest é rodar os testes: é construção, não interface
 const demoInBuild = p.demo?.kind === 'pytest-run';
 const groups: Record<TabId, SectionId[]> = {
-  resumo: ['contexto', 'funcoes', 'video', 'resultados'],
+  resumo: ['contexto', 'funcoes', 'video', 'resultados', 'depoimentos'],
   pesquisa: ['desafio', 'por-dentro', 'decisoes'],
   'ux-ui': demoInBuild ? ['visual'] : ['na-pratica', 'visual'],
   construcao: demoInBuild ? ['processo', 'campo', 'na-pratica', 'tecnologias'] : ['processo', 'campo', 'tecnologias'],
@@ -89,7 +94,7 @@ const sectionsOf = (tab: TabId) => sections.filter((s) => s.tab === tab);
 const head = (id: SectionId) => {
   const i = sections.findIndex((s) => s.id === id);
   const s = sections[i];
-  return { kicker: `${String(i + 1).padStart(2, '0')} — ${s.label}`, title: s.title, id: `${id}-titulo` };
+  return { kicker: `${String(i + 1).padStart(2, '0')} · ${s.label}`, title: s.title, id: `${id}-titulo` };
 };
 
 const texts = [
@@ -114,6 +119,7 @@ const texts = [
 ].map(plain);
 const minutes = readingMinutes(texts);
 const titleWords = p.title.split(' ');
+const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
 ---
 
 <BaseLayout title={`${p.title} · Projetos · Carlos Michael`} description={plain(p.summary)} current="projetos">
@@ -132,6 +138,7 @@ const titleWords = p.title.split(' ');
   <article class="cs" data-case>
     <header class="cs-hero" id="topo" data-tilt-area data-ambient>
       <div class="cs-aura" aria-hidden="true"></div>
+      <div class="cs-aura cs-aura-cool" aria-hidden="true"></div>
       <div class="container">
         <a class="link-arrow cs-back" href="/projetos">
           <Icon name="arrow-left" size={16} />
@@ -144,7 +151,10 @@ const titleWords = p.title.split(' ');
               {titleWords.map((w, i) => (i === titleWords.length - 1 && titleWords.length > 1 ? <em>{w}</em> : <>{w} </>))}
             </h1>
             <p class="cs-tagline" data-reveal style="--i:1">{p.tagline}</p>
-            <div class="cs-hero-meta" data-reveal style="--i:2">
+            <ul class="list-reset cs-tags" data-reveal style="--i:2" aria-label="Temas do projeto">
+              {p.tags.map((tag) => <li>{tag}</li>)}
+            </ul>
+            <div class="cs-hero-meta" data-reveal style="--i:3">
               <span class="status" data-live={live ? '' : undefined}>
                 <span class="status-dot" aria-hidden="true"></span>
                 {p.status}
@@ -156,7 +166,7 @@ const titleWords = p.title.split(' ');
             </div>
             {
               p.links && (
-                <div class="cs-links" data-reveal style="--i:3">
+                <div class="cs-links" data-reveal style="--i:4">
                   {p.links.map((link) => (
                     <a class="btn btn-secondary" href={link.href} target="_blank" rel="noopener noreferrer">
                       {link.icon && <Icon name={link.icon} size={17} />}
@@ -317,6 +327,9 @@ const titleWords = p.title.split(' ');
                         <ul class="list-reset cs-features">
                           {p.features.map((f, i) => (
                             <li class="card card-canvas card-lift cs-feature" data-spotlight data-reveal style={`--i:${i % 3}`}>
+                              <span class="cs-feature-n" aria-hidden="true">
+                                {String(i + 1).padStart(2, '0')}
+                              </span>
                               <span class="cs-feature-icon" aria-hidden="true">
                                 <Icon name={f.icon} size={22} />
                               </span>
@@ -365,12 +378,12 @@ const titleWords = p.title.split(' ');
                               <span class="cs-decision-n" aria-hidden="true" data-n={String(i + 1).padStart(2, '0')} />
                               <h3 class="cs-decision-title" set:html={rich(d.title)} />
                               <p class="cs-decision-why">
-                                <span class="cs-label">Por quê</span>
+                                <span class="cs-label">Motivo</span>
                                 <span set:html={rich(d.why)} />
                               </p>
                               {d.tradeoff && (
                                 <p class="cs-decision-cost">
-                                  <span class="cs-label">Custo</span>
+                                  <span class="cs-label">O que custou</span>
                                   <span set:html={rich(d.tradeoff)} />
                                 </p>
                               )}
@@ -452,6 +465,7 @@ const titleWords = p.title.split(' ');
                             <h3 class="cs-sub" data-reveal>
                               <Icon name="monitor" size={18} /> {p.visual.galleryTitle ?? 'Telas'}
                             </h3>
+                            <ScreenShowcase shots={p.visual.gallery} labels={p.tags} />
                             <Gallery shots={p.visual.gallery} label={`${p.visual.galleryTitle ?? 'Telas'} do projeto ${p.title}`} />
                             {p.visual.galleryNote && (
                               <p class="cs-gallery-note" data-reveal>
@@ -506,18 +520,28 @@ const titleWords = p.title.split(' ');
                       <section id="resultados" class="cs-section" aria-labelledby="resultados-titulo">
                         <SectionHead {...head('resultados')} size="md" />
                         {p.results.metrics && (
-                          <ul class="list-reset cs-metrics">
-                            {p.results.metrics.map((m, i) => (
-                              <li class="cs-metric" data-reveal style={`--i:${i}`}>
-                                <span class="cs-metric-value">
-                                  {m.prefix}
-                                  <span data-count={m.value}>{m.value.toLocaleString('pt-BR')}</span>
-                                  {m.suffix}
-                                </span>
-                                <span class="cs-metric-label">{m.label}</span>
-                              </li>
-                            ))}
-                          </ul>
+                          <div class="cs-metrics-wrap" data-ambient>
+                            {/* anel que se desenha atrás dos números, como no gráfico de rosca da referência */}
+                            <svg class="cs-ring" viewBox="0 0 200 200" aria-hidden="true" focusable="false">
+                              <circle class="cs-ring-track" cx="100" cy="100" r="88" />
+                              <circle class="cs-ring-arc" cx="100" cy="100" r="88" pathLength="100" />
+                            </svg>
+                            <ul class="list-reset cs-metrics" data-reveal="fade">
+                              {p.results.metrics.map((m, i) => (
+                                <li class="cs-metric" data-reveal style={`--i:${i}`}>
+                                  <span class="cs-metric-badge" aria-hidden="true">
+                                    <Icon name={metricIcons[i % metricIcons.length]} size={16} />
+                                  </span>
+                                  <span class="cs-metric-value">
+                                    {m.prefix && <em>{m.prefix}</em>}
+                                    <span data-count={m.value}>{m.value.toLocaleString('pt-BR')}</span>
+                                    {m.suffix && <em>{m.suffix}</em>}
+                                  </span>
+                                  <span class="cs-metric-label">{m.label}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
                         )}
                         {p.results.highlights && (
                           <ul class="list-reset cs-highlights">
@@ -529,6 +553,28 @@ const titleWords = p.title.split(' ');
                             ))}
                           </ul>
                         )}
+                      </section>
+                    )
+                  }
+                  {
+                    s.id === 'depoimentos' && quotes.length > 0 && (
+                      <section id="depoimentos" class="cs-section" aria-labelledby="depoimentos-titulo">
+                        <SectionHead
+                          {...head('depoimentos')}
+                          size="md"
+                          text={
+                            quotes.some((q) => q.sample)
+                              ? 'Por enquanto, o depoimento abaixo é um exemplo, que mostra como esta seção vai ficar.'
+                              : undefined
+                          }
+                        />
+                        <ul class="list-reset cs-quotes">
+                          {quotes.map((q, i) => (
+                            <li data-reveal style={`--i:${i}`}>
+                              <TestimonialCard item={q} showProject={false} flip={i % 2 === 1} />
+                            </li>
+                          ))}
+                        </ul>
                       </section>
                     )
                   }
@@ -675,8 +721,28 @@ const titleWords = p.title.split(' ');
     background: radial-gradient(closest-side, rgb(var(--c-glow-a-rgb) / 0.55), transparent);
   }
 
+  /* segunda luz, fria, do lado do texto */
+  .cs-aura-cool {
+    top: auto;
+    right: auto;
+    bottom: -30vmax;
+    left: -22vmax;
+    width: 52vmax;
+    height: 52vmax;
+    background: radial-gradient(
+      closest-side,
+      rgb(var(--c-cyan-rgb) / 0.12),
+      rgb(var(--c-violet-rgb) / 0.06) 55%,
+      transparent
+    );
+  }
+
   :global(:root[data-motion='full']) .cs-aura {
     animation: drift 20s ease-in-out infinite;
+  }
+
+  :global(:root[data-motion='full']) .cs-aura-cool {
+    animation: drift 26s ease-in-out infinite reverse;
   }
 
   .cs-back {
@@ -721,6 +787,49 @@ const titleWords = p.title.split(' ');
     line-height: 1.6;
   }
 
+  /* temas do projeto em pílulas de contorno, como "REDESIGN · PROTOTYPING" da referência */
+  .cs-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-top: 1.25rem;
+  }
+
+  .cs-tags li {
+    padding: 0.35rem 0.85rem;
+    border: 1px solid var(--c-outline);
+    border-radius: var(--radius-pill);
+    color: var(--c-ink);
+    font-size: var(--fs-caption-upper);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition:
+      border-color 0.3s ease,
+      color 0.3s ease,
+      background-color 0.3s ease;
+  }
+
+  .cs-tags li:nth-child(3n + 1) {
+    border-color: rgb(var(--c-cyan-rgb) / 0.55);
+  }
+
+  .cs-tags li:nth-child(3n + 2) {
+    border-color: rgb(var(--c-violet-rgb) / 0.55);
+  }
+
+  @media (hover: hover) {
+    .cs-tags li:hover {
+      background: var(--c-cyan-soft);
+      color: var(--c-cyan-strong);
+    }
+
+    .cs-tags li:nth-child(3n + 2):hover {
+      background: var(--c-violet-soft);
+      color: var(--c-violet-strong);
+    }
+  }
+
   .cs-hero-meta {
     display: flex;
     flex-wrap: wrap;
@@ -755,17 +864,50 @@ const titleWords = p.title.split(' ');
   }
 
 
+  /* resumo rápido em fichas, cada uma com um fio frio no alto */
   .cs-facts {
     display: grid;
-    gap: 0;
+    gap: 0.75rem;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
     margin: clamp(2.5rem, 2rem + 2vw, 3.5rem) 0 0;
-    border-top: 1px solid var(--c-hairline);
+  }
+
+  /* todo projeto tem 4 fichas: no tablet ficam 2 por linha, sem uma sobrando sozinha */
+  @media (min-width: 30rem) and (max-width: 59.99rem) {
+    .cs-facts {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
   }
 
   .cs-fact {
-    padding: 1rem 1.25rem 1rem 0;
-    border-bottom: 1px solid var(--c-hairline);
+    position: relative;
+    overflow: hidden;
+    padding: 1.1rem 1.25rem;
+    border: 1px solid var(--c-hairline-soft);
+    border-radius: var(--radius-lg);
+    background: rgb(var(--c-canvas-rgb) / 0.72);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+
+  .cs-fact::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 2.25rem;
+    height: 2px;
+    background: linear-gradient(90deg, var(--c-cyan), var(--c-violet));
+    transition: width 0.7s var(--ease-out);
+  }
+
+  .cs-fact:nth-child(even)::before {
+    background: linear-gradient(90deg, var(--c-violet), var(--c-cyan));
+  }
+
+  @media (hover: hover) {
+    .cs-fact:hover::before {
+      width: 100%;
+    }
   }
 
   .cs-fact dt {
@@ -1350,17 +1492,150 @@ const titleWords = p.title.split(' ');
     color: var(--c-body);
   }
 
+  /*
+   * Telas largas: o processo vira um caminho tracejado no meio, com as etapas em caixas
+   * alternando dos dois lados (como as anotações ligadas por linhas da referência).
+   */
+  @media (min-width: 52rem) {
+    .cs-timeline {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      column-gap: 4.5rem;
+      row-gap: 0;
+      padding-inline-start: 0;
+    }
+
+    .cs-timeline::before {
+      left: 50%;
+      width: 0;
+      translate: -1px 0;
+      background: none;
+      border-left: 2px dashed var(--c-hairline);
+    }
+
+    .cs-timeline::after {
+      left: 50%;
+      translate: -1px 0;
+      background: linear-gradient(var(--c-accent-strong), var(--c-cyan) 70%, var(--c-violet));
+    }
+
+    .cs-step {
+      grid-column: 1;
+      align-self: start;
+      margin-bottom: 1.25rem;
+      padding: 1.15rem 1.35rem 1.25rem;
+      border: 1px dashed rgb(var(--c-cyan-rgb) / 0.5);
+      border-radius: var(--radius-lg);
+      background: var(--c-canvas);
+      transition:
+        border-color 0.3s ease,
+        box-shadow 0.5s var(--ease-out),
+        translate 0.5s var(--ease-out);
+    }
+
+    .cs-step:nth-child(even) {
+      grid-column: 2;
+      margin-top: 4.5rem;
+      border-color: rgb(var(--c-violet-rgb) / 0.5);
+    }
+
+    /* ponto no caminho e um traço até a caixa */
+    .cs-step-dot {
+      left: auto;
+      right: calc(-2.25rem - 0.475rem);
+      top: 1.35rem;
+    }
+
+    .cs-step:nth-child(even) .cs-step-dot {
+      right: auto;
+      left: calc(-2.25rem - 0.475rem);
+    }
+
+    .cs-step::before {
+      content: '';
+      position: absolute;
+      top: calc(1.35rem + 0.475rem);
+      right: -2.25rem;
+      width: 2.25rem;
+      border-top: 1px dashed var(--c-outline);
+    }
+
+    .cs-step:nth-child(even)::before {
+      right: auto;
+      left: -2.25rem;
+    }
+
+    .cs-step-text {
+      font-size: var(--fs-body-sm);
+    }
+  }
+
+  @media (min-width: 52rem) and (hover: hover) and (pointer: fine) {
+    .cs-step:hover {
+      border-style: solid;
+      translate: 0 -3px;
+      box-shadow: var(--shadow-md);
+    }
+  }
+
   /* ---------- funções ---------- */
+  /* mosaico: a primeira função ocupa duas colunas e ganha mais destaque */
   .cs-features {
     display: grid;
     gap: 1rem;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
   }
 
+  @media (min-width: 52rem) {
+    .cs-features {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .cs-feature:first-child {
+      grid-column: span 2;
+      align-content: end;
+      min-height: 15rem;
+      background:
+        radial-gradient(90% 120% at 100% 0%, rgb(var(--c-cyan-rgb) / 0.12), transparent 60%),
+        radial-gradient(70% 90% at 0% 100%, rgb(var(--c-violet-rgb) / 0.08), transparent 60%),
+        var(--c-canvas);
+    }
+
+    .cs-feature:first-child .cs-feature-title {
+      font-family: var(--font-display);
+      font-size: var(--fs-display-sm);
+      font-weight: 500;
+    }
+
+    .cs-feature:first-child p {
+      max-width: 34rem;
+      font-size: var(--fs-body-md);
+    }
+
+    /* a última linha do mosaico sempre fecha, com 3, 4, 6 ou 7 funções */
+    .cs-feature:last-child:nth-child(3n) {
+      grid-column: 1 / -1;
+    }
+
+    .cs-feature:last-child:nth-child(3n + 1) {
+      grid-column: span 2;
+    }
+  }
+
   .cs-feature {
+    position: relative;
     display: grid;
     align-content: start;
     gap: 0.6rem;
+    overflow: hidden;
+  }
+
+  .cs-feature-n {
+    position: absolute;
+    top: 1rem;
+    right: 1.25rem;
+    color: var(--c-muted);
+    font-family: var(--font-mono);
+    font-size: var(--fs-caption);
   }
 
   .cs-feature-icon {
@@ -1369,12 +1644,17 @@ const titleWords = p.title.split(' ');
     width: 2.75rem;
     height: 2.75rem;
     border-radius: var(--radius-md);
-    background: var(--c-surface-card);
-    color: var(--c-ink);
+    background: var(--c-cyan-soft);
+    color: var(--c-cyan-strong);
     transition:
       transform 0.5s var(--ease-spring),
       background-color 0.3s ease,
       color 0.3s ease;
+  }
+
+  .cs-feature:nth-child(even) .cs-feature-icon {
+    background: var(--c-violet-soft);
+    color: var(--c-violet-strong);
   }
 
   .cs-feature:hover .cs-feature-icon {
@@ -1400,6 +1680,22 @@ const titleWords = p.title.split(' ');
     display: grid;
     gap: 1rem;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+  }
+
+  /* em duas colunas, a da direita desce: as decisões ficam em escada */
+  @media (min-width: 52rem) {
+    .cs-decisions {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: start;
+    }
+
+    .cs-decision:nth-child(even) {
+      translate: 0 2.5rem;
+    }
+
+    .cs-decisions:has(.cs-decision:nth-child(2)) {
+      padding-bottom: 2.5rem;
+    }
   }
 
   .cs-decision {
@@ -1584,34 +1880,177 @@ const titleWords = p.title.split(' ');
   }
 
   /* ---------- resultados ---------- */
+  /*
+   * Números em fichas de vidro, levemente inclinadas, sobre um anel que se desenha
+   * quando a seção aparece (como os cartões de 30% e 70% da referência).
+   */
+  .cs-metrics-wrap {
+    container-type: inline-size;
+    position: relative;
+    isolation: isolate;
+    margin-bottom: 1.75rem;
+    padding: clamp(1.25rem, 0.5rem + 3vw, 3rem) clamp(0.5rem, 0rem + 2vw, 2rem);
+  }
+
+  /* o anel cabe na altura do bloco dos números, para não invadir o texto de baixo */
+  .cs-ring {
+    position: absolute;
+    z-index: -1;
+    left: 50%;
+    top: 50%;
+    height: calc(100% - 0.5rem);
+    max-height: 24rem;
+    width: auto;
+    aspect-ratio: 1;
+    translate: -50% -50%;
+    fill: none;
+    stroke-width: 9;
+    pointer-events: none;
+  }
+
+  .cs-ring-track {
+    stroke: var(--c-surface-card);
+  }
+
+  .cs-ring-arc {
+    stroke: rgb(var(--c-cyan-rgb) / 0.42);
+    stroke-linecap: round;
+    stroke-dasharray: 72 100;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+  }
+
+  /* o arco só começa vazio quando o script de revelação está rodando (reveal-ready) */
+  :global(:root[data-motion='full'].reveal-ready) .cs-ring-arc {
+    stroke-dashoffset: 72;
+    transition: stroke-dashoffset 1.8s var(--ease-out) 0.2s;
+  }
+
+  :global(:root[data-motion='full'].reveal-ready) .cs-metrics-wrap:has(:global(.cs-metrics.is-visible)) .cs-ring-arc {
+    stroke-dashoffset: 0;
+  }
+
+  :global(:root[data-motion='full']) .cs-ring {
+    animation: spin 60s linear infinite;
+  }
+
   .cs-metrics {
     display: grid;
     gap: 1rem;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
-    margin-bottom: 1.5rem;
+  }
+
+  /* com 4 números: 2 por linha onde não cabem os 4, e nunca 3 em cima e 1 embaixo */
+  @container (min-width: 26rem) {
+    .cs-metrics:has(> :nth-child(4):last-child) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @container (min-width: 50rem) {
+    .cs-metrics:has(> :nth-child(4):last-child) {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
   }
 
   .cs-metric {
+    --tilt: 0deg;
+    --drop: 0rem;
+    --lift: 0rem;
+    position: relative;
     display: grid;
-    gap: 0.4rem;
-    padding: 1.25rem;
+    align-content: start;
+    gap: 0.5rem;
+    padding: 1.4rem 1.35rem 1.25rem;
+    border: 1px solid var(--c-hairline);
     border-radius: var(--radius-lg);
-    background: var(--c-inverse);
-    color: var(--c-on-inverse);
+    background: rgb(var(--c-canvas-rgb) / 0.7);
+    -webkit-backdrop-filter: blur(14px) saturate(1.2);
+    backdrop-filter: blur(14px) saturate(1.2);
+    box-shadow: 0 1.5rem 2.5rem -1.75rem rgb(var(--c-shadow-rgb) / 0.45);
+    color: var(--c-body);
+    rotate: var(--tilt);
+    /* o degrau da escada e a subida do hover se somam, sem um apagar o outro */
+    translate: 0 calc(var(--drop) + var(--lift));
+    transition:
+      rotate 0.6s var(--ease-out),
+      translate 0.6s var(--ease-out),
+      box-shadow 0.6s var(--ease-out);
+  }
+
+  /* inclinações alternadas, só onde há espaço */
+  @media (min-width: 40rem) {
+    .cs-metric:nth-child(4n + 1) {
+      --tilt: -2.5deg;
+    }
+
+    .cs-metric:nth-child(4n + 2) {
+      --tilt: 2deg;
+      --drop: 1.25rem;
+    }
+
+    .cs-metric:nth-child(4n + 3) {
+      --tilt: -1.5deg;
+    }
+
+    .cs-metric:nth-child(4n + 4) {
+      --tilt: 2.5deg;
+      --drop: 1.25rem;
+    }
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .cs-metric:hover {
+      --tilt: 0deg;
+      --lift: -0.35rem;
+      box-shadow: var(--shadow-lg);
+    }
+  }
+
+  /* bolinha com ícone presa na borda, como os marcadores da referência */
+  .cs-metric-badge {
+    position: absolute;
+    top: -0.85rem;
+    right: 1rem;
+    display: grid;
+    place-items: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    border: 1px solid var(--c-hairline);
+    border-radius: 50%;
+    background: var(--c-surface-raised);
+    color: var(--c-cyan-strong);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .cs-metric:nth-child(even) .cs-metric-badge {
+    color: var(--c-violet-strong);
   }
 
   .cs-metric-value {
-    color: var(--c-inverse-accent);
+    color: var(--c-ink);
     font-family: var(--font-display);
     font-size: var(--fs-display-lg);
-    font-style: italic;
     line-height: 1;
     font-variant-numeric: lining-nums;
   }
 
+  .cs-metric-value em {
+    font-style: italic;
+    font-size: 0.62em;
+    color: var(--c-accent);
+  }
+
   .cs-metric-label {
-    color: var(--c-on-inverse-soft);
+    color: var(--c-muted);
     font-size: var(--fs-body-sm);
+  }
+
+  /* ---------- depoimentos do projeto ---------- */
+  .cs-quotes {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 34rem));
   }
 
   .cs-highlights,

@@ -7,11 +7,12 @@ import { experience } from '../../data/profile';
 
 <section id="trajetoria" class="section band-inverse journey" aria-labelledby="trajetoria-title" data-ambient>
   <div class="journey-glow" aria-hidden="true"></div>
+  <div class="journey-glow journey-glow-cool" aria-hidden="true"></div>
   <div class="container">
     <SectionHead
-      kicker="02 — Trajetória"
-      title="Onde tenho *atuado*"
-      text="Do governo do estado ao ecossistema de startups do Piauí, passando pela pesquisa aplicada no IPEA e no IFPI."
+      kicker="02 · Trajetória"
+      title="Onde já *trabalhei*"
+      text="Os cargos que ocupo hoje vêm primeiro. Depois vêm os trabalhos anteriores, no IFPI e no Instituto de Pesquisa Econômica Aplicada (IPEA)."
       id="trajetoria-title"
     />
 
@@ -30,7 +31,7 @@ import { experience } from '../../data/profile';
                 {item.org}
               </p>
               <p class="timeline-detail">{item.detail}</p>
-              <ul class="chip-list" aria-label="Detalhes do vínculo">
+              <ul class="chip-list" aria-label="Detalhes do trabalho">
                 {item.tags.map((tag) => (
                   <li class="chip">{tag}</li>
                 ))}
@@ -46,7 +47,7 @@ import { experience } from '../../data/profile';
           <Icon name="users" size={22} />
           <div>
             <p class="title-md">Comunidade</p>
-            <p>Representa a comunidade de startups Guaribas Valley. Em 2025, expôs o projeto BeeCerrado no Web Summit Lisboa.</p>
+            <p>Represento a comunidade de startups Guaribas Valley. Em 2025, expus o projeto BeeCerrado no Web Summit Lisboa, um evento internacional de tecnologia.</p>
           </div>
         </div>
       </div>
@@ -72,8 +73,28 @@ import { experience } from '../../data/profile';
     pointer-events: none;
   }
 
+  /* segundo brilho, frio, do outro lado da faixa */
+  .journey-glow-cool {
+    top: auto;
+    right: auto;
+    bottom: -25%;
+    left: -15%;
+    width: 46vmax;
+    height: 46vmax;
+    background: radial-gradient(
+      closest-side,
+      rgb(var(--c-inverse-violet-rgb) / 0.13),
+      rgb(var(--c-inverse-cyan-rgb) / 0.05) 55%,
+      transparent
+    );
+  }
+
   :global(:root[data-motion='full']) .journey-glow {
     animation: drift 22s ease-in-out infinite;
+  }
+
+  :global(:root[data-motion='full']) .journey-glow-cool {
+    animation: drift 28s ease-in-out infinite reverse;
   }
 
   .journey-grid {
@@ -109,7 +130,7 @@ import { experience } from '../../data/profile';
     bottom: 0.5rem;
     left: 0.4rem;
     width: 1px;
-    background: linear-gradient(var(--c-inverse-accent), var(--c-inverse-hairline));
+    background: linear-gradient(var(--c-inverse-cyan), var(--c-inverse-accent) 35%, var(--c-inverse-hairline));
     transform-origin: top;
   }
 
@@ -139,8 +160,11 @@ import { experience } from '../../data/profile';
     background: var(--c-inverse);
   }
 
+  /* cargos atuais: ponto em ciano, pulsando */
   .timeline-dot.is-current {
-    background: var(--c-inverse-accent);
+    --pulse-rgb: var(--c-inverse-cyan-rgb);
+    border-color: var(--c-inverse-cyan);
+    background: var(--c-inverse-cyan);
   }
 
   :global(:root[data-motion='full']) .timeline-dot.is-current {
@@ -193,7 +217,7 @@ import { experience } from '../../data/profile';
   .community > :global(.icon) {
     flex: none;
     margin-top: 0.15rem;
-    color: var(--c-inverse-accent);
+    color: var(--c-inverse-violet);
   }
 
   .community .title-md {

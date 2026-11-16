@@ -5,9 +5,9 @@ import { experience, languages, profile } from '../../data/profile';
 import type { IconName } from '../icons';
 
 const facts: { icon: IconName; term: string; value: string }[] = [
-  { icon: 'graduation-cap', term: 'Formação', value: 'Tecnólogo em Análise e Desenvolvimento de Sistemas (IFPI, 2026)' },
-  { icon: 'cpu', term: 'Especialização', value: 'Residência Tecnológica em Sistemas Embarcados (IFPI, 2025–2026)' },
-  { icon: 'briefcase', term: 'Atuação', value: `${experience[0].role} na ${experience[0].org}` },
+  { icon: 'graduation-cap', term: 'Graduação', value: 'Análise e Desenvolvimento de Sistemas (IFPI, 2026)' },
+  { icon: 'cpu', term: 'Especialização', value: 'Residência Tecnológica em Sistemas Embarcados (IFPI, 2025 a 2026)' },
+  { icon: 'briefcase', term: 'Trabalho atual', value: `${experience[0].role} na ${experience[0].org}` },
   { icon: 'layers', term: 'Área', value: profile.area },
   { icon: 'languages', term: 'Idiomas', value: languages.map((l) => l.name).join(', ') },
 ];
@@ -16,7 +16,7 @@ const facts: { icon: IconName; term: string; value: string }[] = [
 <section id="sobre" class="section about" aria-labelledby="sobre-title">
   <div class="container about-grid">
     <div class="about-head">
-      <SectionHead kicker="01 — Sobre" title="Do código à *comunidade*" id="sobre-title" />
+      <SectionHead kicker="01 · Sobre" title="Um pouco sobre *mim*" id="sobre-title" />
     </div>
 
     <div class="about-body">
@@ -88,12 +88,43 @@ const facts: { icon: IconName; term: string; value: string }[] = [
   }
 
   .fact {
+    position: relative;
+    overflow: hidden;
     display: grid;
     gap: 0.4rem;
     padding: 1.1rem 1.25rem;
     border: 1px solid var(--c-hairline);
     border-radius: var(--radius-lg);
     background: var(--c-surface-raised);
+    transition:
+      border-color 0.3s ease,
+      translate 0.5s var(--ease-out);
+  }
+
+  /* fio frio no alto do cartão, que se estende ao passar o ponteiro */
+  .fact::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 2.5rem;
+    height: 2px;
+    background: linear-gradient(90deg, var(--c-cyan), var(--c-violet));
+    transition: width 0.6s var(--ease-out);
+  }
+
+  .fact:nth-child(even)::before {
+    background: linear-gradient(90deg, var(--c-violet), var(--c-cyan));
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .fact:hover {
+      border-color: var(--c-outline);
+      translate: 0 -3px;
+    }
+
+    .fact:hover::before {
+      width: 100%;
+    }
   }
 
   .fact dt {
@@ -105,6 +136,14 @@ const facts: { icon: IconName; term: string; value: string }[] = [
     font-weight: 600;
     letter-spacing: 0.14em;
     text-transform: uppercase;
+  }
+
+  .fact dt :global(.icon) {
+    color: var(--c-cyan-strong);
+  }
+
+  .fact:nth-child(even) dt :global(.icon) {
+    color: var(--c-violet-strong);
   }
 
   .fact dd {

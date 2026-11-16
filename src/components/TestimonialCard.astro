@@ -1,0 +1,358 @@
+---
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import type { IconName } from './icons';
+import { projectHref, projects } from '../data/projects';
+import { formatRating, initials, type ContactKind, type Testimonial } from '../data/testimonials';
+
+/*
+ * Cartão de depoimento em dois blocos: a fala (nota, citação e projeto) e a pessoa
+ * (foto ou iniciais, nome, o que faz hoje e contato). Na página inicial os cartões
+ * alternam qual bloco vem em cima, como na referência de "o que dizem os clientes".
+ * O leitor de tela sempre ouve primeiro a fala e depois quem falou.
+ */
+interface Props {
+  item: Testimonial;
+  /** Pessoa em cima e fala embaixo (só muda a ordem visual). */
+  flip?: boolean;
+  /** Mostra o link para o projeto (na página do próprio projeto não precisa). */
+  showProject?: boolean;
+  /** Cópia decorativa do carrossel: sem links focáveis. */
+  decorative?: boolean;
+}
+
+const { item, flip = false, showProject = true, decorative = false } = Astro.props;
+
+const contactIcon: Record<ContactKind, IconName> = {
+  linkedin: 'linkedin',
+  instagram: 'instagram',
+  email: 'mail',
+  github: 'github',
+  whatsapp: 'message-circle',
+  site: 'globe',
+};
+
+const project = projects.find((p) => p.slug === item.project);
+const score = Math.max(0, Math.min(10, item.rating));
+const segments = Array.from({ length: 10 }, (_, i) => (score >= i + 1 ? 'full' : score > i ? 'half' : 'empty'));
+const rating = formatRating(score);
+---
+
+<figure class:list={['testimonial', { 'is-flipped': flip }]}>
+  <div class="t-quote">
+    <div class="t-top">
+      <p class="t-rating">
+        <span class="sr-only">Nota {rating} de 10</span>
+        <span class="t-score" aria-hidden="true">{rating}<small>/10</small></span>
+        <span class="t-meter" aria-hidden="true">
+          {segments.map((s, i) => <i class={`is-${s}`} style={`--s:${i}`} />)}
+        </span>
+      </p>
+      {item.sample && <span class="t-sample">Exemplo</span>}
+    </div>
+
+    <blockquote class="t-text">
+      <p>{item.quote}</p>
+    </blockquote>
+
+    {
+      (showProject && project) || item.date ? (
+        <p class="t-meta">
+          {showProject && project && (
+            decorative ? (
+              <span class="t-project">
+                <Icon name="layers" size={14} />
+                {project.title}
+              </span>
+            ) : (
+              <a class="t-project" href={projectHref(project.slug)}>
+                <Icon name="layers" size={14} />
+                <span class="sr-only">Depoimento sobre o projeto</span>
+                {project.title}
+                <Icon name="arrow-up-right" size={14} class="icon-diagonal" />
+              </a>
+            )
+          )}
+          {item.date && <span class="t-date">{item.date}</span>}
+        </p>
+      ) : null
+    }
+  </div>
+
+  <figcaption class="t-person">
+    {
+      item.photo ? (
+        <Image src={item.photo} alt="" width={112} height={112} fit="cover" quality={70} class="t-avatar" />
+      ) : (
+        <span class="t-avatar t-initials" aria-hidden="true">
+          {initials(item.name)}
+        </span>
+      )
+    }
+    <span class="t-who">
+      <span class="t-name">{item.name}</span>
+      <span class="t-role">{item.role}</span>
+    </span>
+    {
+      item.contact &&
+        (item.contact.href && !decorative ? (
+          <a class="t-contact" href={item.contact.href} target="_blank" rel="noopener noreferrer">
+            <Icon name={contactIcon[item.contact.kind]} size={16} />
+            <span class="sr-only">
+              {item.contact.label} de {item.name} (abre em nova aba)
+            </span>
+          </a>
+        ) : (
+          <span class="t-contact" title={item.contact.label}>
+            <Icon name={contactIcon[item.contact.kind]} size={16} />
+            <span class="sr-only">Contato: {item.contact.label}</span>
+          </span>
+        ))
+    }
+  </figcaption>
+</figure>
+
+<style>
+  .testimonial {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0;
+    height: 100%;
+    align-content: start;
+  }
+
+  .is-flipped .t-person {
+    order: -1;
+  }
+
+  .t-quote,
+  .t-person {
+    border: 1px solid var(--c-hairline-soft);
+    border-radius: var(--radius-lg);
+    background: var(--c-surface-raised);
+    transition:
+      border-color 0.3s ease,
+      transform 0.5s var(--ease-out),
+      box-shadow 0.5s var(--ease-out);
+  }
+
+  /* ---------- fala ---------- */
+  .t-quote {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    gap: 1.1rem;
+    padding: 1.4rem 1.5rem 1.3rem;
+    overflow: hidden;
+  }
+
+  /* aspas grandes na fonte dos títulos, como marca d'água */
+  .t-quote::after {
+    content: '“';
+    content: '“' / '';
+    position: absolute;
+    right: 0.9rem;
+    bottom: -2.6rem;
+    font-family: var(--font-display);
+    font-size: 9rem;
+    line-height: 1;
+    color: rgb(var(--c-violet-rgb) / 0.12);
+    pointer-events: none;
+  }
+
+  .t-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 0.75rem;
+  }
+
+  .t-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .t-score {
+    font-family: var(--font-display);
+    font-size: 1.85rem;
+    line-height: 1;
+    color: var(--c-ink);
+    font-variant-numeric: lining-nums;
+  }
+
+  .t-score small {
+    margin-inline-start: 0.1rem;
+    font-size: 0.55em;
+    color: var(--c-muted);
+  }
+
+  /* dez tracinhos, um por ponto; meio ponto pinta metade */
+  .t-meter {
+    display: inline-grid;
+    grid-template-columns: repeat(10, 0.45rem);
+    gap: 0.18rem;
+  }
+
+  .t-meter i {
+    height: 0.95rem;
+    border-radius: 2px;
+    background: var(--c-hairline);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .t-meter i::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, var(--c-cyan), var(--c-violet));
+    transform-origin: 50% 100%;
+    transform: scaleY(var(--fill, 0));
+  }
+
+  .t-meter .is-full {
+    --fill: 1;
+  }
+
+  .t-meter .is-half {
+    --fill: 0.5;
+  }
+
+  /* com movimento, os tracinhos sobem um a um quando o cartão aparece */
+  :global(:root[data-motion='full']) .t-meter i::after {
+    transition: transform 0.5s var(--ease-out);
+    transition-delay: calc(var(--s) * 55ms + 250ms);
+  }
+
+  :global(:root[data-motion='full'].reveal-ready) :global([data-reveal]:not(.is-visible)) .t-meter i::after {
+    transform: scaleY(0);
+  }
+
+  .t-sample {
+    padding: 0.2rem 0.6rem;
+    border: 1px dashed var(--c-outline);
+    border-radius: var(--radius-pill);
+    color: var(--c-muted);
+    font-size: var(--fs-caption-upper);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .t-text p {
+    color: var(--c-ink);
+    font-size: var(--fs-body-lg);
+    font-weight: 500;
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+
+  .t-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    padding-top: 0.9rem;
+    border-top: 1px dashed var(--c-hairline);
+    font-size: var(--fs-caption);
+  }
+
+  .t-project {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: var(--radius-pill);
+    background: var(--c-cyan-soft);
+    color: var(--c-cyan-strong);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  a.t-project :global(.icon-diagonal) {
+    transition: transform 0.45s var(--ease-out);
+  }
+
+  a.t-project:hover :global(.icon-diagonal) {
+    transform: translate(2px, -2px);
+  }
+
+  .t-date {
+    color: var(--c-muted);
+  }
+
+  /* ---------- pessoa ---------- */
+  .t-person {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.9rem 1rem;
+  }
+
+  .t-avatar {
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: var(--radius-md);
+    object-fit: cover;
+  }
+
+  .t-initials {
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, var(--c-cyan-strong), var(--c-violet-strong));
+    color: var(--c-canvas);
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  .t-who {
+    display: grid;
+    gap: 0.1rem;
+    min-width: 0;
+  }
+
+  .t-name {
+    color: var(--c-ink);
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  .t-role {
+    color: var(--c-muted);
+    font-size: var(--fs-caption);
+    line-height: 1.35;
+  }
+
+  .t-contact {
+    display: inline-grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 1px solid var(--c-hairline);
+    border-radius: 50%;
+    color: var(--c-violet-strong);
+  }
+
+  a.t-contact:hover {
+    border-color: var(--c-violet);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .testimonial:hover .t-quote,
+    .testimonial:hover .t-person {
+      border-color: var(--c-hairline);
+    }
+
+    .testimonial:hover .t-quote {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+  }
+</style>

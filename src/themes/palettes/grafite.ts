@@ -12,6 +12,23 @@ const slate = '#393F4A';
 const sand = '#DCD2CC';
 const taupe = '#8A7875';
 
+/**
+ * Acentos frios, calculados a partir da própria paleta no espaço OKLCH e com a
+ * mesma luminosidade do taupe (L ≈ 0,60), para pesarem o mesmo na página:
+ * - ciano: o complemento dos tons quentes. O taupe tem matiz 29° e a areia, 53°;
+ *   os opostos ficam em 209° e 233°. O ciano usa 221°, o meio do caminho.
+ * - violeta: o matiz que o grafite já carrega (289°), com mais croma.
+ * Entram só em detalhes: brilhos, fios, ícones e etiquetas.
+ */
+const cyan = '#248DAA';
+const violet = '#7E74C0';
+
+// Acentos frios sobre as faixas invertidas, iguais nos dois modos (elas são sempre escuras).
+const coolOnInverse = {
+  inverseCyan: mix(cyan, white, 0.42),
+  inverseViolet: mix(violet, white, 0.42),
+};
+
 // Papel das maquetes (sempre claro, porque fica dentro da faixa escura).
 const paper = {
   paper: mix(white, sand, 0.08),
@@ -61,6 +78,19 @@ export default definePalette({
     onInverseSoft: mix(sand, slate, 0.2),
     inverseAccent: mix(sand, taupe, 0.3),
     inverseHairline: mix(ink, slate, 0.62),
+    cyan,
+    cyanStrong: mix(cyan, ink, 0.34),
+    cyanSoft: mix(white, cyan, 0.1),
+    violet,
+    violetStrong: mix(violet, ink, 0.3),
+    violetSoft: mix(white, violet, 0.1),
+    ...coolOnInverse,
+    // no modo claro, o topo da página inicial é um bloco de taupe com texto claro
+    hero: mix(taupe, ink, 0.2),
+    heroDeep: mix(taupe, ink, 0.42),
+    onHero: white,
+    onHeroSoft: mix(white, sand, 0.3),
+    heroAccent: mix(sand, white, 0.5),
     focus: mix(taupe, ink, 0.48),
     selection: mix(sand, white, 0.15),
     glowA: sand,
@@ -95,6 +125,19 @@ export default definePalette({
     onInverseSoft: mix(sand, slate, 0.2),
     inverseAccent: mix(sand, taupe, 0.3),
     inverseHairline: mix(ink, slate, 0.72),
+    cyan: mix(cyan, white, 0.42),
+    cyanStrong: mix(cyan, white, 0.52),
+    cyanSoft: mix(ink, cyan, 0.2),
+    violet: mix(violet, white, 0.42),
+    violetStrong: mix(violet, white, 0.52),
+    violetSoft: mix(ink, violet, 0.22),
+    ...coolOnInverse,
+    // no modo escuro, o retrato sai do próprio grafite
+    hero: mix(ink, slate, 0.12),
+    heroDeep: ink,
+    onHero: mix(white, sand, 0.12),
+    onHeroSoft: mix(mist, sand, 0.6),
+    heroAccent: mix(taupe, sand, 0.62),
     focus: sand,
     selection: mix(taupe, ink, 0.45),
     glowA: slate,
