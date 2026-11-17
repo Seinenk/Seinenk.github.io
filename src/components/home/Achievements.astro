@@ -136,6 +136,11 @@ const years = [...new Set(events.map((e) => e.year))].sort((a, b) => b - a);
     color: var(--c-on-primary);
   }
 
+  /* sobre a cor primária, o asterisco do sobretítulo usa a cor do texto */
+  .award .kicker::before {
+    background: currentColor;
+  }
+
   .award-event {
     font-size: var(--fs-title-md);
     font-weight: 500;

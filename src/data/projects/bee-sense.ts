@@ -208,6 +208,11 @@ export const beeSense: CaseStudy = {
         alt: 'Tela de entrada do app: logo, “Bem vindo ao BeeSense!”, campos de e-mail e senha, botão Entrar e entrada com Google ou Apple.',
         caption: 'A entrada aceita e-mail e senha, Google ou Apple.',
         frame: 'phone',
+        story: {
+          step: 'Entrar',
+          text: 'Quem cuida das iscas entra com e-mail e senha, ou com a conta Google ou Apple.',
+          icon: 'log-in',
+        },
       },
       {
         src: appInicio,
@@ -226,24 +231,44 @@ export const beeSense: CaseStudy = {
         alt: 'Aba Isca com três iscas, cada uma com foto, o último estado e a distância: Isca 1, nenhum retorno, 1,2 km; Isca 2, presença detectada, 1,1 km; Isca 3, nenhum retorno, 0,8 km.',
         caption: 'A aba Isca, com o último estado e a distância de cada isca.',
         frame: 'phone',
+        story: {
+          step: 'Ver as iscas',
+          text: 'A aba Isca mostra cada isca com foto, o último estado, como “presença detectada”, e a distância até ela.',
+          icon: 'map-pin',
+        },
       },
       {
         src: appIscas,
         alt: 'Janela “Código de pareamento” sobre a lista de iscas, com o texto “Insira esse código na sua isca para executar o pareamento” e o código 54194685.',
         caption: 'Numa isca nova, o app gera o código de pareamento que vai para a placa.',
         frame: 'phone',
+        story: {
+          step: 'Parear uma isca nova',
+          text: 'O app gera um código de pareamento. A pessoa coloca esse código na placa, e a isca passa a enviar as leituras.',
+          icon: 'link',
+        },
       },
       {
         src: appIsca,
         alt: 'Tela da Isca 2: foto da isca presa a uma árvore, 24 dias totais, 1,1 km de distância, abas Histórico e Cronômetro e eventos com data e hora, como “Abelha”, “Presença detectada” e “Invasor, limpeza necessária”.',
         caption: 'A Isca 2, com dias em campo, distância e histórico de eventos.',
         frame: 'phone',
+        story: {
+          step: 'Acompanhar uma isca',
+          text: 'Cada isca mostra há quantos dias está em campo, a distância e o histórico, com avisos como “Abelha”, “Presença detectada” e “Invasor, limpeza necessária”.',
+          icon: 'bell',
+        },
       },
       {
         src: appCronometro,
         alt: 'Isca 2 na aba Cronômetro: “Selecione um período” com as opções 30, 45 e 60, o 30 escolhido, e o calendário de agosto de 2025 marcando o período a partir do dia 5.',
         caption: 'O cronômetro marca no calendário um período de 30, 45 ou 60 dias.',
         frame: 'phone',
+        story: {
+          step: 'Marcar o tempo',
+          text: 'O cronômetro marca no calendário um período de 30, 45 ou 60 dias, contado a partir do dia escolhido.',
+          icon: 'timer',
+        },
       },
       {
         src: appIscaVazia,

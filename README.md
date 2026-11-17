@@ -38,6 +38,7 @@ npm run build
 | `src/assets/images/` | Fotos e imagens. O Astro gera versões otimizadas (WebP em vários tamanhos). |
 | `public/` | Arquivos servidos como estão: favicon, ícones, imagem de compartilhamento, robots.txt. |
 | `ferramentas/retrato/` | Os dois scripts que geram o retrato recortado do topo da página inicial. |
+| `ferramentas/og/` | O script que gera a imagem de compartilhamento (`public/og-image.jpg`). |
 
 ## Páginas de projeto
 
@@ -81,6 +82,8 @@ Para incluir um projeto:
    da marca, quando existe, fica em `src/components/case/` (como `EfiplaMark.astro`).
 5. Para um "antes e depois", use `demo.kind: 'before-after'` com as duas imagens em
    `demo.compare` (`frame: 'phone'` para prints de celular, `'browser'` para telas largas).
+   A divisória começa no meio; se o meio cortar um rosto ou o título, mude com `start`
+   (em porcentagem, como `start: 40`).
 
 Recursos opcionais da construção visual:
 
@@ -123,10 +126,18 @@ Partes mais visuais, inspiradas em apresentações de portfólio:
 - **Tipografia**: atrás de cada "Aa", uma cópia só de contorno tracejado.
 - **Processo**: em telas largas, um caminho tracejado no meio com as etapas em caixas
   alternando dos dois lados.
-- **Telas** (`ScreenShowcase.astro`): antes da galeria, uma vitrine com um leque de celulares
-  (quando há 3 ou mais telas `phone`) ou janelas de navegador sobrepostas (quando há 2 ou mais
-  `browser`), com um caminho tracejado e as `tags` do projeto flutuando por cima. A vitrine é
-  decorativa; as telas, com texto alternativo e legenda, continuam na galeria logo abaixo.
+- **Como se usa** (`ScreenStory.astro`): nos apps, as telas de celular que têm `story` (nome da
+  etapa, uma ou duas frases e um ícone) viram um passo a passo antes da galeria. Cada etapa tem
+  o celular com moldura fina, uma anotação numerada e um traço com ponto ligando os dois; um fio
+  tracejado leva de uma etapa à seguinte e se desenha conforme a página rola. Em telas largas
+  os celulares alternam de lado, com as anotações no meio; no celular, as etapas ficam
+  empilhadas. Use de 3 a 5 etapas, na ordem de uso.
+- **Telas** (`ScreenShowcase.astro`): nos sites, quando há 2 ou mais telas `browser`, uma
+  vitrine com as janelas de navegador sobrepostas, um caminho tracejado e as `tags` do projeto
+  flutuando por cima.
+- Nas duas, as imagens são decorativas: as telas, com texto alternativo e legenda, continuam na
+  galeria logo abaixo. No passo a passo, o nome e o texto de cada etapa são lidos normalmente
+  pelos leitores de tela.
 - **Depoimentos**: quando há depoimentos sobre o projeto, eles aparecem no fim do Resumo.
 
 ## Depoimentos
@@ -148,7 +159,7 @@ topo). Quando nenhum depoimento for exemplo, o aviso some sozinho.
 
 Os textos falam com quem não é da área (um recrutador, o dono de um pequeno negócio):
 
-- Primeira pessoa ("desenhei", "programei"), frases curtas e com verbo.
+- Primeira pessoa ("desenhei", "desenvolvi"), frases curtas e com verbo.
 - Termo técnico explicado na primeira vez que aparece na página, em poucas palavras:
   "o servidor (backend) que guarda as leituras".
 - Nenhum travessão (— ou –). Períodos por extenso: "2025 a 2026", "2024 até hoje", "desde 2024".
@@ -178,8 +189,38 @@ swift ferramentas/retrato/mascara.swift src/assets/images/carlos-retrato.jpg /tm
 node ferramentas/retrato/recorte.mjs src/assets/images/carlos-retrato.jpg /tmp/mascara src/assets/images/carlos-recorte.webp
 ```
 
-O topo usa a foto original em dois lugares: no cartão "Vamos conversar" e na imagem de
-compartilhamento.
+A foto original aparece no cartão "Vamos conversar", no topo. A imagem de compartilhamento usa
+o recorte (veja abaixo).
+
+As capturas da página do projeto Portfólio (`src/assets/images/projetos/portfolio/depois-*.webp`)
+mostram o topo da página inicial: 1328 × 808 px no computador, nos temas claro e escuro, e
+390 × 844 px no celular, no tema claro. Se o topo mudar, tire as capturas de novo nesses
+tamanhos, com o movimento reduzido (tudo parado e visível), a partir do site gerado
+(`npm run build` e `npm run preview`), que não tem a barra de ferramentas do modo de
+desenvolvimento.
+
+## Imagem de compartilhamento
+
+A imagem que aparece quando alguém compartilha um link do site (`public/og-image.jpg`,
+1200 × 630 px) repete o topo da página inicial: o bloco taupe, o retrato recortado, o primeiro
+nome ao fundo, o sobretítulo com o asterisco, o nome completo e um cartão com o endereço. Ela
+é gerada por um script, que desenha a composição no Chrome instalado e salva o JPEG:
+
+```bash
+node ferramentas/og/gerar.mjs
+```
+
+Com `--tema escuro`, sai a versão grafite. As cores estão no começo do script e são as mesmas
+da paleta (variáveis `--c-hero`); se a paleta mudar, atualize as duas. Os textos (nome, cargo,
+local e a primeira frase da apresentação) também estão escritos no script: se mudarem em
+`src/data/profile.ts`, gere a imagem de novo.
+
+O endereço da imagem nas páginas leva um código tirado do próprio arquivo
+(`og-image.jpg?v=...`, em `src/layouts/BaseLayout.astro`). Quando a imagem muda, o código muda
+sozinho, e as redes que guardam a prévia pelo endereço, como o Facebook, baixam a nova. Para
+uma rede atualizar na hora uma prévia que já foi compartilhada, use a ferramenta dela de
+inspecionar links (no Facebook, o Depurador de Compartilhamento; no LinkedIn, o Post
+Inspector).
 
 ## Design system
 
@@ -207,8 +248,8 @@ pesarem o mesmo na página:
 | Ciano | `#248DAA` | O complemento dos tons quentes: o taupe tem matiz de 29° e a areia, de 53°; os opostos ficam em 209° e 233°. O ciano usa 221°, o meio do caminho. |
 | Violeta | `#7E74C0` | O matiz que o grafite já carrega (289°), com mais saturação. |
 
-Eles entram só em detalhes, nunca em blocos grandes: brilhos de fundo, fios dos sobretítulos,
-barra de progresso, ícones, etiquetas, a luz que segue o ponteiro, o ponto pulsante de "em
+Eles entram só em detalhes, nunca em blocos grandes: brilhos de fundo, o asterisco dos
+sobretítulos, barra de progresso, ícones, etiquetas, a luz que segue o ponteiro, o ponto pulsante de "em
 andamento" e os caminhos tracejados. Cada acento tem uma versão forte para texto pequeno
 (`cyanStrong`, `violetStrong`), uma de fundo suave (`cyanSoft`, `violetSoft`) e uma clara para as
 faixas escuras (`inverseCyan`, `inverseViolet`). O build confere o contraste de todas elas.

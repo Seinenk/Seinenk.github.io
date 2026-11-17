@@ -3,10 +3,10 @@ import { Image } from 'astro:assets';
 import type { Shot } from '../../data/projects/types';
 
 /*
- * Vitrine das telas, no alto do bloco "Telas" de cada projeto: um leque de celulares
- * (como em "Main Screens") ou janelas de navegador sobrepostas (como em "Main Pages"),
- * com um caminho tracejado e etiquetas que flutuam por cima. É só decoração: as mesmas
- * telas aparecem logo abaixo, na galeria, com texto alternativo e legenda.
+ * Vitrine das telas de sites, no alto do bloco "Telas": janelas de navegador sobrepostas
+ * (como em "Main Pages"), com um caminho tracejado e etiquetas que flutuam por cima.
+ * É só decoração: as mesmas telas aparecem logo abaixo, na galeria, com texto
+ * alternativo e legenda. Os apps contam a história de uso em ScreenStory.astro.
  */
 interface Props {
   shots: Shot[];
@@ -17,11 +17,7 @@ interface Props {
 const { shots, labels = [] } = Astro.props;
 const phones = shots.filter((s) => s.frame === 'phone');
 const browsers = shots.filter((s) => s.frame === 'browser');
-const mode = phones.length >= 3 ? 'phones' : browsers.length >= 2 ? 'browsers' : null;
-
-// Leque de celulares: o primeiro no centro, os seguintes alternando dos lados.
-const order = [3, 1, 0, 2, 4];
-const fan = mode === 'phones' ? order.filter((i) => i < Math.min(phones.length, 5)).map((i) => ({ shot: phones[i], slot: i })) : [];
+const mode = browsers.length >= 2 ? 'browsers' : null;
 
 // Janelas: duas atrás, inclinadas, e uma na frente.
 const windows = mode === 'browsers' ? browsers.slice(0, 3) : [];
@@ -37,23 +33,6 @@ const pills = labels.slice(0, 3);
         <path d="M-4 70 C 22 40, 40 92, 70 66 S 118 12, 164 30" />
       </svg>
 
-      {mode === 'phones' && (
-        <div class="sc-stage">
-          {fan.map(({ shot, slot }) => (
-            <figure class={`sc-phone sc-slot-${slot}`} style={`--slot:${slot}`}>
-              <span class="sc-island" />
-              <Image
-                src={shot.src}
-                alt=""
-                widths={[220, 320, 440]}
-                sizes="(min-width: 64rem) 12rem, 30vw"
-                quality={72}
-                class="sc-img"
-              />
-            </figure>
-          ))}
-        </div>
-      )}
 
       {mode === 'browsers' && (
         <div class="sc-stage">
@@ -156,22 +135,23 @@ const pills = labels.slice(0, 3);
     object-position: 50% 0;
   }
 
-  /* ---------- celulares ---------- */
+  /* ---------- celular ao lado das janelas (moldura fina, em rem) ---------- */
   .sc-phone {
-    --w: 21%;
-    --x: 39.5%;
-    --y: 9%;
-    --r: 0deg;
-    --z: 0px;
+    --w: 13%;
+    --x: 80%;
+    --y: 38%;
+    --r: 6deg;
+    --z: 60px;
     position: absolute;
     left: var(--x);
     top: var(--y);
+    z-index: 3;
     width: var(--w);
     aspect-ratio: 9 / 19.5;
     margin: 0;
-    padding: 2.2%;
-    border-radius: 14% / 6.5%;
-    background: #0d0d12;
+    padding: 0.22rem;
+    border-radius: 1.2rem;
+    background: linear-gradient(150deg, #4a4a55, #111117 22%, #0b0b10 70%, #3a3a44);
     box-shadow:
       0 0 0 1px rgb(255 255 255 / 0.08) inset,
       0 1.5rem 3rem -1.25rem rgb(var(--c-shadow-rgb) / 0.55);
@@ -182,129 +162,29 @@ const pills = labels.slice(0, 3);
   }
 
   .sc-phone .sc-img {
-    border-radius: 11% / 5%;
+    border-radius: 1rem;
     background: var(--c-surface-card);
   }
 
   .sc-island {
     position: absolute;
-    top: 3.6%;
+    top: 0.45rem;
     left: 50%;
     z-index: 2;
     width: 28%;
-    height: 2.4%;
+    height: 0.55rem;
     border-radius: 999px;
-    background: #0d0d12;
+    background: #050507;
     translate: -50% 0;
-  }
-
-  .sc-slot-0 {
-    --w: 21%;
-    --x: 39.5%;
-    --y: 7%;
-    --z: 40px;
-    z-index: 3;
-  }
-
-  .sc-slot-1 {
-    --w: 18%;
-    --x: 22%;
-    --y: 15%;
-    --r: -7deg;
-    z-index: 2;
-  }
-
-  .sc-slot-2 {
-    --w: 18%;
-    --x: 60%;
-    --y: 15%;
-    --r: 7deg;
-    z-index: 2;
-  }
-
-  .sc-slot-3 {
-    --w: 15%;
-    --x: 6.5%;
-    --y: 26%;
-    --r: -13deg;
-    --z: -40px;
-    z-index: 1;
-  }
-
-  .sc-slot-4 {
-    --w: 15%;
-    --x: 78.5%;
-    --y: 26%;
-    --r: 13deg;
-    --z: -40px;
-    z-index: 1;
-  }
-
-  /* no celular, só os três do meio, maiores */
-  @media (max-width: 40rem) {
-    .sc-slot-3,
-    .sc-slot-4 {
-      display: none;
-    }
-
-    .sc-slot-0 {
-      --w: 30%;
-      --x: 35%;
-    }
-
-    .sc-slot-1 {
-      --w: 26%;
-      --x: 9%;
-      --y: 16%;
-    }
-
-    .sc-slot-2 {
-      --w: 26%;
-      --x: 65%;
-      --y: 16%;
-    }
-  }
-
-  /* entrada: os celulares saem do centro e se abrem em leque (--from é a distância até o meio) */
-  .sc-slot-1 {
-    --from: 95%;
-  }
-
-  .sc-slot-2 {
-    --from: -95%;
-  }
-
-  .sc-slot-3 {
-    --from: 230%;
-  }
-
-  .sc-slot-4 {
-    --from: -230%;
   }
 
   :global(:root[data-motion='full'].reveal-ready) .sc:not(:global(.is-visible)) .sc-phone {
     opacity: 0;
-    transform: translateX(var(--from, 0%)) translateY(10%) rotate(0deg);
+    transform: translateY(10%) rotate(0deg);
   }
 
   :global(:root[data-motion='full']) .sc:global(.is-visible) .sc-phone {
-    transition-delay: calc(var(--slot) * 90ms + 150ms);
-  }
-
-  /* depois de aberto, cada um flutua no seu ritmo */
-  :global(:root[data-motion='full']) .sc:global(.is-visible) .sc-phone .sc-img {
-    animation: sc-glow 7s ease-in-out infinite;
-    animation-delay: calc(var(--slot) * -1.3s);
-  }
-
-  @keyframes sc-glow {
-    0%,
-    100% {
-      filter: none;
-    }
-    50% {
-      filter: brightness(1.04) saturate(1.05);
-    }
+    transition-delay: 450ms;
   }
 
   :global(:root[data-motion='full']) .sc:global(.is-visible) .sc-stage {
@@ -318,17 +198,6 @@ const pills = labels.slice(0, 3);
     }
     50% {
       transform: translateY(-1.2%);
-    }
-  }
-
-  /* ao passar o ponteiro, o leque se endireita e se aproxima */
-  @media (hover: hover) and (pointer: fine) {
-    .sc:hover .sc-phone {
-      transform: translateZ(var(--z)) rotate(calc(var(--r) * 0.35)) translateY(-3%);
-    }
-
-    .sc:hover .sc-slot-0 {
-      transform: translateZ(70px) translateY(-4%);
     }
   }
 

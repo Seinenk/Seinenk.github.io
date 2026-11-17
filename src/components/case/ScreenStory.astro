@@ -1,0 +1,464 @@
+---
+import { Image } from 'astro:assets';
+import Icon from '../Icon.astro';
+import type { Shot } from '../../data/projects/types';
+
+/*
+ * História de uso do app, no alto do bloco de telas (como as anotações da referência):
+ * os celulares alternam de lado, a anotação de cada etapa fica no meio, um traço com
+ * ponto liga a tela à anotação e um fio tracejado leva de uma etapa à seguinte.
+ *
+ * Entram as telas de celular que têm `story`, na ordem da galeria. As imagens aqui são
+ * decorativas (a anotação ao lado diz o que a tela mostra); a galeria logo abaixo traz
+ * todas as telas com texto alternativo e legenda.
+ *
+ * O fio é desenhado por script a partir da posição real de cada peça e vai aparecendo
+ * conforme a página rola. Sem script, ou no celular, as etapas ficam empilhadas, ligadas
+ * por um tracejado simples.
+ */
+interface Props {
+  shots: Shot[];
+  title: string;
+}
+
+const { shots, title } = Astro.props;
+const steps = shots.filter((s) => s.frame === 'phone' && s.story);
+---
+
+{
+  steps.length >= 2 && (
+    <div class="story" data-story data-ambient>
+      <svg class="st-thread" aria-hidden="true" focusable="false">
+        <path class="st-path" />
+        <path class="st-links" />
+        <g class="st-dots" />
+      </svg>
+
+      <ol class="list-reset st-steps" aria-label={`Como se usa o ${title}, passo a passo`}>
+        {steps.map((shot, i) => (
+          <li class="st-step" style={`--i:${i}`}>
+            <figure class="st-device" data-reveal={i % 2 === 0 ? 'left' : 'right'} aria-hidden="true">
+              <span class="st-island" />
+              <Image
+                src={shot.src}
+                alt=""
+                widths={[240, 360, 480]}
+                sizes="(min-width: 40rem) 14rem, 70vw"
+                quality={74}
+                class="st-img"
+              />
+            </figure>
+            <div class="st-note" data-reveal style="--i:1">
+              <span class="st-badge" aria-hidden="true">
+                <Icon name={shot.story!.icon ?? 'smartphone'} size={20} />
+              </span>
+              <p class="st-n" aria-hidden="true">
+                {String(i + 1).padStart(2, '0')}
+              </p>
+              <h5 class="st-title">{shot.story!.step}</h5>
+              <p class="st-text">{shot.story!.text}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  )
+}
+
+<script>
+  /* Desenha o fio de cada história e o revela conforme a página rola. */
+  const stories = Array.from(document.querySelectorAll<HTMLElement>('[data-story]'));
+
+  const box = (el: HTMLElement) => ({ x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight });
+
+  function layout(story: HTMLElement) {
+    const svg = story.querySelector<SVGSVGElement>('.st-thread');
+    if (!svg || getComputedStyle(svg).display === 'none') return;
+    const width = story.clientWidth;
+    const height = story.clientHeight;
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+    const steps = Array.from(story.querySelectorAll<HTMLElement>('.st-step'));
+    let links = '';
+    let path = '';
+    let dots = '';
+    steps.forEach((step, i) => {
+      const device = box(step.querySelector<HTMLElement>('.st-device')!);
+      const note = box(step.querySelector<HTMLElement>('.st-note')!);
+      const deviceLeft = device.x < note.x;
+      // traço da tela até a anotação, na altura do meio da anotação
+      const y = Math.min(Math.max(note.y + note.h / 2, device.y + 48), device.y + device.h - 48);
+      const x1 = deviceLeft ? device.x + device.w + 10 : device.x - 10;
+      const x2 = deviceLeft ? note.x - 4 : note.x + note.w + 4;
+      links += `M${x1} ${y}H${x2}`;
+      dots += `<circle cx="${x1}" cy="${y}" r="4.5"/><circle class="st-dot-end" cx="${x2}" cy="${y}" r="3"/>`;
+
+      // fio tracejado até a próxima anotação, serpenteando para o lado da próxima tela
+      const next = steps[i + 1]?.querySelector<HTMLElement>('.st-note');
+      if (next) {
+        const n2 = box(next);
+        const sx = note.x + note.w / 2;
+        const sy = note.y + note.h + 8;
+        const ex = n2.x + n2.w / 2;
+        const ey = n2.y - 8;
+        const swing = (deviceLeft ? 1 : -1) * Math.min(90, note.w * 0.28);
+        const k = Math.max(24, (ey - sy) * 0.55);
+        path += `M${sx} ${sy}C${sx + swing} ${sy + k} ${ex + swing} ${ey - k} ${ex} ${ey}`;
+      }
+    });
+    svg.querySelector('.st-links')?.setAttribute('d', links);
+    svg.querySelector('.st-path')?.setAttribute('d', path);
+    const g = svg.querySelector('.st-dots');
+    if (g) g.innerHTML = dots;
+  }
+
+  const motionOn = () => document.documentElement.dataset.motion === 'full';
+
+  function reveal() {
+    const vh = window.innerHeight;
+    stories.forEach((story) => {
+      const svg = story.querySelector<SVGSVGElement>('.st-thread');
+      if (!svg) return;
+      if (!motionOn()) {
+        svg.style.removeProperty('--p');
+        return;
+      }
+      const r = story.getBoundingClientRect();
+      const p = Math.min(1, Math.max(0, (vh * 0.8 - r.top) / Math.max(1, r.height)));
+      svg.style.setProperty('--p', `${(p * 100).toFixed(1)}%`);
+    });
+  }
+
+  if (stories.length) {
+    stories.forEach(layout);
+    if ('ResizeObserver' in window) {
+      const ro = new ResizeObserver((entries) => entries.forEach((e) => layout(e.target as HTMLElement)));
+      stories.forEach((s) => ro.observe(s));
+    }
+    window.addEventListener('load', () => stories.forEach(layout));
+    let ticking = false;
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+          reveal();
+          ticking = false;
+        });
+      },
+      { passive: true },
+    );
+    reveal();
+  }
+</script>
+
+<style>
+  .story {
+    container: story / inline-size;
+    position: relative;
+    margin-block: 0.5rem 2.5rem;
+    padding: clamp(1.25rem, 0.5rem + 3vw, 2.75rem) clamp(1rem, 0.5rem + 2vw, 2rem);
+    border: 1px solid var(--c-hairline-soft);
+    border-radius: var(--radius-xl);
+    background:
+      radial-gradient(55% 35% at 15% 10%, rgb(var(--c-cyan-rgb) / 0.1), transparent 70%),
+      radial-gradient(50% 30% at 85% 55%, rgb(var(--c-violet-rgb) / 0.09), transparent 70%),
+      radial-gradient(55% 30% at 20% 95%, rgb(var(--c-cyan-rgb) / 0.08), transparent 70%),
+      linear-gradient(180deg, var(--c-surface-soft), var(--c-canvas));
+    overflow: hidden;
+  }
+
+  /* ---------- fio ---------- */
+  .st-thread {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    overflow: visible;
+    /* com movimento, o fio aparece de cima para baixo conforme a leitura (--p vem do script) */
+    clip-path: inset(0 0 calc(100% - var(--p, 100%)) 0);
+  }
+
+  .st-path {
+    fill: none;
+    stroke: rgb(var(--c-cyan-rgb) / 0.75);
+    stroke-width: 1.75;
+    stroke-dasharray: 6 7;
+    stroke-linecap: round;
+  }
+
+  :global(:root[data-motion='full']) .st-path {
+    animation: st-flow 2.4s linear infinite;
+  }
+
+  @keyframes st-flow {
+    to {
+      stroke-dashoffset: -26;
+    }
+  }
+
+  .st-links {
+    fill: none;
+    stroke: rgb(var(--c-violet-rgb) / 0.7);
+    stroke-width: 1.25;
+  }
+
+  .st-dots :global(circle) {
+    fill: var(--c-violet);
+  }
+
+  .st-dots :global(.st-dot-end) {
+    fill: var(--c-cyan);
+  }
+
+  /* ---------- etapas ----------
+   * O layout depende da largura do próprio bloco (container query), não da janela: na
+   * página do projeto o bloco divide espaço com o sumário lateral.
+   * Estreito: etapas empilhadas. Médio: duas colunas, tela e anotação alternando de lado.
+   * Largo: três colunas, as telas alternando nas pontas e as anotações no meio. */
+  .st-steps {
+    --pw: clamp(11rem, 27cqw, 14rem);
+    position: static;
+    display: grid;
+    gap: 0;
+  }
+
+  .st-step {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* empilhado: um tracejado simples leva de uma etapa à seguinte */
+  .st-step:not(:last-child)::after {
+    content: '';
+    width: 0;
+    height: 3.25rem;
+    margin-block: 0.9rem;
+    border-left: 1.75px dashed rgb(var(--c-cyan-rgb) / 0.7);
+  }
+
+  .st-thread {
+    display: none;
+  }
+
+  @container story (min-width: 36rem) {
+    .st-thread {
+      display: block;
+    }
+
+    .st-step {
+      display: grid;
+      grid-template-columns: calc(var(--pw) + 1rem) minmax(0, 1fr);
+      align-items: center;
+      column-gap: clamp(1.5rem, 5cqw, 3rem);
+    }
+
+    .st-step:not(:last-child)::after {
+      content: none;
+    }
+
+    .st-step + .st-step {
+      margin-top: 1.75rem;
+    }
+
+    .st-step:nth-child(odd) .st-device {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .st-step:nth-child(odd) .st-note {
+      grid-column: 2;
+      grid-row: 1;
+      justify-self: start;
+    }
+
+    .st-step:nth-child(even) {
+      grid-template-columns: minmax(0, 1fr) calc(var(--pw) + 1rem);
+    }
+
+    .st-step:nth-child(even) .st-device {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .st-step:nth-child(even) .st-note {
+      grid-column: 1;
+      grid-row: 1;
+      justify-self: end;
+    }
+  }
+
+  @container story (min-width: 50rem) {
+    .st-step,
+    .st-step:nth-child(even) {
+      grid-template-columns: calc(var(--pw) + 1rem) minmax(0, 1fr) calc(var(--pw) + 1rem);
+    }
+
+    .st-step:nth-child(even) .st-device {
+      grid-column: 3;
+    }
+
+    .st-step:nth-child(odd) .st-note,
+    .st-step:nth-child(even) .st-note {
+      grid-column: 2;
+      justify-self: center;
+    }
+
+    /* cada etapa sobe um pouco por cima da anterior: o caminho fica em zigue-zague */
+    .st-step + .st-step {
+      margin-top: calc(var(--pw) * -0.6);
+    }
+  }
+
+  /* ---------- celular, com moldura fina ---------- */
+  .st-device {
+    --tilt: -3deg;
+    container-type: inline-size;
+    position: relative;
+    z-index: 1;
+    width: min(70cqw, var(--pw));
+    aspect-ratio: 9 / 19.5;
+    margin: 0;
+    padding: 0.3rem;
+    border-radius: 2.1rem;
+    background: linear-gradient(150deg, #4a4a55, #111117 22%, #0b0b10 70%, #3a3a44);
+    box-shadow:
+      0 0 0 1px rgb(255 255 255 / 0.08) inset,
+      0 0 0 1px rgb(0 0 0 / 0.35),
+      0 1.75rem 3rem -1.5rem rgb(var(--c-shadow-rgb) / 0.55);
+    rotate: var(--tilt);
+    transition:
+      rotate 0.7s var(--ease-out),
+      translate 0.7s var(--ease-out),
+      box-shadow 0.7s var(--ease-out);
+  }
+
+  .st-step:nth-child(even) .st-device {
+    --tilt: 3deg;
+  }
+
+  .st-device :global(.st-img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 1.8rem;
+    object-fit: cover;
+    object-position: 50% 0;
+    background: var(--c-surface-card);
+  }
+
+  .st-island {
+    position: absolute;
+    top: 4cqw;
+    left: 50%;
+    z-index: 2;
+    width: 30cqw;
+    height: 7.5cqw;
+    border-radius: 999px;
+    background: #050507;
+    translate: -50% 0;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .st-step:hover .st-device {
+      --tilt: 0deg;
+      translate: 0 -0.5rem;
+      box-shadow:
+        0 0 0 1px rgb(255 255 255 / 0.08) inset,
+        0 0 0 1px rgb(0 0 0 / 0.35),
+        0 2.5rem 3.5rem -1.5rem rgb(var(--c-shadow-rgb) / 0.6);
+    }
+  }
+
+  /* ---------- anotação, com borda tracejada e um ícone preso no canto ---------- */
+  .st-note {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 23rem);
+    margin-top: 1.25rem;
+    padding: 1.35rem 1.4rem 1.3rem;
+    border: 1.5px dashed rgb(var(--c-cyan-rgb) / 0.55);
+    border-radius: var(--radius-xl);
+    background: rgb(var(--c-canvas-rgb) / 0.88);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    text-align: center;
+  }
+
+  .st-step:nth-child(even) .st-note {
+    border-color: rgb(var(--c-violet-rgb) / 0.55);
+  }
+
+  @container story (min-width: 36rem) {
+    .st-note {
+      margin-top: 0;
+    }
+  }
+
+  .st-badge {
+    position: absolute;
+    top: -1.15rem;
+    right: -0.9rem;
+    display: grid;
+    place-items: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--c-cyan-strong), var(--c-violet-strong));
+    color: var(--c-canvas);
+    box-shadow: 0 0.75rem 1.4rem -0.6rem rgb(var(--c-shadow-rgb) / 0.6);
+  }
+
+  .st-step:nth-child(even) .st-badge {
+    right: auto;
+    left: -0.9rem;
+    background: linear-gradient(135deg, var(--c-violet-strong), var(--c-cyan-strong));
+  }
+
+  /* o ícone entra com um pulo e depois flutua devagar */
+  :global(:root[data-motion='full']) .st-note:global(.is-visible) .st-badge {
+    animation:
+      st-pop 0.8s var(--ease-spring) both 0.25s,
+      float 5s ease-in-out infinite 1.1s;
+  }
+
+  @keyframes st-pop {
+    from {
+      transform: scale(0.2) rotate(-40deg);
+    }
+    to {
+      transform: none;
+    }
+  }
+
+  .st-n {
+    color: var(--c-accent);
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-style: italic;
+    line-height: 1;
+    font-variant-numeric: lining-nums;
+  }
+
+  .st-title {
+    margin-top: 0.35rem;
+    color: var(--c-ink);
+    font-family: var(--font-display);
+    font-size: var(--fs-title-lg);
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  .st-text {
+    margin-top: 0.45rem;
+    color: var(--c-body);
+    font-size: var(--fs-body-sm);
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+</style>

@@ -12,6 +12,10 @@ interface Props {
 }
 
 const { before, after, frame, caption } = Astro.props.compare;
+// ponto de partida da divisória (5 a 95, padrão 50) e o que o leitor de tela anuncia nele
+const start = Math.round(Math.min(95, Math.max(5, Astro.props.compare.start ?? 50)));
+const partial = `{n}% mostrando ${before.name}, à esquerda`;
+const startText = start === 50 ? 'Metade de cada versão' : partial.replace('{n}', String(start));
 const phone = frame === 'phone';
 const ratio = `${after.src.width} / ${after.src.height}`;
 const sizes = phone ? '(min-width: 40rem) 22rem, 82vw' : '(min-width: 64rem) 52rem, 92vw';
@@ -23,8 +27,9 @@ const widthsFor = (w: number) => (phone ? [Math.min(w, 360), w] : [Math.min(w, 6
   data-before-after
   data-only-after={`Só ${after.name}`}
   data-only-before={`Só ${before.name}`}
-  data-partial={`{n}% mostrando ${before.name}, à esquerda`}
-  style="--pos:50%"
+  data-partial={partial}
+  data-start={start}
+  style={`--pos:${start}%`}
 >
   <div class="ba-stage" style={`aspect-ratio:${ratio}`}>
     <Image src={after.src} alt={after.alt} widths={widthsFor(after.src.width)} sizes={sizes} class="ba-img" />
@@ -36,7 +41,7 @@ const widthsFor = (w: number) => (phone ? [Math.min(w, 360), w] : [Math.min(w, 6
     <span class="ba-handle" aria-hidden="true">
       <span class="ba-knob">‹ ›</span>
     </span>
-    <input class="ba-range" type="range" min="0" max="100" value="50" step="1" aria-label={`Comparar ${before.name} com ${after.name}`} aria-valuetext="Metade de cada versão" data-ba-range />
+    <input class="ba-range" type="range" min="0" max="100" value={start} step="1" aria-label={`Comparar ${before.name} com ${after.name}`} aria-valuetext={startText} data-ba-range />
   </div>
   <figcaption class="ba-caption">{caption}</figcaption>
 </figure>

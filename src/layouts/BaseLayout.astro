@@ -1,4 +1,7 @@
 ---
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { Font } from 'astro:assets';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
@@ -23,7 +26,14 @@ const { title, description, current = 'inicio', overlayHeader = false } = Astro.
 const site = Astro.site ?? new URL('https://seinenk.github.io');
 const path = Astro.url.pathname.replace(/index\.html$/, '').replace(/\.html$/, '');
 const canonical = new URL(path, site).href;
-const ogImage = new URL('/og-image.jpg', site).href;
+// O endereço da imagem de compartilhamento leva um código tirado do próprio arquivo. Quando a
+// imagem muda, o endereço muda junto, e as redes que guardam a prévia pelo endereço (como o
+// Facebook) baixam a nova.
+const ogVersion = createHash('sha256')
+  .update(readFileSync(join(process.cwd(), 'public', 'og-image.jpg')))
+  .digest('hex')
+  .slice(0, 8);
+const ogImage = new URL(`/og-image.jpg?v=${ogVersion}`, site).href;
 const themeCss = buildThemeCss();
 const boot = {
   ids: palettes.map((p) => p.id),
@@ -40,7 +50,7 @@ const person = {
   alternateName: profile.shortName,
   jobTitle: profile.headline,
   url: site.href,
-  image: new URL('/og-image.jpg', site).href,
+  image: ogImage,
   alumniOf: { '@type': 'CollegeOrUniversity', name: 'Instituto Federal do Piauí' },
   worksFor: { '@type': 'Organization', name: 'Investe Piauí' },
   sameAs: [links.github.href, links.instagram.href, links.lattes.href, links.orcid.href],
@@ -120,7 +130,7 @@ const person = {
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content={`Retrato de ${profile.shortName} ao lado do nome e da área de atuação`} />
+    <meta property="og:image:alt" content={`Retrato de ${profile.shortName} com o nome completo, a área de atuação e o endereço do site`} />
     <meta name="twitter:card" content="summary_large_image" />
     <script type="application/ld+json" is:inline set:html={JSON.stringify(person)} />
     <!-- pré-carrega a página do link quando o ponteiro para sobre ele: navegação e transição instantâneas -->

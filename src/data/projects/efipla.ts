@@ -285,24 +285,44 @@ export const efipla: CaseStudy = {
         alt: 'Etapa Raça da criação: gênero Masculino marcado, busca por “Tiefling”, botões Tabela e Comparar e o card do Tiefling, com a descrição e as 11 sub-raças, das linhagens de Asmodeus a Zariel, mais o Tiefling Feroz e o Voador. Embaixo, o botão “Próximo: Classe”.',
         caption: 'A etapa Raça da criação, com busca, tabela e comparação',
         frame: 'phone',
+        story: {
+          step: 'Criar o personagem',
+          text: 'A criação vai em etapas. Na etapa Raça, dá para buscar, abrir a tabela e comparar opções, como as sub-raças de Tiefling.',
+          icon: 'user-plus',
+        },
       },
       {
         src: atributos,
         alt: 'Aba Atributos da Ceris Toph: os seis atributos em placas chanfradas, FOR +3, DES +1, CON +2, INT +0, SAB +0 e CAR +5, com os valores 16, 12, 14, 11, 10 e 20, e os testes de resistência, com proficiência em Força (+8) e Constituição (+7).',
         caption: 'Modificadores, valores e testes de resistência na aba Atributos',
         frame: 'phone',
+        story: {
+          step: 'Conferir os atributos',
+          text: 'A aba Atributos mostra os seis atributos com valor e modificador, e os testes de resistência logo abaixo.',
+          icon: 'dices',
+        },
       },
       {
         src: combate,
         alt: 'Aba Combate da Kara Silvanis na Forma Selvagem: o card Vitais com “PV: Tigre” 34 de 44, CA 12, a linha “Kara ao voltar: 45 / 45”, iniciativa, caminhada de 12 m, proficiência, percepção passiva, a experiência do nível 6 e o chip “Tigre · até 3 h”. Abaixo, o card Recursos com a Forma Selvagem em uso, o botão Reverter e os espaços de magia.',
         caption: 'Combate na Forma Selvagem, com a vida do tigre, a da druida por baixo e os recursos',
         frame: 'phone',
+        story: {
+          step: 'Entrar em combate',
+          text: 'No combate, a ficha acompanha vida, defesa e recursos. Na Forma Selvagem, mostra a vida do tigre e, por baixo, a da druida.',
+          icon: 'swords',
+        },
       },
       {
         src: conjuracao,
         alt: 'Folha da Conjuração sobre a ficha da Ceris Toph: o card da Fome de Hadar, magia de 3º círculo, com o botão Conjurar, o gasto de 1 espaço de pacto do 4º círculo, o dano gélido de 2d6 (média 7) no início do turno, o dano ácido com teste de Destreza CD 17 no fim do turno e os componentes verbal, somático e material, com a fala da magia e o tentáculo de polvo em conserva.',
         caption: 'Conjuração com custo, dano médio, teste e componentes de cada magia',
         frame: 'phone',
+        story: {
+          step: 'Lançar uma magia',
+          text: 'Cada magia mostra o custo, o dano médio, o teste e os componentes, com o botão Conjurar.',
+          icon: 'wand-sparkles',
+        },
       },
       {
         src: loja,
@@ -315,6 +335,11 @@ export const efipla: CaseStudy = {
         alt: 'Diário da sessão “A Torre Partida”, em andamento: uma anotação sobre a torre selada com runas e as linhas que o app registrou sozinho às 02:37 e 02:38, com a iniciativa, o ataque de Espada Longa que acertou, o dano, o dano recebido (52 para 48), os PV temporários e o teste de concentração da Imobilizar Pessoa. No pé, o botão vermelho de parar, o microfone do ditado e os de anexar imagem e fotografar.',
         caption: 'O diário anota sozinho cada rolagem, com a hora',
         frame: 'phone',
+        story: {
+          step: 'Registrar a sessão',
+          text: 'O diário da sessão anota sozinho cada rolagem, com a hora.',
+          icon: 'notebook-pen',
+        },
       },
       {
         src: icone,

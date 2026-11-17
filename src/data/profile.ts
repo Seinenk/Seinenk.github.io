@@ -24,9 +24,9 @@ export const profile = {
   /** Frases que se alternam no topo da página inicial (cada uma cabe numa linha do celular). */
   roles: ['Desenvolvedor front-end', 'Designer de UX/UI', 'Pesquisador em inovação', 'Desenvolvedor de IoT'],
   lead:
-    'Desenho e programo sites e aplicativos fáceis de usar. Sou formado pelo Instituto Federal do Piauí (IFPI) e trabalho como assessor técnico na Investe Piauí.',
+    'Desenho e desenvolvo sites e aplicativos fáceis de usar. Sou formado pelo Instituto Federal do Piauí (IFPI) e trabalho como assessor técnico na Investe Piauí.',
   about: [
-    'Sou Carlos Michael, desenvolvedor front-end e designer de UX/UI. Na prática, planejo como um site ou aplicativo vai funcionar, desenho as telas e programo a parte que as pessoas veem e usam.',
+    'Sou Carlos Michael, desenvolvedor front-end e designer de UX/UI. Na prática, planejo como um site ou aplicativo vai funcionar, desenho as telas e desenvolvo a parte que as pessoas veem e usam.',
     'Estudei no Instituto Federal do Piauí (IFPI). Lá fiz o curso técnico em Informática, a graduação em Análise e Desenvolvimento de Sistemas, que concluí em 2026, e a Residência Tecnológica em Sistemas Embarcados, uma formação prática em programar placas eletrônicas.',
     'Hoje trabalho como assessor técnico na Investe Piauí, ligada ao governo do estado, e sou diretor de tecnologia do Vale do Mel, uma rede de inovação do Piauí. Também represento a comunidade de startups Guaribas Valley e pesquiso inovação e empreendedorismo.',
   ],
@@ -97,7 +97,7 @@ export const experience: Experience[] = [
     role: 'Assistente de pesquisa e desenvolvedor front-end',
     org: 'Instituto de Pesquisa Econômica Aplicada (IPEA)',
     detail:
-      'Trabalhei na criação da Coleção Gestão Pública Antirracista. Fiz os wireframes (rascunhos das telas), programei a parte visual e publiquei o conteúdo em WordPress.',
+      'Trabalhei na criação da Coleção Gestão Pública Antirracista. Fiz os wireframes (rascunhos das telas), desenvolvi a parte visual e publiquei o conteúdo em WordPress.',
     tags: ['Colaborador', 'Front-end', 'WordPress'],
   },
 ];

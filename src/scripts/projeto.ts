@@ -236,14 +236,15 @@ document.querySelectorAll<HTMLElement>('[data-before-after]').forEach((figure) =
     figure.classList.remove('is-hinting');
     apply();
   });
-  // ao aparecer pela primeira vez, a divisória dá uma volta para mostrar que se move
+  // ao aparecer pela primeira vez, a divisória dá uma volta e para onde começou
   if (motionOn() && 'IntersectionObserver' in window) {
+    const start = Number(figure.dataset.start) || 50;
     const hint = new IntersectionObserver(
       ([entry]) => {
         if (!entry.isIntersecting) return;
         hint.disconnect();
         figure.classList.add('is-hinting');
-        const steps = [72, 30, 50];
+        const steps = [Math.min(90, start + 22), Math.max(10, start - 20), start];
         steps.forEach((value, i) =>
           window.setTimeout(() => {
             if (!figure.classList.contains('is-hinting')) return;

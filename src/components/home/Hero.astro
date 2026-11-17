@@ -1,14 +1,12 @@
 ---
 import { Image, Picture, getImage } from 'astro:assets';
 import Icon from '../Icon.astro';
-import Monogram from '../Monogram.astro';
 import ProjectArt from '../ProjectArt.astro';
 import cutout from '../../assets/images/carlos-recorte.webp';
 import portrait from '../../assets/images/carlos-retrato.jpg';
 import { links, profile, projects } from '../../data/profile';
 import { projectHref } from '../../data/projects';
 
-const ring = 'UX/UI · Front-end · Inovação · Piauí · ';
 const social = [
   { ...links.github, icon: 'github' as const },
   { ...links.instagram, icon: 'instagram' as const },
@@ -122,15 +120,6 @@ const columns = [0, 33.333, 66.667, 100];
           <span class="portrait-tint" style={`--mask:url('${tintMask.src}')`} aria-hidden="true"></span>
         </div>
 
-        <div class="portrait-badge" aria-hidden="true">
-          <svg class="ring" viewBox="0 0 120 120">
-            <defs>
-              <path id="ring-path" d="M60 60m-46 0a46 46 0 1 1 92 0a46 46 0 1 1-92 0"></path>
-            </defs>
-            <text><textPath href="#ring-path" textLength="288">{ring}</textPath></text>
-          </svg>
-          <Monogram size={46} class="badge-mark" />
-        </div>
       </div>
 
       <ul class="list-reset portrait-chips" aria-label="Destaques">
@@ -199,6 +188,8 @@ const columns = [0, 33.333, 66.667, 100];
    */
   .hero {
     --c-focus: var(--c-on-hero);
+    --c-cyan: var(--c-inverse-cyan);
+    --c-violet: var(--c-inverse-violet);
     position: relative;
     isolation: isolate;
     overflow: clip;
@@ -805,52 +796,6 @@ const columns = [0, 33.333, 66.667, 100];
     }
   }
 
-  .portrait-badge {
-    position: absolute;
-    left: clamp(-0.5rem, 3%, 2rem);
-    bottom: 33%;
-    z-index: 2;
-    width: clamp(5.5rem, 4.75rem + 2.4vw, 7.25rem);
-    height: clamp(5.5rem, 4.75rem + 2.4vw, 7.25rem);
-    display: grid;
-    place-items: center;
-    border-radius: 50%;
-    background: var(--c-canvas);
-    box-shadow: var(--shadow-md);
-    translate: 0 0 50px;
-  }
-
-  .ring {
-    position: absolute;
-    inset: 0.35rem;
-    fill: var(--c-ink);
-    font-family: var(--font-sans);
-    font-size: 9.5px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-
-  :global(:root[data-motion='full']) .ring {
-    animation: spin 26s linear infinite;
-  }
-
-  /* a partir do tablet o selo fica no alto, à esquerda da cabeça, longe do texto */
-  @media (min-width: 48rem) {
-    .portrait-badge {
-      left: 1%;
-      top: 3%;
-      bottom: auto;
-    }
-  }
-
-  @media (min-width: 72rem) and (min-height: 40rem) {
-    .portrait-badge {
-      left: 18%;
-      top: 1%;
-    }
-  }
-
   .portrait-chips {
     display: flex;
     flex-wrap: wrap;
@@ -909,62 +854,14 @@ const columns = [0, 33.333, 66.667, 100];
     }
   }
 
+  /*
+   * Os selos só aparecem no celular, numa linha depois do texto. Do tablet em diante o
+   * retrato fica sozinho no bloco, sem nada flutuando ao lado do rosto, e a lista sai
+   * também do leitor de tela (o que ela diz já está no texto ao lado e nas seções abaixo).
+   */
   @media (min-width: 48rem) {
     .portrait-chips {
-      display: block;
-      margin: 0;
-      position: static;
-      transform-style: preserve-3d;
-    }
-
-    /* a profundidade vai em translate, que soma com as animações de transform */
-    .chip-float {
-      position: absolute;
-      z-index: 5;
-      translate: 0 0 70px;
-    }
-
-    .chip-a {
-      top: 9%;
-      right: 2%;
-    }
-
-    .chip-b {
-      top: 43%;
-      left: -3%;
-    }
-
-    .chip-c {
-      top: 63%;
-      right: -2%;
-    }
-
-    :global(:root[data-motion='full']) .chip-float {
-      animation:
-        fade-up 0.9s var(--ease-out) both,
-        float 6s ease-in-out infinite;
-      animation-delay:
-        calc(1000ms + var(--c) * 140ms),
-        calc(1900ms + var(--c) * 700ms);
-    }
-  }
-
-  @media (min-width: 72rem) and (min-height: 40rem) {
-    .chip-a {
-      top: 7%;
-      right: 9%;
-    }
-
-    /* nas telas largas os três selos ficam do lado direito do rosto, longe do texto */
-    .chip-b {
-      top: 47%;
-      left: auto;
-      right: 12%;
-    }
-
-    .chip-c {
-      top: 61%;
-      right: 3%;
+      display: none;
     }
   }
 
@@ -1203,7 +1100,4 @@ const columns = [0, 33.333, 66.667, 100];
     }
   }
 
-  :global(:root[data-motion='full']) .portrait-badge {
-    animation: fade-up 1s var(--ease-out) backwards 0.9s;
-  }
 </style>

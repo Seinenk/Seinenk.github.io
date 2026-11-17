@@ -94,6 +94,21 @@ export interface Shot {
    * delas) e 'poster' para imagens em pé sem moldura de aparelho, como telas de loja.
    */
   frame: 'phone' | 'browser' | 'square' | 'photo' | 'poster';
+  /**
+   * Etapa da história de uso. As telas de celular com `story` viram, na ordem da galeria,
+   * o passo a passo no alto do bloco de telas: o celular, uma anotação e um fio tracejado
+   * levando à etapa seguinte. Use de 3 a 5 etapas que contem o uso do começo ao fim.
+   */
+  story?: ShotStory;
+}
+
+export interface ShotStory {
+  /** Nome curto da etapa, com verbo: "Entrar", "Parear uma isca nova". */
+  step: string;
+  /** O que a pessoa faz ou vê nessa tela, em uma ou duas frases. */
+  text: string;
+  /** Ícone da bolinha da anotação. */
+  icon?: IconName;
 }
 
 export interface Metric {
@@ -169,6 +184,11 @@ export interface Compare {
   /** 'browser' para telas largas; 'phone' para prints de celular, numa moldura estreita. */
   frame: 'browser' | 'phone';
   caption: string;
+  /**
+   * Onde a divisória começa, em porcentagem da largura (o "antes" fica à esquerda). O padrão
+   * é 50. Mude quando o meio corta o principal da imagem, como um rosto.
+   */
+  start?: number;
 }
 
 /** Fontes que só a página do projeto carrega (configuradas em astro.config.mjs). */

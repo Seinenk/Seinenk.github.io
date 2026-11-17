@@ -1,6 +1,10 @@
 ---
 import Icon from '../Icon.astro';
+import Monogram from '../Monogram.astro';
 import { links } from '../../data/profile';
+
+// Selo que gira no canto do cartão (antes ficava no topo da página, ao lado do retrato).
+const ring = 'UX/UI · Front-end · Inovação · Piauí · ';
 ---
 
 <section id="contato" class="section contact" aria-labelledby="contato-title">
@@ -9,6 +13,15 @@ import { links } from '../../data/profile';
       <div class="contact-glow" aria-hidden="true"></div>
       <div class="contact-glow contact-glow-cyan" aria-hidden="true"></div>
       <div class="contact-glow contact-glow-violet" aria-hidden="true"></div>
+      <div class="contact-stamp" aria-hidden="true">
+        <svg class="contact-ring" viewBox="0 0 120 120">
+          <defs>
+            <path id="contact-ring-path" d="M60 60m-46 0a46 46 0 1 1 92 0a46 46 0 1 1-92 0"></path>
+          </defs>
+          <text><textPath href="#contact-ring-path" textLength="288">{ring}</textPath></text>
+        </svg>
+        <Monogram size={52} class="contact-stamp-mark" />
+      </div>
       <p class="kicker">08 · Contato</p>
       <h2 id="contato-title" class="display-lg">Vamos <em>conversar?</em></h2>
       <p class="contact-text">
@@ -59,6 +72,47 @@ import { links } from '../../data/profile';
   .contact-card h2,
   .contact-card h2 :global(em) {
     color: var(--c-on-primary);
+  }
+
+  /* selo giratório no canto direito, só onde sobra espaço ao lado do texto */
+  .contact-stamp {
+    --monogram-bg: var(--c-on-primary);
+    --monogram-fg: var(--c-primary);
+    position: absolute;
+    top: 50%;
+    right: clamp(2rem, 6vw, 5.5rem);
+    display: none;
+    place-items: center;
+    width: 9.5rem;
+    height: 9.5rem;
+    translate: 0 -50%;
+    pointer-events: none;
+  }
+
+  @media (min-width: 64rem) {
+    .contact-stamp {
+      display: grid;
+    }
+  }
+
+  .contact-ring {
+    position: absolute;
+    inset: 0;
+    fill: var(--c-on-primary);
+    font-family: var(--font-sans);
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  :global(:root[data-motion='full']) .contact-ring {
+    animation: spin 26s linear infinite;
+  }
+
+  /* sobre a cor primária, o asterisco do sobretítulo usa a cor do texto */
+  .contact-card .kicker::before {
+    background: currentColor;
   }
 
   .contact-text {

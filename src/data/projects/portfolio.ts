@@ -34,7 +34,7 @@ export const portfolio: CaseStudy = {
   ],
   challenge: {
     problem:
-      'O site é a primeira impressão que se tem de mim como desenvolvedor front-end e designer de UX/UI, alguém que programa e desenha telas. Precisava ser bonito e cheio de animação, acessível a todos, rápido em qualquer aparelho e fácil de manter e de ganhar paletas novas.',
+      'O site é a primeira impressão que se tem de mim como desenvolvedor front-end e designer de UX/UI, alguém que desenha e desenvolve sites e aplicativos. Precisava ser bonito e cheio de animação, acessível a todos, rápido em qualquer aparelho e fácil de manter e de ganhar paletas novas.',
     goals: [
       'Migrar de HTML e CSS puros para o Astro, ferramenta que gera sites, sem perder nada do original',
       'Adotar um design system editorial com a paleta Grafite',
@@ -117,11 +117,13 @@ export const portfolio: CaseStudy = {
       },
       after: {
         src: depoisClaro,
-        alt: 'Página inicial de 2026: fundo claro, nome em serifa e retrato em preto e branco.',
+        alt: 'Página inicial de 2026: o retrato recortado em preto e branco sobre um fundo taupe (marrom acinzentado), o nome em letras grandes e o cargo sendo digitado.',
         tag: '2026',
         name: 'a versão de 2026',
       },
       frame: 'browser',
+      // começa um pouco à esquerda do meio, para o rosto aparecer inteiro do lado de 2026
+      start: 40,
       caption: 'À esquerda, 2023; à direita, 2026. Arraste a divisória ou use as setas do teclado.',
     },
   },
@@ -171,9 +173,9 @@ export const portfolio: CaseStudy = {
       },
     ],
     gallery: [
-      { src: depoisClaro, alt: 'Página inicial de 2026 no tema claro: nome em serifa, cargo sendo digitado e o retrato em preto e branco.', caption: 'Página inicial de 2026, tema claro', frame: 'browser' },
+      { src: depoisClaro, alt: 'Página inicial de 2026 no tema claro: o retrato recortado em preto e branco sobre fundo taupe, o primeiro nome grande e apagado ao fundo, o cargo sendo digitado, o nome completo embaixo e, à direita, os cartões do projeto em destaque e de contato.', caption: 'Página inicial de 2026, tema claro', frame: 'browser' },
       { src: depoisEscuro, alt: 'A mesma página inicial no tema escuro, com fundo grafite.', caption: 'O mesmo topo no tema escuro', frame: 'browser' },
-      { src: depoisCelular, alt: 'Página inicial no celular, com o nome, o cargo e os botões empilhados.', caption: 'No celular', frame: 'phone' },
+      { src: depoisCelular, alt: 'Página inicial no celular: o retrato no alto e, embaixo dele, o nome completo, o cargo, uma apresentação curta e os dois botões lado a lado.', caption: 'No celular', frame: 'phone' },
       { src: antes, alt: 'Página inicial de 2023: fundo escuro em degradê, nome em cinza e uma ilustração de panda.', caption: 'A versão de 2023', frame: 'browser' },
     ],
   },

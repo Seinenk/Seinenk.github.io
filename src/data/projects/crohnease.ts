@@ -192,30 +192,55 @@ export const crohnease: CaseStudy = {
         alt: 'Cadastro do redesenho: “Qual a sua condição?”, com as opções Crohn e Retocolite, cada uma com uma ilustração, e o botão Prosseguir.',
         caption: 'v2: o cadastro começa pela condição.',
         frame: 'phone',
+        story: {
+          step: 'Dizer a condição',
+          text: 'O cadastro começa pela condição, Crohn ou retocolite, cada uma com uma ilustração.',
+          icon: 'user',
+        },
       },
       {
         src: v2Dados,
         alt: 'Cadastro do redesenho, etapa de dados pessoais: campos de nome e e-mail e o botão Prosseguir, com o logo embaixo.',
         caption: 'v2: os dados pessoais vêm depois.',
         frame: 'phone',
+        story: {
+          step: 'Preencher os dados',
+          text: 'Depois vêm os dados pessoais, com nome e e-mail.',
+          icon: 'file-text',
+        },
       },
       {
         src: v2RemediosVazio,
         alt: 'Remédios na primeira visita: ilustração, a pergunta “Vamos adicionar seus medicamentos na sua lista?” e o botão Adicionar.',
         caption: 'v2: a lista vazia mostra um convite.',
         frame: 'phone',
+        story: {
+          step: 'Adicionar os remédios',
+          text: 'Na primeira visita, a lista vazia convida a pessoa a adicionar os medicamentos.',
+          icon: 'plus',
+        },
       },
       {
         src: v2Remedios,
         alt: 'Lista de remédios do redesenho, filtrada por comprimidos, com Alopurinol e Certolizumabe e os botões de compartilhar e adicionar.',
         caption: 'v2: a lista de remédios.',
         frame: 'phone',
+        story: {
+          step: 'Ver a lista',
+          text: 'A lista de remédios pode ser filtrada, por comprimidos, por exemplo, e tem botões para compartilhar e adicionar.',
+          icon: 'list',
+        },
       },
       {
         src: v2Remedio,
         alt: 'Detalhes de um remédio: princípio ativo, descrição, indicação, administração, doses, efeitos colaterais e fabricante, com o botão Remover.',
         caption: 'v2: o detalhe do remédio, com o vermelho só para remover.',
         frame: 'phone',
+        story: {
+          step: 'Abrir um remédio',
+          text: 'O detalhe mostra princípio ativo, indicação, doses, efeitos colaterais e fabricante. O vermelho aparece só no botão de remover.',
+          icon: 'book-open',
+        },
       },
       {
         src: v1Inicio,
