@@ -77,9 +77,13 @@ Para incluir um projeto:
    para telas largas, `'square'` para ícones, `'photo'` para fotos, que ficam todas na mesma
    altura, cada uma na sua proporção, e `'poster'` para imagens em pé sem moldura de aparelho
    (telas de loja, por exemplo).
-4. A ilustração do cartão (`art`) e o diagrama de "Por dentro" ficam em
-   `src/components/ProjectArt.astro` e `src/components/case/ProjectDiagram.astro`; o desenho
-   da marca, quando existe, fica em `src/components/case/` (como `EfiplaMark.astro`).
+4. A ilustração do cartão (`art`) fica em `src/components/ProjectArt.astro`, e o diagrama de
+   "Por dentro" fica em `src/components/case/ProjectDiagram.astro`. Um nome novo de ilustração
+   ou de diagrama também entra nos tipos `ArtKind` e `DiagramKind`, em
+   `src/data/projects/types.ts`. O desenho da marca, quando existe, fica em
+   `src/components/case/` (como `EfiplaMark.astro`). Para ele aparecer no bloco da marca,
+   registre o componente no mapa `marks`, no topo de `src/pages/projeto/[slug].astro`: sem
+   esse registro, o bloco sai só com o texto, e o build não avisa.
 5. Para um "antes e depois", use `demo.kind: 'before-after'` com as duas imagens em
    `demo.compare` (`frame: 'phone'` para prints de celular, `'browser'` para telas largas).
    A divisória começa no meio; se o meio cortar um rosto ou o título, mude com `start`

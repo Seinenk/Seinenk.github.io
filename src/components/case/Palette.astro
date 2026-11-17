@@ -121,7 +121,8 @@ const onColor = (hex: string) => {
     width: 100%;
     aspect-ratio: 1 / 1.08;
     padding: 0.8rem;
-    border: 1px solid rgb(var(--c-shadow-rgb) / 0.12);
+    /* na cor do texto: no tema escuro vira um fio claro, e as amostras escuras não somem */
+    border: 1px solid rgb(var(--c-ink-rgb) / 0.12);
     border-radius: var(--radius-lg);
     background: var(--sw);
     color: var(--on);

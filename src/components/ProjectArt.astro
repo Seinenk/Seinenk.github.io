@@ -4,12 +4,15 @@ import type { ArtKind } from '../data/projects/types';
 import ExtractorysMark from './case/ExtractorysMark.astro';
 import EfiplaMark from './case/EfiplaMark.astro';
 import CrohneaseMark from './case/CrohneaseMark.astro';
+import VanmedMark from './case/VanmedMark.astro';
 import efiplaCombate from '../assets/images/projetos/efipla/combate-depois.webp';
 import efiplaLoja from '../assets/images/projetos/efipla/loja.webp';
 import beeEntrada from '../assets/images/projetos/bee-sense/app-entrada.webp';
 import beeIscas from '../assets/images/projetos/bee-sense/app-iscas.webp';
 import crLogin from '../assets/images/projetos/crohnease/v2-login.webp';
 import crRemedios from '../assets/images/projetos/crohnease/v2-remedios.webp';
+import vmRemedios from '../assets/images/projetos/vanmed/remedios.webp';
+import vmAgua from '../assets/images/projetos/vanmed/agua.webp';
 import telaClara from '../assets/images/projetos/extractorys/tela-inicial-clara.webp';
 import telaEscura from '../assets/images/projetos/extractorys/tela-inicial-escura.webp';
 import siteClaro from '../assets/images/projetos/portfolio/depois-claro.webp';
@@ -45,10 +48,11 @@ const leaves = [
 const uid = `${kind}-${size}-${Math.random().toString(36).slice(2, 7)}`;
 const hero = size === 'hero';
 // prints nos celulares da ilustração: o celular ocupa 26 % do cartão (uns 100 px) e
-// 34 % do topo da página (até 190 px); a imagem baixa no tamanho em que aparece
-// e em qualidade 70, que nesse tamanho não se distingue da padrão e pesa bem menos
-const phoneWidths = [200, 260, 320];
-const phoneSizes = hero ? '(min-width: 64rem) 12rem, 32vw' : '6.5rem';
+// 34 % do topo da página (até uns 300 px no tablet e até 190 px quando o topo vira duas
+// colunas, a partir de 60rem); a imagem baixa no tamanho em que aparece e em qualidade 70,
+// que nesse tamanho não se distingue da padrão e pesa bem menos
+const phoneWidths = [200, 260, 320, 480, 640];
+const phoneSizes = hero ? '(min-width: 60rem) 12rem, 32vw' : '6.5rem';
 
 /* ---------- Dino Runner: quadros da matriz 5×5 (as mesmas poses do código) ---------- */
 const FRAME = 330;
@@ -220,6 +224,23 @@ const cells = Array.from({ length: 15 }, (_, i) => ({ x: 26 + (i % 5) * 17, y: 3
           </div>
           <div class="art-phone art-phone-b">
             <Image src={crRemedios} alt="" widths={phoneWidths} sizes={phoneSizes} quality={70} loading={hero ? 'eager' : 'lazy'} />
+          </div>
+        </div>
+      </>
+    )
+  }
+
+  {
+    kind === 'vanmed' && (
+      <>
+        <VanmedMark class="vm-art-mark" variant="icone-claro" />
+        {/* duas telas do app: a lista de remédios e o copo da aba Água */}
+        <div class="art-phones">
+          <div class="art-phone art-phone-a">
+            <Image src={vmRemedios} alt="" widths={phoneWidths} sizes={phoneSizes} quality={70} loading={hero ? 'eager' : 'lazy'} />
+          </div>
+          <div class="art-phone art-phone-b">
+            <Image src={vmAgua} alt="" widths={phoneWidths} sizes={phoneSizes} quality={70} loading={hero ? 'eager' : 'lazy'} />
           </div>
         </div>
       </>
@@ -413,7 +434,7 @@ const cells = Array.from({ length: 15 }, (_, i) => ({ x: 26 + (i % 5) * 17, y: 3
     height: auto;
   }
 
-  /* ---------- celulares das ilustrações (Extractorys, EFIPLA, Bee Sense, Crohnease) ---------- */
+  /* ---------- celulares das ilustrações (Extractorys, EFIPLA, Bee Sense, Crohnease, Vanmed) ---------- */
   /* o mesmo arranjo em todas; cada uma ajusta largura, borda, giro e altura no topo da página */
   .art-phones {
     position: absolute;
@@ -826,6 +847,41 @@ const cells = Array.from({ length: 15 }, (_, i) => ({ x: 26 + (i % 5) * 17, y: 3
     left: 50%;
     top: 7cqw;
     width: 27cqw;
+    translate: -50% 0;
+  }
+
+  /* ---------- Vanmed: o índigo elétrico do ícone do app, com o símbolo nas cores dele ---------- */
+  .art-vanmed {
+    --phone-edge: #1c1c1c;
+    background:
+      radial-gradient(60% 55% at 20% 50%, rgb(255 46 154 / 0.22), transparent 70%),
+      linear-gradient(150deg, #4a00cc 0%, #5d00ff 55%, #6c18ff 100%);
+  }
+
+  /* a retícula branca do ícone claro: aqui os pontos somem longe do canto de cima */
+  .art-vanmed::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(circle, rgb(255 255 255 / 0.3) 0.36cqw, transparent 0.46cqw) 0 0 / 2.4cqw 2.4cqw;
+    -webkit-mask-image: radial-gradient(85% 85% at 100% 0%, #000, transparent 75%);
+    mask-image: radial-gradient(85% 85% at 100% 0%, #000, transparent 75%);
+  }
+
+  .art :global(.vm-art-mark) {
+    position: absolute;
+    left: 7cqw;
+    top: 50%;
+    width: 34cqw;
+    translate: 0 -50%;
+    filter: drop-shadow(0 1.5cqw 2.5cqw rgb(20 0 60 / 0.45));
+  }
+
+  .art-hero :global(.vm-art-mark) {
+    left: 50%;
+    top: 8cqw;
+    width: 30cqw;
     translate: -50% 0;
   }
 

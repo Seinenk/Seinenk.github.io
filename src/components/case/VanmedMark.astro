@@ -1,0 +1,136 @@
+---
+/*
+ * Símbolo do Vanmed redesenhado a partir do SVG da marca (docs/brand no repositório do app):
+ * o V feito de três comprimidos, que também é um ✓ de dose tomada, com as ondas do lembrete
+ * tocando na ponta. Por padrão, usa as cores da versão escura (fúcsia, laranja e lima), a do
+ * ícone sobre grafite. Com variant="icone-claro", usa as do ícone padrão sobre o índigo:
+ * branco, rosa e lima, sem brilho no comprimido branco. Sem o nome: o logotipo completo
+ * aparece na construção visual. Com movimento ligado, as ondas acendem uma depois da outra,
+ * como um alarme tocando, e o símbolo dá um balanço de leve.
+ */
+interface Props {
+  class?: string;
+  variant?: 'escuro' | 'icone-claro';
+}
+
+const { class: className, variant = 'escuro' } = Astro.props;
+---
+
+<svg class:list={['vnm', `vnm-${variant}`, className]} viewBox="-21.5 55.9 555.11 487.9" aria-hidden="true" focusable="false">
+  <g class="vnm-body">
+    <path class="vnm-pill vnm-p1" d="M38.5,344.7 L128.9,420.5"></path>
+    <path class="vnm-pill vnm-p2" d="M204.4,483.8 L270.3,386"></path>
+    <path class="vnm-pill vnm-p3" d="M325.2,304.8 L391.1,206.9"></path>
+    <path class="vnm-shine vnm-s1" d="M63.16,342.83 L103.84,376.94"></path>
+    <path class="vnm-shine" d="M199.95,459.47 L229.61,415.46"></path>
+    <path class="vnm-shine" d="M320.75,280.47 L350.41,236.41"></path>
+    <path class="vnm-wave vnm-w1" d="M391.03,130.9 A76,76 0 0 1 461.54,178.36"></path>
+    <path class="vnm-wave vnm-w2" d="M390.99,90.9 A116,116 0 0 1 498.61,163.34"></path>
+  </g>
+</svg>
+
+<style>
+  .vnm {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .vnm-pill {
+    fill: none;
+    stroke-width: 72;
+    stroke-linecap: round;
+  }
+
+  .vnm-p1 {
+    stroke: #ff2e9a;
+  }
+
+  .vnm-p2 {
+    stroke: #ff8f1c;
+  }
+
+  .vnm-p3 {
+    stroke: #cfff04;
+  }
+
+  /* o ícone padrão, sobre o índigo: comprimido branco (sem brilho), rosa e lima */
+  .vnm-icone-claro .vnm-p1 {
+    stroke: #fff;
+  }
+
+  .vnm-icone-claro .vnm-p2 {
+    stroke: #ff2e9a;
+  }
+
+  .vnm-icone-claro .vnm-s1 {
+    display: none;
+  }
+
+  .vnm-shine {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 11;
+    stroke-linecap: round;
+    stroke-opacity: 0.5;
+  }
+
+  .vnm-wave {
+    fill: none;
+    stroke: #cfff04;
+    stroke-width: 22;
+    stroke-linecap: round;
+  }
+
+  .vnm-body {
+    transform-box: fill-box;
+    transform-origin: 40% 95%;
+  }
+
+  /* o alarme toca: as ondas acendem em sequência e o V balança de leve a cada toque */
+  :global(:root[data-motion='full']) .vnm-wave {
+    animation: vnm-ring 2.4s ease-in-out infinite;
+  }
+
+  :global(:root[data-motion='full']) .vnm-w2 {
+    animation-delay: 0.3s;
+  }
+
+  :global(:root[data-motion='full']) .vnm-body {
+    animation: vnm-shake 4.8s ease-in-out infinite;
+  }
+
+  @keyframes vnm-ring {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.2;
+    }
+  }
+
+  @keyframes vnm-shake {
+    0%,
+    70%,
+    100% {
+      rotate: 0deg;
+    }
+    74% {
+      rotate: 4deg;
+    }
+    78% {
+      rotate: -4deg;
+    }
+    82% {
+      rotate: 3deg;
+    }
+    86% {
+      rotate: -2deg;
+    }
+    90% {
+      rotate: 0deg;
+    }
+  }
+</style>

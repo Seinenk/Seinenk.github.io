@@ -12,6 +12,7 @@ import ExtractorysMark from '../../components/case/ExtractorysMark.astro';
 import EfiplaMark from '../../components/case/EfiplaMark.astro';
 import BeeSenseMark from '../../components/case/BeeSenseMark.astro';
 import CrohneaseMark from '../../components/case/CrohneaseMark.astro';
+import VanmedMark from '../../components/case/VanmedMark.astro';
 import ThemePlayground from '../../components/case/ThemePlayground.astro';
 import DinoGame from '../../components/case/DinoGame.astro';
 import BeforeAfter from '../../components/case/BeforeAfter.astro';
@@ -49,7 +50,7 @@ const emphasizeLast = (title: string) => {
   return words.length > 1 ? `${words.slice(0, -1).join(' ')} *${words.at(-1)}*` : `*${title}*`;
 };
 /* desenho da marca, por projeto (o texto vem dos dados) */
-const marks = { extractorys: ExtractorysMark, efipla: EfiplaMark, 'bee-sense': BeeSenseMark, crohnease: CrohneaseMark } as const;
+const marks = { extractorys: ExtractorysMark, efipla: EfiplaMark, 'bee-sense': BeeSenseMark, crohnease: CrohneaseMark, vanmed: VanmedMark } as const;
 const Mark = p.art in marks ? marks[p.art as keyof typeof marks] : null;
 const hasVisual = Boolean(p.visual && (p.visual.palette || p.visual.appThemes || p.visual.typography || p.visual.tokens || p.visual.gallery || p.visual.mark));
 type TabId = 'resumo' | 'pesquisa' | 'ux-ui' | 'construcao' | 'aprendizado';
@@ -451,7 +452,7 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
                         {p.visual.mark && (
                           <div class:list={['cs-block', 'cs-mark', { 'cs-mark-art-on': Mark }]} data-reveal style={p.visual.markBackground ? `--mark-bg:${p.visual.markBackground}` : undefined}>
                             {Mark && (
-                              <div class="cs-mark-art" aria-hidden="true">
+                              <div class="cs-mark-art" aria-hidden="true" data-ambient>
                                 <Mark />
                               </div>
                             )}
@@ -938,6 +939,7 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
     color: var(--c-ink);
     font-weight: 500;
     line-height: 1.45;
+    text-wrap: pretty;
   }
 
   /* ---------- tópicos (abas) por área de atuação: atalhos numa página só ---------- */
@@ -1707,7 +1709,8 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
       translate: 0 2.5rem;
     }
 
-    .cs-decisions:has(.cs-decision:nth-child(2)) {
+    /* o respiro só entra quando a última decisão é da coluna que desce */
+    .cs-decisions:has(> .cs-decision:nth-child(even):last-child) {
       padding-bottom: 2.5rem;
     }
   }

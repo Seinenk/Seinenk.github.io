@@ -34,7 +34,9 @@ const sizing = (shot: Shot) => {
       shots.map((shot, i) => (
         <li class:list={['shot', `shot-${shot.frame}`]} data-reveal="scale" style={`--i:${i % 4}${sizing(shot).style}`}>
           <figure>
-          <button class="shot-open" type="button" data-shot={i} aria-label={`Ampliar: ${shot.caption}`}>
+          {/* o nome do botão é "Ampliar: " + o alt da imagem, para o leitor de tela descrever a tela */}
+          <button class="shot-open" type="button" data-shot={i}>
+            <span class="sr-only">Ampliar: </span>
             <span class="shot-frame">
               {shot.frame === 'browser' && (
                 <span class="shot-bar" aria-hidden="true">

@@ -38,6 +38,17 @@ const flows: Record<Exclude<DiagramKind, 'extractorys' | 'efipla' | 'bee-sense' 
       { icon: 'monitor', title: 'OLED', text: 'SSD1306 com o placar', tone: 'accent' },
     ],
   },
+  vanmed: {
+    label: 'Como uma dose vira alarme no Vanmed',
+    nodes: [
+      { icon: 'pill', title: 'Cadastro', text: 'Remédio, dose e horários' },
+      { icon: 'calendar', title: 'Agenda', text: 'Próximas doses e reforços, até 60 por vez', tone: 'ink' },
+      //   é um espaço que não quebra: "iOS 26+" e "Tomei agora" nunca se dividem
+      { icon: 'smartphone', title: 'Sistema', text: 'Alarme do Android ou do iPhone (iOS 26+)' },
+      { icon: 'alarm-clock', title: 'Hora da dose', text: 'Toca até no silencioso', tone: 'accent' },
+      { icon: 'check', title: 'Registro', text: '"Tomei agora" cala os reforços' },
+    ],
+  },
   portfolio: {
     label: 'Como uma paleta vira tema no site',
     nodes: [
@@ -611,6 +622,8 @@ const selection = [
     position: relative;
     display: grid;
     justify-items: center;
+    /* ícones e títulos na mesma altura em todos os nós; a sobra fica embaixo */
+    align-content: start;
     gap: 0.3rem;
     padding: 1.1rem 0.9rem;
     border: 1px solid var(--c-hairline);

@@ -1,5 +1,6 @@
 import type { CaseStudy } from './types';
 import { efipla } from './efipla';
+import { vanmed } from './vanmed';
 import { extractorys } from './extractorys';
 import { crohnease } from './crohnease';
 import { agendeAi } from './agende-ai';
@@ -13,7 +14,7 @@ import { layoutSimples } from './layout-simples';
 export type { CaseStudy, ProjectType, ProjectStatus } from './types';
 
 /** Ordem de exibição: a mesma da página de projetos e da navegação "próximo projeto". */
-export const projects: CaseStudy[] = [efipla, extractorys, crohnease, agendeAi, beeSense, dinoRunner, inclua, pytest, portfolio, layoutSimples];
+export const projects: CaseStudy[] = [efipla, vanmed, extractorys, crohnease, agendeAi, beeSense, dinoRunner, inclua, pytest, portfolio, layoutSimples];
 
 export const projectHref = (slug: string) => `/projeto/${slug}`;
 

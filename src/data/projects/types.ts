@@ -23,10 +23,11 @@ export type ArtKind =
   | 'portfolio'
   | 'layout-simples'
   | 'efipla'
-  | 'crohnease';
+  | 'crohnease'
+  | 'vanmed';
 
 /** Diagrama de "Por dentro", desenhado em ProjectDiagram.astro. */
-export type DiagramKind = 'extractorys' | 'bee-sense' | 'dino-runner' | 'portfolio' | 'efipla' | 'pytest' | 'crohnease';
+export type DiagramKind = 'extractorys' | 'bee-sense' | 'dino-runner' | 'portfolio' | 'efipla' | 'pytest' | 'crohnease' | 'vanmed';
 
 /** Demonstração interativa na página. */
 export type DemoKind = 'dino-game' | 'before-after' | 'layout-boxes' | 'pytest-run';
