@@ -690,9 +690,9 @@ const columns = [0, 33.333, 66.667, 100];
   }
 
   /* ---------- retrato recortado ---------- */
+  /* a perspectiva fica parada: o retrato não se mexe com o mouse, só o nome atrás dele */
   .hero-scene {
-    transform: perspective(1400px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
-    transition: transform 0.8s var(--ease-out);
+    transform: perspective(1400px);
     transform-style: preserve-3d;
   }
 
@@ -717,7 +717,9 @@ const columns = [0, 33.333, 66.667, 100];
     text-transform: uppercase;
     white-space: nowrap;
     color: rgb(var(--c-on-hero-rgb) / var(--ghost-alpha, 0.12));
-    transform: translateZ(-150px);
+    /* só o nome inclina com o mouse (--tilt-x e --tilt-y vêm de site.ts), na mesma profundidade */
+    transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) translateZ(-150px);
+    transition: transform 0.8s var(--ease-out);
     -webkit-user-select: none;
     user-select: none;
   }
