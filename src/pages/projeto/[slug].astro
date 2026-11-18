@@ -585,8 +585,9 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
                         />
                         <ul class="list-reset cs-quotes">
                           {quotes.map((q, i) => (
-                            <li data-reveal style={`--i:${i}`}>
-                              <TestimonialCard item={q} showProject={false} flip={i % 2 === 1} />
+                            <li class:list={[{ 'cs-quote-long': q.full?.length }]} data-reveal style={`--i:${i}`}>
+                              {/* depoimento longo: inteiro, com a pessoa em cima, na largura do texto */}
+                              <TestimonialCard item={q} showProject={false} flip={q.full?.length ? true : i % 2 === 1} full />
                             </li>
                           ))}
                         </ul>
@@ -2086,6 +2087,11 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
     display: grid;
     gap: 1rem;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 34rem));
+  }
+
+  .cs-quote-long {
+    grid-column: 1 / -1;
+    max-width: 46rem;
   }
 
   .cs-highlights,

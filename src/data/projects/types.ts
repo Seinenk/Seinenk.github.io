@@ -24,10 +24,20 @@ export type ArtKind =
   | 'layout-simples'
   | 'efipla'
   | 'crohnease'
-  | 'vanmed';
+  | 'vanmed'
+  | 'trilha-da-protecao';
 
 /** Diagrama de "Por dentro", desenhado em ProjectDiagram.astro. */
-export type DiagramKind = 'extractorys' | 'bee-sense' | 'dino-runner' | 'portfolio' | 'efipla' | 'pytest' | 'crohnease' | 'vanmed';
+export type DiagramKind =
+  | 'extractorys'
+  | 'bee-sense'
+  | 'dino-runner'
+  | 'portfolio'
+  | 'efipla'
+  | 'pytest'
+  | 'crohnease'
+  | 'vanmed'
+  | 'trilha-da-protecao';
 
 /** Demonstração interativa na página. */
 export type DemoKind = 'dino-game' | 'before-after' | 'layout-boxes' | 'pytest-run';
@@ -193,7 +203,13 @@ export interface Compare {
 }
 
 /** Fontes que só a página do projeto carrega (configuradas em astro.config.mjs). */
-export type PageFont = '--font-efipla-logo' | '--font-efipla-title' | '--font-efipla-text' | '--font-efipla-pixel';
+export type PageFont =
+  | '--font-efipla-logo'
+  | '--font-efipla-title'
+  | '--font-efipla-text'
+  | '--font-efipla-pixel'
+  | '--font-trilha-title'
+  | '--font-trilha-text';
 
 export interface CaseStudy {
   slug: string;

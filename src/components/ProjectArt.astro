@@ -54,6 +54,29 @@ const hero = size === 'hero';
 const phoneWidths = [200, 260, 320, 480, 640];
 const phoneSizes = hero ? '(min-width: 60rem) 12rem, 32vw' : '6.5rem';
 
+/* ---------- Trilha da Proteção: as cinco paradas do site e as pegadas entre elas ---------- */
+// cores dos cartões das paradas no site; a quarta (Como agir) é a de destaque, maior
+const tpStops = [
+  { x: 9, y: 28, w: 30, h: 40, fill: '#fedf5e', icon: 'escudo' },
+  { x: 44.5, y: 34, w: 30, h: 40, fill: '#fe8b2c', icon: 'lei' },
+  { x: 80, y: 25, w: 30, h: 40, fill: '#6aab4e', icon: 'indices' },
+  { x: 115.5, y: 21, w: 35, h: 46, fill: '#4a90d9', icon: 'agir' },
+];
+const tpFinal = { x: 45, y: 80, w: 70, h: 13.5, fill: '#c26a20' };
+// pegadas de criança: [x, y, ângulo, pé]. Seguem de uma parada à outra e descem até a última.
+const tpFeet: [number, number, number, 'L' | 'R'][] = [
+  [40.6, 57, 90, 'L'],
+  [43.2, 54.6, 90, 'R'],
+  [76.1, 50, 76, 'L'],
+  [78.7, 47.4, 76, 'R'],
+  [111.6, 46, 84, 'L'],
+  [114.2, 43.6, 84, 'R'],
+  [131, 72.2, 205, 'L'],
+  [125.4, 74.6, 222, 'R'],
+  [119.9, 78.4, 236, 'L'],
+];
+const tpGrass = Array.from({ length: 27 }, (_, i) => 3 + i * 6);
+
 /* ---------- Dino Runner: quadros da matriz 5×5 (as mesmas poses do código) ---------- */
 const FRAME = 330;
 const dino = (up: number) => [
@@ -244,6 +267,88 @@ const cells = Array.from({ length: 15 }, (_, i) => ({ x: 26 + (i % 5) * 17, y: 3
           </div>
         </div>
       </>
+    )
+  }
+
+  {
+    kind === 'trilha-da-protecao' && (
+      <svg class="svg" viewBox="0 0 160 100" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <linearGradient id={`${uid}-tp-shade`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0.3" stop-color="#012d1d" stop-opacity="0" />
+            <stop offset="1" stop-color="#012d1d" stop-opacity="0.5" />
+          </linearGradient>
+          <g id={`${uid}-tp-foot`}>
+            <ellipse cx="0" cy="1.25" rx="0.6" ry="0.72" />
+            <ellipse cx="0.12" cy="-0.25" rx="0.92" ry="1.08" />
+            <circle cx="-0.6" cy="-1.52" r="0.37" />
+            <circle cx="-0.04" cy="-1.8" r="0.3" />
+            <circle cx="0.46" cy="-1.68" r="0.26" />
+          </g>
+        </defs>
+
+        {/* sol, nuvem e grama em traço de lápis, como na ilustração do site */}
+        <g class="tp-sun">
+          <circle cx="152" cy="6" r="10" />
+          <path d="M136.5 6a15.5 15.5 0 0 0 15.5 15.5M131 6a21 21 0 0 0 21 21" />
+        </g>
+        <path
+          class="tp-cloud"
+          d="M10 17.5h25c2.6 0 3.6-3.4 1.2-4.6.4-3.4-3.6-4.8-5.8-2.6-1.2-4.4-7.6-4.8-9.2-.6-2.8-1.6-6.4.4-6 3.4-3.2.4-3.6 4.4-.4 4.4H10Z"
+        />
+        <g class="tp-grass">
+          {tpGrass.map((x, i) => (
+            <path d={`M${x} 100v-${3 + (i % 3)}m2 ${3 + (i % 3)}v-${2 + ((i + 1) % 3)}`} />
+          ))}
+        </g>
+
+        {/* as quatro primeiras paradas */}
+        {tpStops.map((c, i) => (
+          <g class:list={['tp-stop', { 'tp-featured': i === 3 }]} style={`--i:${i}`}>
+            <rect class="tp-shadow" x={c.x + 0.8} y={c.y + 1.4} width={c.w} height={c.h} rx="3" />
+            <rect class="tp-card" x={c.x} y={c.y} width={c.w} height={c.h} rx="3" fill={c.fill} />
+            <rect x={c.x} y={c.y} width={c.w} height={c.h} rx="3" fill={`url(#${uid}-tp-shade)`} />
+            <rect class="tp-stitch" x={c.x + 1.4} y={c.y + 1.4} width={c.w - 2.8} height={c.h - 2.8} rx="2.2" />
+            <rect class="tp-pill" x={c.x + 3} y={c.y + 3} width="11" height="3.4" rx="1.7" />
+            <g class="tp-icon" transform={`translate(${c.x + 4} ${c.y + c.h - 16})`}>
+              {c.icon === 'escudo' && <path d="M0 .7 3 -.5 6 .7v3c0 2.4-3 3.8-3 3.8S0 6.1 0 3.7Z" />}
+              {c.icon === 'lei' && (
+                <>
+                  <rect x="0" y="-.6" width="5.2" height="7" rx=".7" />
+                  <path class="tp-icon-line" d="M1.2 1.4h2.8M1.2 3h2.8M1.2 4.6h1.8" />
+                </>
+              )}
+              {c.icon === 'indices' && <path d="M0 6.4h1.6V3.4H0Zm2.4 0H4V1.4H2.4Zm2.4 0h1.6V-.6H4.8Z" />}
+              {c.icon === 'agir' && <path d="M3.4 6.8C-1.2 3.8.2-.2 3.4 1.6c3.2-1.8 4.6 2.2 0 5.2Z" />}
+            </g>
+            <rect class="tp-line" x={c.x + 4} y={c.y + c.h - 7} width={c.w * 0.62} height="1.7" rx=".85" />
+            <rect class="tp-line tp-line-soft" x={c.x + 4} y={c.y + c.h - 4.4} width={c.w * 0.45} height="1.3" rx=".65" />
+          </g>
+        ))}
+
+        {/* a quinta parada, a final, deitada e centralizada como no site */}
+        <g class="tp-stop" style="--i:4">
+          <rect class="tp-shadow" x={tpFinal.x + 0.8} y={tpFinal.y + 1.2} width={tpFinal.w} height={tpFinal.h} rx="3" />
+          <rect class="tp-card" x={tpFinal.x} y={tpFinal.y} width={tpFinal.w} height={tpFinal.h} rx="3" fill={tpFinal.fill} />
+          <rect class="tp-stitch" x={tpFinal.x + 1.3} y={tpFinal.y + 1.3} width={tpFinal.w - 2.6} height={tpFinal.h - 2.6} rx="2.1" />
+          <circle class="tp-badge" cx={tpFinal.x + 8} cy={tpFinal.y + tpFinal.h / 2} r="4" />
+          <path
+            class="tp-icon tp-book"
+            d={`M${tpFinal.x + 5.2} ${tpFinal.y + 5.2}c1-.4 2-.3 2.8.3.8-.6 1.8-.7 2.8-.3v4c-1-.4-2-.3-2.8.3-.8-.6-1.8-.7-2.8-.3Z`}
+          />
+          <rect class="tp-line" x={tpFinal.x + 15} y={tpFinal.y + 4.2} width="30" height="1.8" rx=".9" />
+          <rect class="tp-line tp-line-soft" x={tpFinal.x + 15} y={tpFinal.y + 7.6} width="42" height="1.3" rx=".65" />
+        </g>
+
+        {/* pegadas de criança, como as que o site desenha entre as paradas */}
+        <g class="tp-feet">
+          {tpFeet.map(([x, y, deg, side], n) => (
+            <g transform={`translate(${x} ${y}) rotate(${deg})${side === 'L' ? ' scale(-1 1)' : ''}`}>
+              <use class="tp-foot" href={`#${uid}-tp-foot`} style={`--n:${n}`} />
+            </g>
+          ))}
+        </g>
+      </svg>
     )
   }
 
@@ -851,6 +956,137 @@ const cells = Array.from({ length: 15 }, (_, i) => ({ x: 26 + (i % 5) * 17, y: 3
   }
 
   /* ---------- Vanmed: o índigo elétrico do ícone do app, com o símbolo nas cores dele ---------- */
+  /* ---------- Trilha da Proteção ---------- */
+  .art-trilha-da-protecao {
+    background:
+      radial-gradient(38% 46% at 96% 4%, rgb(254 223 94 / 0.55), transparent 70%),
+      radial-gradient(90% 40% at 50% 112%, rgb(106 171 78 / 0.28), transparent 72%),
+      #f9faf6;
+  }
+
+  .tp-sun circle {
+    fill: #fedf5e;
+    opacity: 0.75;
+  }
+
+  .tp-sun path {
+    fill: none;
+    stroke: #e8b923;
+    stroke-width: 0.7;
+    stroke-linecap: round;
+    stroke-dasharray: 2.4 1.6;
+    opacity: 0.8;
+  }
+
+  .tp-cloud {
+    fill: rgb(255 255 255 / 0.85);
+    stroke: #4b4f4c;
+    stroke-width: 0.45;
+    stroke-linejoin: round;
+  }
+
+  .tp-grass path {
+    fill: none;
+    stroke: #8fb072;
+    stroke-width: 0.5;
+    stroke-linecap: round;
+  }
+
+  .tp-shadow {
+    fill: #012d1d;
+    opacity: 0.12;
+  }
+
+  .tp-card {
+    stroke: rgb(0 0 0 / 0.14);
+    stroke-width: 0.3;
+  }
+
+  .tp-stitch {
+    fill: none;
+    stroke: rgb(255 255 255 / 0.7);
+    stroke-width: 0.45;
+    stroke-dasharray: 1.4 1;
+  }
+
+  .tp-pill,
+  .tp-line {
+    fill: #fff;
+    opacity: 0.92;
+  }
+
+  .tp-line-soft {
+    opacity: 0.6;
+  }
+
+  .tp-icon {
+    fill: #fff;
+  }
+
+  .tp-icon-line {
+    fill: none;
+    stroke: #fe8b2c;
+    stroke-width: 0.6;
+    stroke-linecap: round;
+  }
+
+  .tp-badge {
+    fill: rgb(255 255 255 / 0.2);
+  }
+
+  .tp-book {
+    fill: #fff;
+  }
+
+  .tp-foot {
+    fill: #161616;
+    opacity: 0.78;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  .tp-featured {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  /* com movimento: as pegadas aparecem uma a uma, como passinhos, e a parada de destaque flutua */
+  :global(:root[data-motion='full']) .tp-foot {
+    animation: tp-step 7.2s ease-out infinite;
+    animation-delay: calc(var(--n) * 0.42s);
+  }
+
+  :global(:root[data-motion='full']) .tp-featured {
+    animation: tp-float 3.6s ease-in-out infinite;
+  }
+
+  @keyframes tp-step {
+    0% {
+      opacity: 0;
+      scale: 0.35;
+    }
+    5%,
+    62% {
+      opacity: 0.78;
+      scale: 1;
+    }
+    74%,
+    100% {
+      opacity: 0;
+      scale: 1;
+    }
+  }
+
+  @keyframes tp-float {
+    0%,
+    100% {
+      translate: 0 0;
+    }
+    50% {
+      translate: 0 -1.4px;
+    }
+  }
+
   .art-vanmed {
     --phone-edge: #1c1c1c;
     background:

@@ -1,76 +1,96 @@
 ---
 import SectionHead from '../SectionHead.astro';
 import TestimonialCard from '../TestimonialCard.astro';
-import { formatRating, testimonials } from '../../data/testimonials';
+import { formatRating, publishedTestimonials as items } from '../../data/testimonials';
 
-const hasSamples = testimonials.some((t) => t.sample);
-const average = testimonials.length
-  ? testimonials.reduce((sum, t) => sum + t.rating, 0) / testimonials.length
-  : 0;
+const hasSamples = items.some((t) => t.sample);
+const average = items.length ? items.reduce((sum, t) => sum + t.rating, 0) / items.length : 0;
 const averageText = formatRating(Math.round(average * 10) / 10);
+// a faixa que corre sozinha só faz sentido com vários cartões; com poucos, eles ficam lado a lado
+const rail = items.length >= 3;
 const intro = hasSamples
   ? 'O que dizem as pessoas que usaram ou acompanharam os projetos. Por enquanto, os depoimentos abaixo são exemplos e serão trocados pelos reais.'
   : 'O que dizem as pessoas que usaram ou acompanharam os projetos.';
 ---
 
 {
-  testimonials.length > 0 && (
+  items.length > 0 && (
     <section id="depoimentos" class="section testimonials" aria-labelledby="depoimentos-title" data-ambient>
       <div class="container testimonials-head">
         <SectionHead kicker="05 · Depoimentos" title="O que dizem do meu *trabalho*" text={intro} id="depoimentos-title" />
 
-        <div class="t-summary" data-reveal="scale" style="--i:2">
-          <p class="t-summary-score">
-            <span class="sr-only">
-              Nota média {averageText} de 10, em {testimonials.length} depoimentos
-              {hasSamples ? ' de exemplo' : ''}
-            </span>
-            <span aria-hidden="true">
-              {averageText}
-              <small>/10</small>
-            </span>
-          </p>
-          <p class="t-summary-label" aria-hidden="true">
-            Nota média em {testimonials.length} depoimentos
-          </p>
-          <ul class="list-reset t-summary-faces" aria-hidden="true">
-            {testimonials.slice(0, 4).map((t) => (
-              <li>
-                {t.name
-                  .split(/\s+/)
-                  .filter((p) => p.length > 2)
-                  .map((p) => p[0])
-                  .slice(0, 1)
-                  .join('')}
-              </li>
-            ))}
-          </ul>
-        </div>
+        {
+          items.length >= 2 && (
+            <div class="t-summary" data-reveal="scale" style="--i:2">
+              <p class="t-summary-score">
+                <span class="sr-only">
+                  Nota média {averageText} de 10, em {items.length} depoimentos
+                  {hasSamples ? ' de exemplo' : ''}
+                </span>
+                <span aria-hidden="true">
+                  {averageText}
+                  <small>/10</small>
+                </span>
+              </p>
+              <p class="t-summary-label" aria-hidden="true">
+                Nota média em {items.length} depoimentos
+              </p>
+              <ul class="list-reset t-summary-faces" aria-hidden="true">
+                {items.slice(0, 4).map((t) => (
+                  <li>
+                    {t.name
+                      .split(/\s+/)
+                      .filter((p) => p.length > 2)
+                      .map((p) => p[0])
+                      .slice(0, 1)
+                      .join('')}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+        }
       </div>
 
-      <!--
-        Faixa que corre sozinha: a lista de verdade e uma cópia decorativa (inerte, sem
-        links), para a volta não ter emenda. Com o movimento desligado, vira uma lista que
-        se rola com o dedo, e a cópia some.
-      -->
-      <div class="t-rail" data-reveal="fade">
-        <div class="t-track">
-          <ul class="list-reset t-group" aria-label="Depoimentos">
-            {testimonials.map((item, i) => (
-              <li class="t-item">
-                <TestimonialCard item={item} flip={i % 2 === 1} />
-              </li>
-            ))}
-          </ul>
-          <ul class="list-reset t-group t-clone" aria-hidden="true" inert>
-            {testimonials.map((item, i) => (
-              <li class="t-item">
-                <TestimonialCard item={item} flip={i % 2 === 1} decorative />
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+      {
+        rail ? (
+          <>
+            {/*
+              Faixa que corre sozinha: a lista de verdade e uma cópia decorativa (inerte, sem
+              links), para a volta não ter emenda. Com o movimento desligado, vira uma lista que
+              se rola com o dedo, e a cópia some.
+            */}
+            <div class="t-rail" data-reveal="fade">
+              <div class="t-track">
+                <ul class="list-reset t-group" aria-label="Depoimentos">
+                  {items.map((item, i) => (
+                    <li class="t-item">
+                      <TestimonialCard item={item} flip={i % 2 === 1} />
+                    </li>
+                  ))}
+                </ul>
+                <ul class="list-reset t-group t-clone" aria-hidden="true" inert>
+                  {items.map((item, i) => (
+                    <li class="t-item">
+                      <TestimonialCard item={item} flip={i % 2 === 1} decorative />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div class="container">
+            <ul class="list-reset t-static" aria-label="Depoimentos">
+              {items.map((item, i) => (
+                <li data-reveal style={`--i:${i}`}>
+                  <TestimonialCard item={item} flip={i % 2 === 1} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
     </section>
   )
 }
@@ -148,6 +168,14 @@ const intro = hasSamples
 
   .t-summary-faces li:nth-child(even) {
     background: linear-gradient(135deg, var(--c-violet-strong), var(--c-accent-strong));
+  }
+
+  /* ---------- poucos depoimentos: lado a lado, sem a faixa que corre ---------- */
+  .t-static {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 40rem));
+    align-items: start;
   }
 
   /* ---------- faixa de depoimentos ---------- */

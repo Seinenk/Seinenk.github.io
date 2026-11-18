@@ -12,6 +12,12 @@ const fontFile = (pkg, file) => `./node_modules/${pkg}/files/${file}`;
 /** @param {string} file */
 const efiplaFile = (file) => `./src/assets/fonts/efipla/${file}`;
 
+// Fontes da Trilha da Proteção, só para as amostras de tipografia da página dela: recortes
+// da Lexend e da Source Sans 3 (licença OFL, arquivos latinos do @fontsource) com os
+// caracteres das amostras. Como refazer: README.
+/** @param {string} file */
+const trilhaFile = (file) => `./src/assets/fonts/trilha/${file}`;
+
 export default defineConfig({
   site: 'https://seinenk.github.io',
   // Gera projetos.html (endereço antigo do site) e projeto/<nome>.html para cada projeto.
@@ -98,6 +104,20 @@ export default defineConfig({
       cssVariable: '--font-efipla-pixel',
       fallbacks: ['ui-monospace', 'monospace'],
       options: { variants: [{ weight: 400, style: 'normal', src: [efiplaFile('silkscreen.woff2')] }] },
+    },
+    {
+      provider: fontProviders.local(),
+      name: 'Lexend',
+      cssVariable: '--font-trilha-title',
+      fallbacks: ['system-ui', 'sans-serif'],
+      options: { variants: [{ weight: 600, style: 'normal', src: [trilhaFile('lexend.woff2')] }] },
+    },
+    {
+      provider: fontProviders.local(),
+      name: 'Source Sans 3',
+      cssVariable: '--font-trilha-text',
+      fallbacks: ['system-ui', 'sans-serif'],
+      options: { variants: [{ weight: 400, style: 'normal', src: [trilhaFile('source-sans-3.woff2')] }] },
     },
   ],
 });

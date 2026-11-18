@@ -19,9 +19,11 @@ interface Props {
   showProject?: boolean;
   /** Cópia decorativa do carrossel: sem links focáveis. */
   decorative?: boolean;
+  /** Mostra o depoimento inteiro (`full`), em vez do trecho (na página do projeto). */
+  full?: boolean;
 }
 
-const { item, flip = false, showProject = true, decorative = false } = Astro.props;
+const { item, flip = false, showProject = true, decorative = false, full = false } = Astro.props;
 
 const contactIcon: Record<ContactKind, IconName> = {
   linkedin: 'linkedin',
@@ -36,9 +38,15 @@ const project = projects.find((p) => p.slug === item.project);
 const score = Math.max(0, Math.min(10, item.rating));
 const segments = Array.from({ length: 10 }, (_, i) => (score >= i + 1 ? 'full' : score > i ? 'half' : 'empty'));
 const rating = formatRating(score);
+// depoimento longo: o texto inteiro na página do projeto; nos outros lugares, o trecho e um
+// link para o texto inteiro
+const long = full && Boolean(item.full?.length);
+const paragraphs = long ? item.full! : [item.quote];
+const moreHref = !full && item.full?.length && project && !decorative ? `${projectHref(project.slug)}#depoimentos` : null;
+const email = item.contact?.kind === 'email';
 ---
 
-<figure class:list={['testimonial', { 'is-flipped': flip }]}>
+<figure class:list={['testimonial', { 'is-flipped': flip, 'is-long': long }]}>
   <div class="t-quote">
     <div class="t-top">
       <p class="t-rating">
@@ -52,8 +60,17 @@ const rating = formatRating(score);
     </div>
 
     <blockquote class="t-text">
-      <p>{item.quote}</p>
+      {paragraphs.map((text) => <p>{text}</p>)}
     </blockquote>
+
+    {
+      moreHref && (
+        <a class="t-more" href={moreHref}>
+          Ler o depoimento completo
+          <Icon name="arrow-right" size={14} class="icon-trail" />
+        </a>
+      )
+    }
 
     {
       (showProject && project) || item.date ? (
@@ -82,7 +99,7 @@ const rating = formatRating(score);
   <figcaption class="t-person">
     {
       item.photo ? (
-        <Image src={item.photo} alt="" width={112} height={112} fit="cover" quality={70} class="t-avatar" />
+        <Image src={item.photo} alt="" width={long ? 144 : 112} height={long ? 144 : 112} fit="cover" quality={70} class="t-avatar" />
       ) : (
         <span class="t-avatar t-initials" aria-hidden="true">
           {initials(item.name)}
@@ -92,16 +109,24 @@ const rating = formatRating(score);
     <span class="t-who">
       <span class="t-name">{item.name}</span>
       <span class="t-role">{item.role}</span>
+      {item.education && <span class="t-role t-education">{item.education}</span>}
     </span>
     {
       item.contact &&
         (item.contact.href && !decorative ? (
-          <a class="t-contact" href={item.contact.href} target="_blank" rel="noopener noreferrer">
-            <Icon name={contactIcon[item.contact.kind]} size={16} />
-            <span class="sr-only">
-              {item.contact.label} de {item.name} (abre em nova aba)
-            </span>
-          </a>
+          email ? (
+            <a class="t-contact" href={item.contact.href} title={`Enviar e-mail para ${item.name}`}>
+              <Icon name={contactIcon[item.contact.kind]} size={16} />
+              <span class="sr-only">Enviar e-mail para {item.name}</span>
+            </a>
+          ) : (
+            <a class="t-contact" href={item.contact.href} target="_blank" rel="noopener noreferrer">
+              <Icon name={contactIcon[item.contact.kind]} size={16} />
+              <span class="sr-only">
+                {item.contact.label} de {item.name} (abre em nova aba)
+              </span>
+            </a>
+          )
         ) : (
           <span class="t-contact" title={item.contact.label}>
             <Icon name={contactIcon[item.contact.kind]} size={16} />
@@ -242,12 +267,46 @@ const rating = formatRating(score);
     text-transform: uppercase;
   }
 
+  .t-text {
+    display: grid;
+    gap: 0.9rem;
+  }
+
   .t-text p {
     color: var(--c-ink);
     font-size: var(--fs-body-lg);
     font-weight: 500;
     line-height: 1.5;
     text-wrap: pretty;
+  }
+
+  /* depoimento inteiro: o primeiro parágrafo abre em destaque, e o resto é texto corrido */
+  .is-long .t-text p + p {
+    color: var(--c-body);
+    font-size: var(--fs-body-md);
+    font-weight: 400;
+    line-height: 1.65;
+  }
+
+  .t-more {
+    display: inline-flex;
+    align-items: center;
+    justify-self: start;
+    gap: 0.35rem;
+    color: var(--c-cyan-strong);
+    font-size: var(--fs-caption);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.25em;
+  }
+
+  .t-more:hover :global(.icon-trail) {
+    transform: translateX(3px);
+  }
+
+  .t-more :global(.icon-trail) {
+    transition: transform 0.45s var(--ease-out);
   }
 
   .t-meta {
@@ -328,6 +387,16 @@ const rating = formatRating(score);
     color: var(--c-muted);
     font-size: var(--fs-caption);
     line-height: 1.35;
+  }
+
+  .t-education {
+    margin-top: 0.15rem;
+  }
+
+  /* no depoimento inteiro, a foto cresce um pouco */
+  .is-long .t-avatar {
+    width: 4.25rem;
+    height: 4.25rem;
   }
 
   .t-contact {

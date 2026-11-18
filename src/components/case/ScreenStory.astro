@@ -34,7 +34,7 @@ const steps = shots.filter((s) => s.frame === 'phone' && s.story);
         <g class="st-dots" />
       </svg>
 
-      <ol class="list-reset st-steps" aria-label={`Como se usa o ${title}, passo a passo`}>
+      <ol class="list-reset st-steps" aria-label={`Como se usa, passo a passo: ${title}`}>
         {steps.map((shot, i) => (
           <li class="st-step" style={`--i:${i}`}>
             <figure class="st-device" data-reveal={i % 2 === 0 ? 'left' : 'right'} aria-hidden="true">

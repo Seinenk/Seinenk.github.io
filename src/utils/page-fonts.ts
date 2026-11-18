@@ -12,6 +12,8 @@ const families: Record<PageFont, { family: string; fallback: string }> = {
   '--font-efipla-title': { family: 'EFIPLA Cinzel', fallback: 'Georgia, serif' },
   '--font-efipla-text': { family: 'EFIPLA Alegreya', fallback: 'Georgia, serif' },
   '--font-efipla-pixel': { family: 'EFIPLA Silkscreen', fallback: 'ui-monospace, monospace' },
+  '--font-trilha-title': { family: 'Trilha Lexend', fallback: 'system-ui, sans-serif' },
+  '--font-trilha-text': { family: 'Trilha Source Sans 3', fallback: 'system-ui, sans-serif' },
 };
 
 /** As variáveis CSS (sempre ativas) e os @font-face (ligados sob demanda). */

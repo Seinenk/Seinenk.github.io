@@ -114,6 +114,14 @@ miniatura, gere de novo com o `pyftsubset` (fonttools), por exemplo:
 pyftsubset rubik-distressed-latin-400-normal.woff2 --text="EFIPLAa" --flavor=woff2 --layout-features='*' --output-file=src/assets/fonts/efipla/rubik-distressed.woff2
 ```
 
+As fontes da Trilha da Proteção em `src/assets/fonts/trilha/` (Lexend e Source Sans 3, licença
+OFL) seguem o mesmo caminho: são recortes com só os caracteres das duas amostras de tipografia
+da página. Se mudar as amostras, gere de novo:
+
+```bash
+pyftsubset lexend-latin-600-normal.woff2 --text="AaProteção Integral: O que é?" --flavor=woff2 --layout-features='*' --output-file=src/assets/fonts/trilha/lexend.woff2
+```
+
 Efeitos das páginas: transição do cartão para o topo da página (View Transitions), barra de
 abas com uma pílula que desliza até o tópico que está sendo lido, sumário que acompanha a leitura, linha do tempo que se preenche ao rolar, cores que se copiam com um clique,
 amostras de fonte variável, galeria com caixa de luz, comparação antes/depois, o Dino Runner
@@ -147,17 +155,22 @@ Partes mais visuais, inspiradas em apresentações de portfólio:
 ## Depoimentos
 
 Ficam em `src/data/testimonials.ts`. Cada depoimento tem foto (opcional), nome, o que a pessoa
-faz hoje, uma forma de contato, uma nota de 0 a 10 (aceita meio ponto) e o projeto a que se
-refere (`project`, o nome do arquivo em `src/data/projects/`). Eles aparecem na página inicial,
-numa faixa que corre sozinha e para quando o ponteiro ou o foco do teclado chega nela, e na
-página do projeto correspondente.
+faz hoje, a formação (opcional), uma forma de contato, uma nota de 0 a 10 (aceita meio ponto) e
+o projeto a que se refere (`project`, o nome do arquivo em `src/data/projects/`). Eles aparecem
+na página inicial e na página do projeto correspondente. Com três depoimentos ou mais, a página
+inicial mostra uma faixa que corre sozinha e para quando o ponteiro ou o foco do teclado chega
+nela; com menos, os cartões ficam lado a lado, parados. A nota média aparece a partir de dois.
 
-Os seis que estão lá hoje são **exemplos** (`sample: true`): aparecem com o selo "Exemplo",
-sem link de contato, e a seção avisa que são exemplos. Para publicar um depoimento real, troque
-um exemplo pelo texto que a pessoa enviou e autorizou publicar, e tire o `sample: true`. Sem
-foto, o cartão mostra as iniciais do nome; com foto, coloque o arquivo em
-`src/assets/images/depoimentos/` e importe no arquivo de dados (há um exemplo no comentário do
-topo). Quando nenhum depoimento for exemplo, o aviso some sozinho.
+Depoimento longo: o texto inteiro vai em `full`, um parágrafo por item, e `quote` guarda um
+trecho dele, com as palavras exatas da pessoa. A página inicial mostra o trecho e o link "Ler o
+depoimento completo"; a página do projeto mostra o texto inteiro, com a pessoa em cima.
+
+O primeiro depoimento real é o de Sabrina Bortoli Roman, sobre a Trilha da Proteção. Os seis
+itens com `sample: true` são **exemplos**: só aparecem enquanto nenhum depoimento real existe, e
+por isso hoje estão fora do site. Ficam no arquivo como modelo. Para publicar outro depoimento,
+copie um item, preencha com o texto que a pessoa enviou e autorizou publicar, sem
+`sample: true`. Sem foto, o cartão mostra as iniciais do nome; com foto, coloque o arquivo em
+`src/assets/images/depoimentos/` e importe no arquivo de dados, como a foto da Sabrina.
 
 ## Como escrever os textos
 
