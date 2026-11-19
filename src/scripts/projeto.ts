@@ -56,6 +56,17 @@ if (toc && 'IntersectionObserver' in window) {
   });
 }
 
+/* ---------- índice lateral: só aparece enquanto se leem as seções ---------- */
+// No topo (o cartão do projeto) e no fim (o próximo projeto), o trilho sai de cena para não
+// encostar nos cartões largos. Ele continua no Tab: com o foco, volta a aparecer (CSS).
+const aside = document.querySelector<HTMLElement>('.cs-aside');
+const main = document.querySelector<HTMLElement>('.cs-main');
+if (aside && main && 'IntersectionObserver' in window) {
+  new IntersectionObserver(([entry]) => aside.classList.toggle('is-away', !entry.isIntersecting), {
+    rootMargin: '-45% 0px -45% 0px',
+  }).observe(main);
+}
+
 /* ---------- tópicos (abas) por área de atuação ---------- */
 // Todas as seções ficam à mostra, uma depois da outra. Cada aba da barra é um link para o
 // começo do seu tópico (#aba-ux-ui) e funciona sem script; aqui a barra acompanha a leitura:

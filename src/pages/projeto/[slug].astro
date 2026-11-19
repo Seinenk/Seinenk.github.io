@@ -26,9 +26,18 @@ import ScreenShowcase from '../../components/case/ScreenShowcase.astro';
 import ScreenStory from '../../components/case/ScreenStory.astro';
 import TestimonialCard from '../../components/TestimonialCard.astro';
 import { projects, nextProject, projectHref, type CaseStudy } from '../../data/projects';
+import type { ArtKind } from '../../data/projects/types';
 import { testimonialsFor } from '../../data/testimonials';
 import { plain, readingMinutes, rich } from '../../utils/rich';
 import { pageFontCss } from '../../utils/page-fonts';
+
+/*
+ * Página de cada projeto, montada como a landing page de um produto: um cartão escuro no
+ * topo (com os botões do projeto e o desenho dele), a barra do produto presa no alto com os
+ * tópicos, faixas largas que alternam o fundo, funções em mosaico (bento), os números numa
+ * faixa escura e, no fim, o convite para o próximo projeto. O conteúdo vem todo dos dados
+ * (src/data/projects); aqui só muda a forma de mostrar.
+ */
 
 export function getStaticPaths() {
   return projects.map((project) => ({ params: { slug: project.slug }, props: { project } }));
@@ -113,6 +122,56 @@ const head = (id: SectionId) => {
   return { kicker: `${String(i + 1).padStart(2, '0')} · ${s.label}`, title: s.title, id: `${id}-titulo` };
 };
 
+/*
+ * Fundo de cada faixa, como numa landing page: claro e areia se alternam, e os números
+ * (resultados) e as ferramentas (tecnologias) ganham a faixa escura. Duas faixas escuras
+ * nunca ficam coladas.
+ */
+type Tone = 'canvas' | 'soft' | 'inverse';
+const darkSections: SectionId[] = ['resultados', 'tecnologias'];
+const tones = {} as Record<SectionId, Tone>;
+let previousTone: Tone = 'soft';
+for (const s of sections) {
+  const tone: Tone = darkSections.includes(s.id) && previousTone !== 'inverse' ? 'inverse' : previousTone === 'soft' ? 'canvas' : 'soft';
+  tones[s.id] = tone;
+  previousTone = tone;
+}
+/* seções com o título centralizado (as de vitrine); as outras abrem à esquerda */
+const centered: SectionId[] = ['funcoes', 'video', 'resultados', 'depoimentos', 'na-pratica', 'processo', 'campo', 'tecnologias'];
+const headClass = (id: SectionId) => (centered.includes(id) ? 'lp-head-center' : undefined);
+
+/*
+ * Duas cores de cada projeto, tiradas das paletas e dos desenhos dele. Pintam só os brilhos
+ * decorativos do topo, o selo da barra e o convite para o próximo projeto: nenhum texto
+ * depende delas para ser lido.
+ */
+const brandTint: Partial<Record<ArtKind, [string, string]>> = {
+  extractorys: ['#800080', '#D50048'],
+  efipla: ['#6750A4', '#FFD700'],
+  'bee-sense': ['#EDB039', '#1B9DDA'],
+  crohnease: ['#00BBC9', '#007F8F'],
+  vanmed: ['#5D00FF', '#FF2E9A'],
+  'rota-do-hub': ['#E98B9C', '#F6C81E'],
+  'trilha-da-protecao': ['#FE8B2C', '#6AAB4E'],
+  'agende-ai': ['#FF5800', '#D91C0D'],
+  'dino-runner': ['#4F6BFF', '#FF4B4B'],
+  'layout-simples': ['#8E7CC3', '#6FA8DC'],
+  portfolio: ['#8A7875', '#248DAA'],
+  pytest: ['#248DAA', '#7E74C0'],
+  inclua: ['#7E74C0', '#248DAA'],
+};
+/* um projeto novo, ainda fora do mapa, fica com o ciano e o violeta do site */
+const tint = (kind: ArtKind) => {
+  const [a, b] = brandTint[kind] ?? ['#248DAA', '#7E74C0'];
+  return `--brand-a:${a};--brand-b:${b}`;
+};
+
+/* faixa de ferramentas logo abaixo do topo (repete as da seção Tecnologias, em movimento) */
+const techItems = [...new Set((p.tech ?? []).flatMap((g) => g.items))];
+const tickerHalf: string[] = [];
+while (techItems.length && tickerHalf.length < 10) tickerHalf.push(...techItems);
+const cta = p.links?.[0];
+
 const texts = [
   p.tagline,
   ...p.context,
@@ -136,6 +195,28 @@ const texts = [
 const minutes = readingMinutes(texts);
 const titleWords = p.title.split(' ');
 const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
+const metricCount = p.results?.metrics?.length ?? 0;
+
+/*
+ * Cartões por linha (no máximo `max`): o número que deixa a última linha mais cheia. A sobra
+ * fica centralizada, com a mesma largura das outras. Um cartão sozinho ganha meia largura.
+ */
+const perRow = (n: number, max = 3) => {
+  if (n <= 1) return 2;
+  if (n <= max) return n;
+  let best = max;
+  let bestFill = 0;
+  for (let c = max; c >= 2; c--) {
+    const rest = n % c;
+    const fill = rest === 0 ? 1 : rest / c;
+    if (fill > bestFill + 1e-9) {
+      best = c;
+      bestFill = fill;
+    }
+  }
+  return best;
+};
+const flow = (n: number, max = 3) => `--per-row:${perRow(n, max)}`;
 ---
 
 <BaseLayout title={`${p.title} · Projetos · Carlos Michael`} description={plain(p.summary)} current="projetos">
@@ -151,164 +232,223 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
       </Fragment>
     )
   }
-  <article class="cs" data-case>
-    <header class="cs-hero" id="topo" data-tilt-area data-ambient>
-      <div class="cs-aura" aria-hidden="true"></div>
-      <div class="cs-aura cs-aura-cool" aria-hidden="true"></div>
-      <div class="container">
-        <a class="link-arrow cs-back" href="/projetos">
-          <Icon name="arrow-left" size={16} />
-          Todos os projetos
+  <article class="cs" data-case style={tint(p.art)}>
+    {/* barra do produto: o nome à esquerda, os tópicos no meio e o botão principal à direita */}
+    <div class="cs-tabs-bar" data-tabs-bar>
+      <div class="container lp-bar">
+        <a class="lp-bar-brand" href="#topo" data-to-top>
+          <span class="lp-bar-tile" aria-hidden="true">{p.title.charAt(0)}</span>
+          <span class="lp-bar-name">{p.title}</span>
         </a>
-        <div class="cs-hero-grid">
-          <div class="cs-hero-text">
-            <p class="kicker" data-reveal="fade">{p.type} · {p.period}</p>
-            <h1 class="display-xl cs-title" tabindex="-1" style={`view-transition-name:title-${p.slug}`}>
-              {titleWords.map((w, i) => (i === titleWords.length - 1 && titleWords.length > 1 ? <em>{w}</em> : <>{w} </>))}
-            </h1>
-            <p class="cs-tagline" data-reveal style="--i:1">{p.tagline}</p>
-            <ul class="list-reset cs-tags" data-reveal style="--i:2" aria-label="Temas do projeto">
-              {p.tags.map((tag) => <li>{tag}</li>)}
-            </ul>
-            <div class="cs-hero-meta" data-reveal style="--i:3">
-              <span class="status" data-live={live ? '' : undefined}>
-                <span class="status-dot" aria-hidden="true"></span>
-                {p.status}
-              </span>
-              <span class="cs-read">
+        <nav class="cs-tabs-nav" aria-label="Tópicos do projeto">
+          <div class="cs-tabs" data-tablist>
+            {
+              tabs.map((t) => (
+                <a class="cs-tab" href={`#aba-${t.id}`} data-tab-link={t.id}>
+                  <Icon name={t.icon} size={16} />
+                  <span>{t.label}</span>
+                </a>
+              ))
+            }
+            <span class="cs-tabs-ink" aria-hidden="true"></span>
+          </div>
+        </nav>
+        {
+          cta && (
+            <a class="btn btn-primary lp-bar-cta" href={cta.href} target="_blank" rel="noopener noreferrer">
+              {cta.icon && <Icon name={cta.icon} size={16} />}
+              {cta.label}
+              <Icon name="arrow-up-right" size={15} class="icon-diagonal" />
+              <span class="sr-only">(abre em nova aba)</span>
+            </a>
+          )
+        }
+      </div>
+    </div>
+
+    <header class="cs-hero" id="topo" data-tilt-area data-ambient>
+      <div class="lp-hero-panel">
+        <div class="lp-backdrop" aria-hidden="true">
+          <span class="lp-glow lp-glow-a"></span>
+          <span class="lp-glow lp-glow-b"></span>
+          <span class="lp-grid"></span>
+        </div>
+        <div class="container lp-hero-inner">
+          <a class="lp-back" href="/projetos">
+            <Icon name="arrow-left" size={16} />
+            Todos os projetos
+          </a>
+          <div class="cs-hero-grid">
+            <div class="cs-hero-text">
+              <p class="lp-eyebrow" data-reveal="fade">
+                <span class="status" data-live={live ? '' : undefined}>
+                  <span class="status-dot" aria-hidden="true"></span>
+                  {p.status}
+                </span>
+                <span class="lp-eyebrow-sep" aria-hidden="true"></span>
+                <span>{p.type} · {p.period}</span>
+              </p>
+              <h1 class="display-xl cs-title" tabindex="-1" style={`view-transition-name:title-${p.slug}`}>
+                {titleWords.map((w, i) => (i === titleWords.length - 1 && titleWords.length > 1 ? <em>{w}</em> : <>{w} </>))}
+              </h1>
+              <p class="cs-tagline" data-reveal style="--i:1">{p.tagline}</p>
+              {
+                p.links && (
+                  <div class="cs-links" data-reveal style="--i:2">
+                    {p.links.map((link, i) => (
+                      <a class:list={['btn', i === 0 ? 'lp-btn-light' : 'btn-on-inverse']} href={link.href} target="_blank" rel="noopener noreferrer">
+                        {link.icon && <Icon name={link.icon} size={17} />}
+                        {link.label}
+                        <Icon name="arrow-up-right" size={16} class="icon-diagonal" />
+                        <span class="sr-only">(abre em nova aba)</span>
+                      </a>
+                    ))}
+                  </div>
+                )
+              }
+              <ul class="list-reset cs-tags" data-reveal style="--i:3" aria-label="Temas do projeto">
+                {p.tags.map((tag) => <li>{tag}</li>)}
+              </ul>
+              <p class="cs-read" data-reveal style="--i:4">
                 <Icon name="clock" size={15} />
                 Leitura de {minutes} min
-              </span>
+              </p>
             </div>
-            {
-              p.links && (
-                <div class="cs-links" data-reveal style="--i:4">
-                  {p.links.map((link) => (
-                    <a class="btn btn-secondary" href={link.href} target="_blank" rel="noopener noreferrer">
-                      {link.icon && <Icon name={link.icon} size={17} />}
-                      {link.label}
-                      <Icon name="arrow-up-right" size={16} class="icon-diagonal" />
-                      <span class="sr-only">(abre em nova aba)</span>
-                    </a>
-                  ))}
+            <div class="cs-hero-art">
+              <div class="lp-art-frame">
+                <div class="cs-tilt" data-tilt>
+                  <ProjectArt kind={p.art} size="hero" vt={`art-${p.slug}`} />
                 </div>
-              )
-            }
-          </div>
-          <div class="cs-hero-art">
-            <div class="cs-tilt" data-tilt>
-              <ProjectArt kind={p.art} size="hero" vt={`art-${p.slug}`} />
+              </div>
             </div>
           </div>
         </div>
-        <dl class="cs-facts">
-          {
-            p.facts.map((f, i) => (
-              <div class="cs-fact" data-reveal style={`--i:${i}`}>
-                <dt>{f.label}</dt>
-                <dd>{f.value}</dd>
-              </div>
-            ))
-          }
-        </dl>
+        <div class="lp-facts-bar">
+          <dl class="container cs-facts">
+            {
+              p.facts.map((f, i) => (
+                <div class="cs-fact" data-reveal style={`--i:${i}`}>
+                  <dt>{f.label}</dt>
+                  <dd>{f.value}</dd>
+                </div>
+              ))
+            }
+          </dl>
+        </div>
       </div>
     </header>
 
-    <div class="cs-main">
-      <div class="cs-tabs-bar" data-tabs-bar>
-        <div class="container">
-          <nav class="cs-tabs-nav" aria-label="Tópicos do projeto">
-            <div class="cs-tabs" data-tablist>
-              {
-                tabs.map((t) => (
-                  <a class="cs-tab" href={`#aba-${t.id}`} data-tab-link={t.id}>
-                    <Icon name={t.icon} size={16} />
-                    <span>{t.label}</span>
-                  </a>
-                ))
-              }
-              <span class="cs-tabs-ink" aria-hidden="true"></span>
+    {
+      tickerHalf.length > 0 && (
+        <div class="lp-ticker" aria-hidden="true" data-ambient>
+          <div class="container lp-ticker-inner">
+            <span class="lp-ticker-label">Tecnologias</span>
+            <div class="lp-ticker-viewport">
+              <ul class="list-reset lp-ticker-track">
+                {[...tickerHalf, ...tickerHalf].map((item) => (
+                  <li>{item}</li>
+                ))}
+              </ul>
             </div>
-          </nav>
+          </div>
         </div>
-      </div>
-    <div class="container cs-layout">
-      <aside class="cs-aside">
-        <nav class="cs-toc" aria-labelledby="toc-titulo" data-toc>
-          <p class="cs-toc-title" id="toc-titulo">
-            <Icon name="list" size={16} />
-            Nesta página
-          </p>
-          <ol class="list-reset">
-            {
-              sections.map((s, i) => (
-                <li data-tab={s.tab} data-first={i > 0 && sections[i - 1].tab !== s.tab ? '' : undefined}>
-                  <a href={`#${s.id}`} data-toc-link>
-                    <span class="cs-toc-n">{String(i + 1).padStart(2, '0')}</span>
-                    {s.label}
-                  </a>
-                </li>
-              ))
-            }
-          </ol>
-        </nav>
-      </aside>
+      )
+    }
 
-      <div class="cs-body">
-        {
-          tabs.map((t, ti) => {
-            const prev = tabs[ti - 1];
-            const after = tabs[ti + 1];
-            return (
-              <div class="cs-panel" id={`aba-${t.id}`} data-panel={t.id}>
-                <p class="cs-area" data-reveal="fade">
-                  <Icon name={t.icon} size={16} />
-                  {t.label}
-                </p>
-                {sectionsOf(t.id).map((s) => (
-                  <>
-                  {
-                    s.id === 'contexto' && (
-                      <section id="contexto" class="cs-section" aria-labelledby="contexto-titulo">
-                        <SectionHead {...head('contexto')} size="md" />
-                        <div class="cs-prose">
-                          {p.context.map((t, i) => <p class:list={{ 'cs-lead': i === 0 }} data-reveal style={`--i:${i}`} set:html={rich(t)} />)}
+    {/* índice das seções: um trilho na borda direita, nas telas largas */}
+    <aside class="cs-aside">
+      <nav class="cs-toc" aria-labelledby="toc-titulo" data-toc>
+        <p class="cs-toc-title" id="toc-titulo">
+          <Icon name="list" size={16} />
+          <span>Nesta página</span>
+        </p>
+        <ol class="list-reset">
+          {
+            sections.map((s, i) => (
+              <li data-tab={s.tab} data-first={i > 0 && sections[i - 1].tab !== s.tab ? '' : undefined}>
+                <a href={`#${s.id}`} data-toc-link>
+                  <span class="cs-toc-label">{s.label}</span>
+                  <span class="cs-toc-n">{String(i + 1).padStart(2, '0')}</span>
+                </a>
+              </li>
+            ))
+          }
+        </ol>
+      </nav>
+    </aside>
+
+    <div class="cs-main">
+      {
+        tabs.map((t, ti) => {
+          const prev = tabs[ti - 1];
+          const after = tabs[ti + 1];
+          const list = sectionsOf(t.id);
+          const lastTone = tones[list[list.length - 1].id];
+          return (
+            <div class="cs-panel" id={`aba-${t.id}`} data-panel={t.id}>
+              {list.map((s, si) => (
+                <section
+                  id={s.id}
+                  class:list={['cs-section', 'lp-band', `lp-${s.id}`, { 'band-inverse': tones[s.id] === 'inverse' }]}
+                  data-tone={tones[s.id]}
+                  aria-labelledby={`${s.id}-titulo`}
+                >
+                  <div class="container">
+                    {si === 0 && (
+                      <div class="lp-chapter" data-reveal="fade">
+                        <p class="cs-area">
+                          <Icon name={t.icon} size={16} />
+                          {t.label}
+                        </p>
+                        <span class="lp-chapter-line" aria-hidden="true" />
+                        <span class="lp-chapter-n" aria-hidden="true">
+                          {String(ti + 1).padStart(2, '0')} / {String(tabs.length).padStart(2, '0')}
+                        </span>
+                      </div>
+                    )}
+                    {s.id === 'contexto' && (
+                      <div class="lp-split">
+                        <div class="lp-split-head">
+                          <SectionHead {...head('contexto')} size="md" />
                         </div>
-                      </section>
-                    )
-                  }
-                  {
-                    s.id === 'desafio' && p.challenge && (
-                      <section id="desafio" class="cs-section" aria-labelledby="desafio-titulo">
+                        <div class="cs-prose">
+                          {p.context.map((t, i) => (
+                            <p class:list={{ 'cs-lead': i === 0 }} data-reveal style={`--i:${i}`} set:html={rich(t)} />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {s.id === 'desafio' && p.challenge && (
+                      <>
                         <SectionHead {...head('desafio')} size="md" />
-                        <blockquote class="cs-problem" data-reveal>
-                          <Icon name="target" size={26} />
-                          <p set:html={rich(p.challenge.problem)} />
-                        </blockquote>
-                        {p.challenge.goals && (
-                          <>
-                            <h3 class="cs-sub" data-reveal>
-                              Objetivos
-                            </h3>
-                            <ol class="list-reset cs-goals">
-                              {p.challenge.goals.map((g, i) => (
-                                <li data-reveal style={`--i:${i}`}>
-                                  <span class="cs-goal-n" aria-hidden="true">
-                                    {String(i + 1).padStart(2, '0')}
-                                  </span>
-                                  <span set:html={rich(g)} />
-                                </li>
-                              ))}
-                            </ol>
-                          </>
-                        )}
-                      </section>
-                    )
-                  }
-                  {
-                    s.id === 'processo' && p.story && (
-                      <section id="processo" class="cs-section" aria-labelledby="processo-titulo">
-                        <SectionHead {...head('processo')} size="md" />
+                        <div class:list={['lp-problem-grid', { 'has-goals': p.challenge.goals?.length }]}>
+                          <blockquote class="cs-problem" data-reveal>
+                            <Icon name="target" size={26} />
+                            <p set:html={rich(p.challenge.problem)} />
+                          </blockquote>
+                          {p.challenge.goals && (
+                            <div class="lp-goals">
+                              <h3 class="cs-sub" data-reveal>
+                                Objetivos
+                              </h3>
+                              <ol class="list-reset cs-goals">
+                                {p.challenge.goals.map((g, i) => (
+                                  <li data-reveal style={`--i:${i}`}>
+                                    <span class="cs-goal-n" aria-hidden="true">
+                                      {String(i + 1).padStart(2, '0')}
+                                    </span>
+                                    <span set:html={rich(g)} />
+                                  </li>
+                                ))}
+                              </ol>
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    )}
+                    {s.id === 'processo' && p.story && (
+                      <>
+                        <SectionHead {...head('processo')} size="md" class={headClass('processo')} />
                         <ol class="list-reset cs-timeline">
                           {p.story.map((s, i) => (
                             <li class="cs-step" data-reveal style={`--i:${i % 3}`}>
@@ -319,13 +459,11 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
                             </li>
                           ))}
                         </ol>
-                      </section>
-                    )
-                  }
-                  {
-                    s.id === 'campo' && p.fieldwork && (
-                      <section id="campo" class="cs-section" aria-labelledby="campo-titulo">
-                        <SectionHead {...head('campo')} size="md" text={p.fieldwork.text} />
+                      </>
+                    )}
+                    {s.id === 'campo' && p.fieldwork && (
+                      <>
+                        <SectionHead {...head('campo')} size="md" text={p.fieldwork.text} class={headClass('campo')} />
                         <Gallery shots={p.fieldwork.shots} label={`Fotos dos testes do projeto ${p.title}`} />
                         {p.fieldwork.note && (
                           <p class="cs-gallery-note" data-reveal>
@@ -333,14 +471,12 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
                             <span set:html={rich(p.fieldwork.note)} />
                           </p>
                         )}
-                      </section>
-                    )
-                  }
-                  {
-                    s.id === 'funcoes' && p.features && (
-                      <section id="funcoes" class="cs-section" aria-labelledby="funcoes-titulo">
-                        <SectionHead {...head('funcoes')} size="md" />
-                        <ul class="list-reset cs-features">
+                      </>
+                    )}
+                    {s.id === 'funcoes' && p.features && (
+                      <>
+                        <SectionHead {...head('funcoes')} size="md" class={headClass('funcoes')} />
+                        <ul class="list-reset cs-features" data-ambient>
                           {p.features.map((f, i) => (
                             <li class="card card-canvas card-lift cs-feature" data-spotlight data-reveal style={`--i:${i % 3}`}>
                               <span class="cs-feature-n" aria-hidden="true">
@@ -354,41 +490,39 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
                             </li>
                           ))}
                         </ul>
-                      </section>
-                    )
-                  }
-                  {
-                    s.id === 'video' && p.video && (
-                      <section id="video" class="cs-section" aria-labelledby="video-titulo">
-                        <SectionHead {...head('video')} size="md" text={p.video.text} />
-                        <div data-reveal>
+                      </>
+                    )}
+                    {s.id === 'video' && p.video && (
+                      <>
+                        <SectionHead {...head('video')} size="md" text={p.video.text} class={headClass('video')} />
+                        <div class="lp-stage lp-stage-video" data-reveal>
                           <VideoEmbed video={p.video} art={p.art} />
                         </div>
-                      </section>
-                    )
-                  }
-                  {
-                    s.id === 'por-dentro' && p.inside && (
-                      <section id="por-dentro" class="cs-section" aria-labelledby="por-dentro-titulo">
-                        <SectionHead {...head('por-dentro')} size="md" />
-                        <div class="cs-prose">
-                          {p.inside.text.map((t, i) => (
-                            <p data-reveal style={`--i:${i}`} set:html={rich(t)} />
-                          ))}
+                      </>
+                    )}
+                    {s.id === 'por-dentro' && p.inside && (
+                      <>
+                        <div class="lp-split">
+                          <div class="lp-split-head">
+                            <SectionHead {...head('por-dentro')} size="md" />
+                          </div>
+                          <div class="cs-prose">
+                            {p.inside.text.map((t, i) => (
+                              <p data-reveal style={`--i:${i}`} set:html={rich(t)} />
+                            ))}
+                          </div>
                         </div>
                         {p.inside.diagram && (
                           <div class="cs-wide" data-reveal>
                             <ProjectDiagram kind={p.inside.diagram} />
                           </div>
                         )}
-                      </section>
-                    )
-                  }
-                  {
-                    s.id === 'decisoes' && p.decisions && (
-                      <section id="decisoes" class="cs-section" aria-labelledby="decisoes-titulo">
+                      </>
+                    )}
+                    {s.id === 'decisoes' && p.decisions && (
+                      <>
                         <SectionHead {...head('decisoes')} size="md" />
-                        <ol class="list-reset cs-decisions">
+                        <ol class="list-reset cs-decisions lp-flow" style={flow(p.decisions.length, 2)}>
                           {p.decisions.map((d, i) => (
                             <li class="cs-decision" data-reveal style={`--i:${i % 2}`}>
                               <span class="cs-decision-n" aria-hidden="true" data-n={String(i + 1).padStart(2, '0')} />
@@ -406,120 +540,120 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
                             </li>
                           ))}
                         </ol>
-                      </section>
-                    )
-                  }
-                  {
-                    s.id === 'na-pratica' && p.demo && (
-                      <section id="na-pratica" class="cs-section" aria-labelledby="na-pratica-titulo">
-                        <SectionHead {...head('na-pratica')} size="md" text={p.demo.text} />
-                        <div class="cs-wide" data-reveal>
+                      </>
+                    )}
+                    {s.id === 'na-pratica' && p.demo && (
+                      <>
+                        <SectionHead {...head('na-pratica')} size="md" text={p.demo.text} class={headClass('na-pratica')} />
+                        <div class="cs-wide lp-stage" data-reveal>
                           {p.demo.kind === 'dino-game' && <DinoGame />}
                           {p.demo.kind === 'before-after' && p.demo.compare && <BeforeAfter compare={p.demo.compare} />}
                           {p.demo.kind === 'layout-boxes' && <LayoutBoxes />}
                           {p.demo.kind === 'pytest-run' && <PytestRun />}
                           {p.demo.kind === 'palette-swap' && <PaletteSwap />}
                         </div>
-                      </section>
-                    )
-                  }
-                  {
-                    s.id === 'visual' && hasVisual && p.visual && (
-                      <section id="visual" class="cs-section" aria-labelledby="visual-titulo">
+                      </>
+                    )}
+                    {s.id === 'visual' && hasVisual && p.visual && (
+                      <>
                         <SectionHead {...head('visual')} size="md" text={p.visual.intro} />
-                        {p.visual.palette && (
-                          <div class="cs-block">
-                            <h3 class="cs-sub" data-reveal>
-                              <Icon name="palette" size={18} /> Cores
-                            </h3>
-                            <Palette swatches={p.visual.palette} gradient={p.visual.gradient} note={p.visual.paletteNote} />
-                          </div>
-                        )}
-                        {p.visual.paletteWall && (
-                          <div class="cs-block">
-                            <h3 class="cs-sub" data-reveal>
-                              <Icon name="swatch-book" size={18} /> {p.visual.paletteWall.title}
-                            </h3>
-                            {p.visual.paletteWall.text && <p class="cs-block-text" data-reveal set:html={rich(p.visual.paletteWall.text)} />}
-                            <PaletteWall palettes={p.visual.paletteWall.palettes} label={p.visual.paletteWall.title} />
-                          </div>
-                        )}
-                        {p.visual.appThemes && (
-                          <div class="cs-block">
-                            <h3 class="cs-sub" data-reveal>
-                              <Icon name="swatch-book" size={18} /> Destaques e peles
-                            </h3>
-                            {p.visual.appThemesText && <p class="cs-block-text" data-reveal set:html={rich(p.visual.appThemesText)} />}
-                            <div data-reveal>
-                              <ThemePlayground themes={p.visual.appThemes} />
-                            </div>
-                          </div>
-                        )}
-                        {p.visual.typography && (
-                          <div class="cs-block">
-                            <h3 class="cs-sub" data-reveal>
-                              <Icon name="type" size={18} /> Tipografia
-                            </h3>
-                            <TypeSpecimens specimens={p.visual.typography} />
-                          </div>
-                        )}
-                        {p.visual.tokens && (
-                          <div class="cs-block">
-                            <h3 class="cs-sub" data-reveal>
-                              <Icon name="layers" size={18} /> Design system
-                            </h3>
-                            <TypeSpecimens tokens={p.visual.tokens} />
-                          </div>
-                        )}
-                        {p.visual.mark && (
-                          <div class:list={['cs-block', 'cs-mark', { 'cs-mark-art-on': Mark }]} data-reveal style={p.visual.markBackground ? `--mark-bg:${p.visual.markBackground}` : undefined}>
-                            {Mark && (
-                              <div class="cs-mark-art" aria-hidden="true" data-ambient>
-                                <Mark />
-                              </div>
-                            )}
-                            <div>
-                              <h3 class="cs-sub">
-                                <Icon name="sparkles" size={18} /> Marca
+                        <div class="lp-board">
+                          {p.visual.palette && (
+                            <div class="cs-block lp-panel">
+                              <h3 class="cs-sub" data-reveal>
+                                <Icon name="palette" size={18} /> Cores
                               </h3>
-                              <p set:html={rich(p.visual.mark)} />
+                              <Palette swatches={p.visual.palette} gradient={p.visual.gradient} note={p.visual.paletteNote} />
                             </div>
-                          </div>
-                        )}
-                        {p.visual.gallery && (
-                          <div class="cs-block">
-                            <h3 class="cs-sub" data-reveal>
-                              <Icon name="monitor" size={18} /> {p.visual.galleryTitle ?? 'Telas'}
-                            </h3>
-                            {hasStory && (
-                              <h4 class="cs-story-label" data-reveal="fade">
-                                <Icon name="compass" size={16} /> Como se usa, passo a passo
-                              </h4>
-                            )}
-                            <ScreenStory shots={p.visual.gallery} title={p.title} />
-                            <ScreenShowcase shots={p.visual.gallery} labels={p.tags} />
-                            {hasStory && (
-                              <h4 class="cs-story-label" data-reveal="fade">
-                                <Icon name="image" size={16} /> Todas as telas
-                              </h4>
-                            )}
-                            <Gallery shots={p.visual.gallery} label={`${p.visual.galleryTitle ?? 'Telas'} do projeto ${p.title}`} />
-                            {p.visual.galleryNote && (
-                              <p class="cs-gallery-note" data-reveal>
-                                <Icon name="clock" size={15} />
-                                <span set:html={rich(p.visual.galleryNote)} />
-                              </p>
-                            )}
-                          </div>
-                        )}
-                      </section>
-                    )
-                  }
-                  {
-                    s.id === 'tecnologias' && p.tech && (
-                      <section id="tecnologias" class="cs-section" aria-labelledby="tecnologias-titulo">
-                        <SectionHead {...head('tecnologias')} size="md" />
-                        <div class="cs-tech">
+                          )}
+                          {p.visual.paletteWall && (
+                            <div class="cs-block lp-panel">
+                              <h3 class="cs-sub" data-reveal>
+                                <Icon name="swatch-book" size={18} /> {p.visual.paletteWall.title}
+                              </h3>
+                              {p.visual.paletteWall.text && <p class="cs-block-text" data-reveal set:html={rich(p.visual.paletteWall.text)} />}
+                              <PaletteWall palettes={p.visual.paletteWall.palettes} label={p.visual.paletteWall.title} />
+                            </div>
+                          )}
+                          {p.visual.appThemes && (
+                            <div class="cs-block lp-panel">
+                              <h3 class="cs-sub" data-reveal>
+                                <Icon name="swatch-book" size={18} /> Destaques e peles
+                              </h3>
+                              {p.visual.appThemesText && <p class="cs-block-text" data-reveal set:html={rich(p.visual.appThemesText)} />}
+                              <div data-reveal>
+                                <ThemePlayground themes={p.visual.appThemes} />
+                              </div>
+                            </div>
+                          )}
+                          {p.visual.typography && (
+                            <div class="cs-block lp-panel">
+                              <h3 class="cs-sub" data-reveal>
+                                <Icon name="type" size={18} /> Tipografia
+                              </h3>
+                              <TypeSpecimens specimens={p.visual.typography} />
+                            </div>
+                          )}
+                          {p.visual.tokens && (
+                            <div class="cs-block lp-panel">
+                              <h3 class="cs-sub" data-reveal>
+                                <Icon name="layers" size={18} /> Design system
+                              </h3>
+                              <TypeSpecimens tokens={p.visual.tokens} />
+                            </div>
+                          )}
+                          {p.visual.mark && (
+                            <div
+                              class:list={['cs-block', 'cs-mark', { 'cs-mark-art-on': Mark }]}
+                              data-reveal
+                              style={p.visual.markBackground ? `--mark-bg:${p.visual.markBackground}` : undefined}
+                            >
+                              {Mark && (
+                                <div class="cs-mark-art" aria-hidden="true" data-ambient>
+                                  <Mark />
+                                </div>
+                              )}
+                              <div>
+                                <h3 class="cs-sub">
+                                  <Icon name="sparkles" size={18} /> Marca
+                                </h3>
+                                <p set:html={rich(p.visual.mark)} />
+                              </div>
+                            </div>
+                          )}
+                          {p.visual.gallery && (
+                            <div class="cs-block lp-screens">
+                              <h3 class="cs-sub" data-reveal>
+                                <Icon name="monitor" size={18} /> {p.visual.galleryTitle ?? 'Telas'}
+                              </h3>
+                              {hasStory && (
+                                <h4 class="cs-story-label" data-reveal="fade">
+                                  <Icon name="compass" size={16} /> Como se usa, passo a passo
+                                </h4>
+                              )}
+                              <ScreenStory shots={p.visual.gallery} title={p.title} />
+                              <ScreenShowcase shots={p.visual.gallery} labels={p.tags} />
+                              {hasStory && (
+                                <h4 class="cs-story-label" data-reveal="fade">
+                                  <Icon name="image" size={16} /> Todas as telas
+                                </h4>
+                              )}
+                              <Gallery shots={p.visual.gallery} label={`${p.visual.galleryTitle ?? 'Telas'} do projeto ${p.title}`} />
+                              {p.visual.galleryNote && (
+                                <p class="cs-gallery-note" data-reveal>
+                                  <Icon name="clock" size={15} />
+                                  <span set:html={rich(p.visual.galleryNote)} />
+                                </p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    )}
+                    {s.id === 'tecnologias' && p.tech && (
+                      <>
+                        <SectionHead {...head('tecnologias')} size="md" class={headClass('tecnologias')} />
+                        <div class="cs-tech lp-flow" style={flow(p.tech.length, 4)}>
                           {p.tech.map((group, i) => (
                             <div class="cs-tech-group" data-reveal style={`--i:${i % 4}`}>
                               <h3 class="cs-tech-title">{group.group}</h3>
@@ -531,14 +665,12 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
                             </div>
                           ))}
                         </div>
-                      </section>
-                    )
-                  }
-                  {
-                    s.id === 'habilidades' && p.skills && (
-                      <section id="habilidades" class="cs-section" aria-labelledby="habilidades-titulo">
+                      </>
+                    )}
+                    {s.id === 'habilidades' && p.skills && (
+                      <>
                         <SectionHead {...head('habilidades')} size="md" />
-                        <ul class="list-reset cs-skills">
+                        <ul class="list-reset cs-skills lp-flow" style={flow(p.skills.length)}>
                           {p.skills.map((s, i) => (
                             <li class="cs-skill" data-reveal style={`--i:${i % 3}`}>
                               <Icon name="check" size={18} />
@@ -549,21 +681,14 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
                             </li>
                           ))}
                         </ul>
-                      </section>
-                    )
-                  }
-                  {
-                    s.id === 'resultados' && p.results && (
-                      <section id="resultados" class="cs-section" aria-labelledby="resultados-titulo">
-                        <SectionHead {...head('resultados')} size="md" />
+                      </>
+                    )}
+                    {s.id === 'resultados' && p.results && (
+                      <>
+                        <SectionHead {...head('resultados')} size="md" class={headClass('resultados')} />
                         {p.results.metrics && (
-                          <div class="cs-metrics-wrap" data-ambient>
-                            {/* anel que se desenha atrás dos números, como no gráfico de rosca da referência */}
-                            <svg class="cs-ring" viewBox="0 0 200 200" aria-hidden="true" focusable="false">
-                              <circle class="cs-ring-track" cx="100" cy="100" r="88" />
-                              <circle class="cs-ring-arc" cx="100" cy="100" r="88" pathLength="100" />
-                            </svg>
-                            <ul class="list-reset cs-metrics" data-reveal="fade">
+                          <div class="cs-metrics-wrap">
+                            <ul class="list-reset cs-metrics" data-reveal="fade" style={`--n:${metricCount}`}>
                               {p.results.metrics.map((m, i) => (
                                 <li class="cs-metric" data-reveal style={`--i:${i}`}>
                                   <span class="cs-metric-badge" aria-hidden="true">
@@ -581,24 +706,23 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
                           </div>
                         )}
                         {p.results.highlights && (
-                          <ul class="list-reset cs-highlights">
+                          <ul class="list-reset cs-highlights lp-flow" style={flow(p.results.highlights.length)}>
                             {p.results.highlights.map((h, i) => (
-                              <li data-reveal style={`--i:${i}`}>
+                              <li data-reveal style={`--i:${i % 3}`}>
                                 <Icon name="award" size={18} />
                                 <span set:html={rich(h)} />
                               </li>
                             ))}
                           </ul>
                         )}
-                      </section>
-                    )
-                  }
-                  {
-                    s.id === 'depoimentos' && quotes.length > 0 && (
-                      <section id="depoimentos" class="cs-section" aria-labelledby="depoimentos-titulo">
+                      </>
+                    )}
+                    {s.id === 'depoimentos' && quotes.length > 0 && (
+                      <>
                         <SectionHead
                           {...head('depoimentos')}
                           size="md"
+                          class={headClass('depoimentos')}
                           text={
                             quotes.some((q) => q.sample)
                               ? 'Por enquanto, o depoimento abaixo é um exemplo, que mostra como esta seção vai ficar.'
@@ -613,14 +737,12 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
                             </li>
                           ))}
                         </ul>
-                      </section>
-                    )
-                  }
-                  {
-                    s.id === 'aprendizados' && p.lessons && (
-                      <section id="aprendizados" class="cs-section" aria-labelledby="aprendizados-titulo">
+                      </>
+                    )}
+                    {s.id === 'aprendizados' && p.lessons && (
+                      <>
                         <SectionHead {...head('aprendizados')} size="md" />
-                        <ul class="list-reset cs-lessons">
+                        <ul class="list-reset cs-lessons lp-flow" style={flow(p.lessons.length)}>
                           {p.lessons.map((l, i) => (
                             <li class="card card-canvas cs-lesson" data-reveal style={`--i:${i % 2}`}>
                               <Icon name="lightbulb" size={20} />
@@ -629,29 +751,25 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
                             </li>
                           ))}
                         </ul>
-                      </section>
-                    )
-                  }
-                  {
-                    s.id === 'proximos' && p.next && (
-                      <section id="proximos" class="cs-section" aria-labelledby="proximos-titulo">
+                      </>
+                    )}
+                    {s.id === 'proximos' && p.next && (
+                      <>
                         <SectionHead {...head('proximos')} size="md" />
-                        <ul class="list-reset cs-next-steps">
+                        <ul class="list-reset cs-next-steps lp-flow" style={flow(p.next.length, 4)}>
                           {p.next.map((n, i) => (
-                            <li data-reveal style={`--i:${i}`}>
+                            <li data-reveal style={`--i:${i % 3}`}>
                               <Icon name="compass" size={18} />
                               <span set:html={rich(n)} />
                             </li>
                           ))}
                         </ul>
-                      </section>
-                    )
-                  }
-                  {
-                    s.id === 'creditos' && p.credits && (
-                      <section id="creditos" class="cs-section" aria-labelledby="creditos-titulo">
+                      </>
+                    )}
+                    {s.id === 'creditos' && p.credits && (
+                      <>
                         <SectionHead {...head('creditos')} size="md" />
-                        <ul class="list-reset cs-credits">
+                        <ul class="list-reset cs-credits lp-flow" style={flow(p.credits.length, 4)}>
                           {p.credits.map((c) => (
                             <li class="cs-credit" data-reveal>
                               <span class="cs-credit-avatar" aria-hidden="true">
@@ -675,47 +793,63 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
                             </li>
                           ))}
                         </ul>
-                      </section>
-                    )
-                  }
-                  </>
-                ))}
-                <nav class="cs-tabnav" aria-label={`Fim da aba ${t.label}`} data-reveal>
-                  {prev && (
-                    <a class="btn btn-secondary cs-tabnav-btn cs-tabnav-prev" href={`#aba-${prev.id}`} data-tab-go={prev.id}>
-                      <Icon name="arrow-left" size={18} class="icon-back" />
-                      <span class="cs-tabnav-text">
-                        <span class="cs-tabnav-small">Aba anterior</span>
-                        {prev.label}
-                      </span>
+                      </>
+                    )}
+                  </div>
+                </section>
+              ))}
+              <div class:list={['lp-band', 'lp-tabnav-band', { 'band-inverse': lastTone === 'inverse' }]} data-tone={lastTone}>
+                <div class="container">
+                  <nav class="cs-tabnav" aria-label={`Fim da aba ${t.label}`} data-reveal>
+                    {prev && (
+                      <a class="btn btn-secondary cs-tabnav-btn cs-tabnav-prev" href={`#aba-${prev.id}`} data-tab-go={prev.id}>
+                        <Icon name="arrow-left" size={18} class="icon-back" />
+                        <span class="cs-tabnav-text">
+                          <span class="cs-tabnav-small">Aba anterior</span>
+                          {prev.label}
+                        </span>
+                      </a>
+                    )}
+                    <a class="btn btn-secondary cs-tabnav-btn cs-tabnav-top" href="#topo" data-to-top>
+                      <Icon name="arrow-up" size={18} class="icon-up" />
+                      Voltar ao topo
                     </a>
-                  )}
-                  <a class="btn btn-secondary cs-tabnav-btn cs-tabnav-top" href="#topo" data-to-top>
-                    <Icon name="arrow-up" size={18} class="icon-up" />
-                    Voltar ao topo
-                  </a>
-                  {after && (
-                    <a class="btn btn-primary cs-tabnav-btn cs-tabnav-next" href={`#aba-${after.id}`} data-tab-go={after.id}>
-                      <span class="cs-tabnav-text">
-                        <span class="cs-tabnav-small">Próxima aba</span>
-                        {after.label}
-                      </span>
-                      <Icon name="arrow-right" size={18} class="icon-trail" />
-                    </a>
-                  )}
-                </nav>
+                    {after && (
+                      <a class="btn btn-primary cs-tabnav-btn cs-tabnav-next" href={`#aba-${after.id}`} data-tab-go={after.id}>
+                        <span class="cs-tabnav-text">
+                          <span class="cs-tabnav-small">Próxima aba</span>
+                          {after.label}
+                        </span>
+                        <Icon name="arrow-right" size={18} class="icon-trail" />
+                      </a>
+                    )}
+                  </nav>
+                </div>
               </div>
-            );
-          })
-        }
+            </div>
+          );
+        })
+      }
 
-        {p.sources && <p class="cs-sources">Fontes desta página: {p.sources}</p>}
-      </div>
-    </div>
+      {
+        p.sources && (
+          <div class="lp-sources">
+            <div class="container">
+              <p class="cs-sources">Fontes desta página: {p.sources}</p>
+            </div>
+          </div>
+        )
+      }
     </div>
 
-    <nav class="cs-next band-inverse" aria-label="Próximo projeto">
+    {/* fecho da landing page: o convite para o próximo projeto, nas cores dele */}
+    <nav class="cs-next" aria-label="Próximo projeto" style={tint(next.art)} data-ambient>
       <a class="cs-next-link" href={projectHref(next.slug)}>
+        <span class="lp-backdrop" aria-hidden="true">
+          <span class="lp-glow lp-glow-a"></span>
+          <span class="lp-glow lp-glow-b"></span>
+          <span class="lp-grid"></span>
+        </span>
         <div class="container cs-next-inner">
           <div class="cs-next-text">
             <span class="cs-next-kicker">Próximo projeto</span>
@@ -740,252 +874,147 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
 </script>
 
 <style>
-  /* ---------- topo ---------- */
-  .cs-hero {
-    position: relative;
-    overflow: clip;
-    isolation: isolate;
-    padding-block: clamp(1.5rem, 1rem + 2vw, 2.5rem) clamp(2.5rem, 2rem + 3vw, 4rem);
-  }
-
-  .cs-aura {
-    position: absolute;
-    z-index: -1;
-    top: -28vmax;
-    right: -16vmax;
-    width: 62vmax;
-    height: 62vmax;
-    border-radius: 50%;
-    background: radial-gradient(closest-side, rgb(var(--c-glow-a-rgb) / 0.55), transparent);
-  }
-
-  /* segunda luz, fria, do lado do texto */
-  .cs-aura-cool {
-    top: auto;
-    right: auto;
-    bottom: -30vmax;
-    left: -22vmax;
-    width: 52vmax;
-    height: 52vmax;
-    background: radial-gradient(
-      closest-side,
-      rgb(var(--c-cyan-rgb) / 0.12),
-      rgb(var(--c-violet-rgb) / 0.06) 55%,
-      transparent
-    );
-  }
-
-  :global(:root[data-motion='full']) .cs-aura {
-    animation: drift 20s ease-in-out infinite;
-  }
-
-  :global(:root[data-motion='full']) .cs-aura-cool {
-    animation: drift 26s ease-in-out infinite reverse;
-  }
-
-  .cs-back {
-    margin-bottom: clamp(1.25rem, 1rem + 1.5vw, 2.25rem);
-    color: var(--c-muted);
-  }
-
-  .cs-back:hover :global(.icon) {
-    transform: translateX(-4px);
-  }
-
-  .cs-hero-grid {
-    display: grid;
-    gap: clamp(2rem, 1.5rem + 2vw, 3.5rem);
-    align-items: center;
-  }
-
-  @media (min-width: 60rem) {
-    .cs-hero-grid {
-      grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
-    }
-  }
-
-  .cs-title {
-    margin-block: 0.4rem 1rem;
-    overflow-wrap: anywhere;
-  }
-
-  /* números alinhados na Cormorant (o padrão dela são numerais antigos) */
-  .cs-title,
-  .cs-problem,
-  .cs-step-title,
-  .cs-next-title {
-    font-variant-numeric: lining-nums;
-  }
-
-
-  .cs-tagline {
-    max-width: 34rem;
-    color: var(--c-body-strong);
-    font-size: var(--fs-body-lg);
-    line-height: 1.6;
-  }
-
-  /* temas do projeto em pílulas de contorno, como "REDESIGN · PROTOTYPING" da referência */
-  .cs-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.45rem;
-    margin-top: 1.25rem;
-  }
-
-  .cs-tags li {
-    padding: 0.35rem 0.85rem;
-    border: 1px solid var(--c-outline);
-    border-radius: var(--radius-pill);
-    color: var(--c-ink);
-    font-size: var(--fs-caption-upper);
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    transition:
-      border-color 0.3s ease,
-      color 0.3s ease,
-      background-color 0.3s ease;
-  }
-
-  .cs-tags li:nth-child(3n + 1) {
-    border-color: rgb(var(--c-cyan-rgb) / 0.55);
-  }
-
-  .cs-tags li:nth-child(3n + 2) {
-    border-color: rgb(var(--c-violet-rgb) / 0.55);
-  }
-
-  @media (hover: hover) {
-    .cs-tags li:hover {
-      background: var(--c-cyan-soft);
-      color: var(--c-cyan-strong);
-    }
-
-    .cs-tags li:nth-child(3n + 2):hover {
-      background: var(--c-violet-soft);
-      color: var(--c-violet-strong);
-    }
-  }
-
-  .cs-hero-meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem 1.5rem;
-    margin-top: 1.25rem;
-  }
-
-  .cs-read {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    color: var(--c-muted);
-    font-size: var(--fs-caption);
-    font-weight: 500;
-  }
-
-  .cs-links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-top: 1.5rem;
-  }
-
-  .cs-hero-art {
-    perspective: 1400px;
-  }
-
-  .cs-tilt {
-    transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
-    transition: transform 0.6s var(--ease-out);
-  }
-
-
-  /* resumo rápido em fichas, cada uma com um fio frio no alto */
-  .cs-facts {
-    display: grid;
-    gap: 0.75rem;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
-    margin: clamp(2.5rem, 2rem + 2vw, 3.5rem) 0 0;
-  }
-
-  /* todo projeto tem 4 fichas: no tablet ficam 2 por linha, sem uma sobrando sozinha */
-  @media (min-width: 30rem) and (max-width: 59.99rem) {
-    .cs-facts {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-
-  .cs-fact {
-    position: relative;
-    overflow: hidden;
-    padding: 1.1rem 1.25rem;
-    border: 1px solid var(--c-hairline-soft);
-    border-radius: var(--radius-lg);
-    background: rgb(var(--c-canvas-rgb) / 0.72);
-    -webkit-backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
-  }
-
-  .cs-fact::before {
-    content: '';
-    position: absolute;
-    inset: 0 auto auto 0;
-    width: 2.25rem;
-    height: 2px;
-    background: linear-gradient(90deg, var(--c-cyan), var(--c-violet));
-    transition: width 0.7s var(--ease-out);
-  }
-
-  .cs-fact:nth-child(even)::before {
-    background: linear-gradient(90deg, var(--c-violet), var(--c-cyan));
-  }
-
-  @media (hover: hover) {
-    .cs-fact:hover::before {
-      width: 100%;
-    }
-  }
-
-  .cs-fact dt {
-    margin-bottom: 0.3rem;
-    color: var(--c-muted);
-    font-size: var(--fs-caption-upper);
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
-  .cs-fact dd {
-    margin: 0;
-    color: var(--c-ink);
-    font-weight: 500;
-    line-height: 1.45;
-    text-wrap: pretty;
-  }
-
-  /* ---------- tópicos (abas) por área de atuação: atalhos numa página só ---------- */
+  /* ================= base da landing page ================= */
   .cs {
     --tabs-h: 3.75rem;
+    --lp-edge: clamp(0.5rem, 0.2rem + 1.2vw, 1.25rem);
+    --lp-radius: clamp(1.25rem, 0.9rem + 1.5vw, 2rem);
+    --lp-card-radius: 1.25rem;
   }
 
   .cs-title:focus {
     outline: none;
   }
 
+  /* números alinhados na Cormorant (o padrão dela são numerais antigos) */
+  .cs-title,
+  .cs-problem,
+  .cs-step-title,
+  .cs-next-title,
+  .cs-lead,
+  .cs-metric-value {
+    font-variant-numeric: lining-nums;
+  }
+
+  /* ---------- fundo vivo dos cartões escuros (topo e próximo projeto) ---------- */
+  .lp-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .lp-glow {
+    position: absolute;
+    aspect-ratio: 1;
+    border-radius: 50%;
+  }
+
+  .lp-glow-a {
+    top: -42%;
+    right: -12%;
+    width: min(62%, 52rem);
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--brand-a) 46%, transparent), transparent);
+  }
+
+  .lp-glow-b {
+    bottom: -58%;
+    left: -16%;
+    width: min(56%, 46rem);
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--brand-b) 28%, transparent), transparent);
+  }
+
+  /* quadriculado fino que some nas bordas, como uma prancheta */
+  .lp-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgb(var(--c-on-inverse-rgb) / 0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--c-on-inverse-rgb) / 0.07) 1px, transparent 1px);
+    background-size: 3.5rem 3.5rem;
+    background-position: center top;
+    mask-image: radial-gradient(ellipse 60% 70% at 72% 30%, #000, transparent 72%);
+  }
+
+  :global(:root[data-motion='full']) .lp-glow-a {
+    animation: drift 22s ease-in-out infinite;
+  }
+
+  :global(:root[data-motion='full']) .lp-glow-b {
+    animation: drift 28s ease-in-out infinite reverse;
+  }
+
+  /* ================= barra do produto ================= */
   .cs-tabs-bar {
     position: sticky;
     top: var(--nav-h);
     z-index: 30;
-    border-block: 1px solid var(--c-hairline);
+    border-bottom: 1px solid var(--c-hairline);
     background: rgb(var(--c-canvas-rgb) / 0.86);
     -webkit-backdrop-filter: saturate(1.4) blur(16px);
     backdrop-filter: saturate(1.4) blur(16px);
   }
 
+  .lp-bar {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    min-height: var(--tabs-h);
+  }
+
+  /* nome do projeto, com um selo nas cores dele: leva de volta ao topo */
+  .lp-bar-brand {
+    display: none;
+    flex: none;
+    align-items: center;
+    gap: 0.65rem;
+    min-height: 2.75rem;
+    color: var(--c-ink);
+    font-size: var(--fs-body-sm);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .lp-bar-tile {
+    display: grid;
+    place-items: center;
+    width: 1.95rem;
+    height: 1.95rem;
+    border-radius: 0.6rem;
+    background: linear-gradient(135deg, var(--brand-a), var(--brand-b));
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.28);
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-style: italic;
+    line-height: 1;
+    text-shadow: 0 1px 2px rgb(0 0 0 / 0.45);
+    transition: transform 0.5s var(--ease-spring);
+  }
+
+  .lp-bar-brand:hover .lp-bar-tile {
+    transform: rotate(-8deg) scale(1.06);
+  }
+
+  .lp-bar-brand:focus-visible {
+    outline: 3px solid var(--c-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  .lp-bar-cta {
+    display: none;
+    flex: none;
+    min-height: 2.5rem;
+    padding: 0.55rem 1rem;
+    font-size: var(--fs-body-sm);
+  }
+
   /* no celular as abas rolam para o lado, com as bordas esmaecendo */
   .cs-tabs-nav {
+    flex: 1;
+    min-width: 0;
     overflow-x: auto;
     scrollbar-width: none;
     margin-inline: calc(var(--gutter, 1rem) * -1);
@@ -995,6 +1024,28 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
 
   .cs-tabs-nav::-webkit-scrollbar {
     display: none;
+  }
+
+  @media (min-width: 72rem) {
+    .lp-bar-brand {
+      display: inline-flex;
+    }
+
+    .cs-tabs-nav {
+      margin-inline: 0;
+      padding-inline: 0;
+      mask-image: none;
+    }
+
+    .cs-tabs {
+      justify-content: center;
+    }
+  }
+
+  @media (min-width: 82rem) {
+    .lp-bar-cta {
+      display: inline-flex;
+    }
   }
 
   .cs-tabs {
@@ -1064,300 +1115,564 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
       width 0.5s var(--ease-out);
   }
 
-  /* todos os tópicos à mostra, um depois do outro; o link da barra leva ao começo de cada um */
-  .cs-panel {
-    scroll-margin-top: var(--tabs-h);
+  /* ================= topo: o cartão escuro do produto ================= */
+  .cs-hero {
+    padding-top: clamp(0.75rem, 0.5rem + 1vw, 1.5rem);
   }
 
-  .cs-panel + .cs-panel {
-    margin-top: clamp(2.5rem, 2rem + 2.5vw, 4rem);
+  .lp-hero-panel {
+    position: relative;
+    isolation: isolate;
+    overflow: clip;
+    width: min(100% - 2 * var(--lp-edge), 92rem);
+    margin-inline: auto;
+    border: 1px solid var(--c-inverse-hairline);
+    border-radius: var(--lp-radius);
+    background: var(--c-inverse);
+    color: var(--c-on-inverse-soft);
+    box-shadow: var(--shadow-lg);
   }
 
-  /* o nome do tópico abre cada bloco, para quem lê tudo em sequência */
-  .cs-area {
+  /* fio de luz no alto do cartão, nas cores do projeto */
+  .lp-hero-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0 12% auto;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--brand-a) 70%, #fff), color-mix(in srgb, var(--brand-b) 70%, #fff), transparent);
+    opacity: 0.75;
+  }
+
+  .lp-hero-inner {
+    padding-block: clamp(1rem, 0.75rem + 1vw, 1.75rem) clamp(2rem, 1.5rem + 2.5vw, 3.75rem);
+  }
+
+  /*
+   * Textos do cartão: os acentos frios e o foco usam as versões para fundo escuro. A arte
+   * fica de fora, porque ela é desenhada com as cores normais da página.
+   */
+  .cs-hero-text,
+  .lp-back,
+  .lp-facts-bar {
+    --c-focus: var(--c-on-inverse);
+    --c-cyan: var(--c-inverse-cyan);
+    --c-violet: var(--c-inverse-violet);
+    --c-cyan-rgb: var(--c-inverse-cyan-rgb);
+    --c-violet-rgb: var(--c-inverse-violet-rgb);
+  }
+
+  .lp-back {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    margin-bottom: clamp(1.5rem, 1.2rem + 1vw, 2.25rem);
-    padding: 0.45rem 0.95rem;
-    border: 1px solid var(--c-hairline);
+    gap: 0.45rem;
+    min-height: 2.5rem;
+    margin-bottom: clamp(1.5rem, 1rem + 2vw, 2.75rem);
+    padding: 0.4rem 1rem 0.4rem 0.8rem;
+    border: 1px solid var(--c-inverse-hairline);
     border-radius: var(--radius-pill);
-    background: var(--c-surface-soft);
-    color: var(--c-ink);
-    font-size: var(--fs-caption-upper);
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    background: rgb(var(--c-on-inverse-rgb) / 0.04);
+    color: var(--c-on-inverse-soft);
+    font-size: var(--fs-body-sm);
+    font-weight: 500;
+    text-decoration: none;
+    transition:
+      color 0.3s ease,
+      border-color 0.3s ease,
+      background-color 0.3s ease;
   }
 
-  .cs-area :global(svg) {
-    color: var(--c-accent-strong);
+  .lp-back:hover {
+    border-color: rgb(var(--c-on-inverse-rgb) / 0.4);
+    background: rgb(var(--c-on-inverse-rgb) / 0.08);
+    color: var(--c-on-inverse);
   }
 
-  .cs-area + .cs-section {
-    padding-top: 0;
-    border-top: 0;
+  .lp-back :global(.icon) {
+    transition: transform 0.45s var(--ease-out);
   }
 
-  /* o sumário lista todas as seções, com um respiro entre os tópicos; no celular, a barra basta */
-  @media (min-width: 64rem) {
-    .cs-toc li[data-first] {
-      margin-top: 0.7rem;
+  .lp-back:hover :global(.icon) {
+    transform: translateX(-4px);
+  }
+
+  .lp-back:focus-visible {
+    outline: 3px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+
+  .cs-hero-grid {
+    display: grid;
+    gap: clamp(2rem, 1.5rem + 2.5vw, 4rem);
+    align-items: center;
+  }
+
+  @media (min-width: 60rem) {
+    .cs-hero-grid {
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
     }
   }
 
-  @media (max-width: 63.999rem) {
-    .cs-aside {
-      display: none;
-    }
-  }
-
-  /* fim de cada tópico: anterior, topo e próximo */
-  .cs-tabnav {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: stretch;
-    gap: 0.75rem;
-    margin-top: clamp(2rem, 1.5rem + 2vw, 3rem);
-    padding-top: clamp(1.5rem, 1rem + 1.5vw, 2rem);
-    border-top: 1px solid var(--c-hairline);
-  }
-
-  .cs-tabnav-btn {
-    min-height: 3.5rem;
-  }
-
-  .cs-tabnav-text {
-    display: grid;
-    gap: 0.15rem;
-    text-align: start;
-  }
-
-  .cs-tabnav-small {
+  /* selo do alto: situação, tipo e período */
+  .lp-eyebrow {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.7rem;
+    padding: 0.4rem 0.95rem 0.4rem 0.75rem;
+    border: 1px solid var(--c-inverse-hairline);
+    border-radius: var(--radius-pill);
+    background: rgb(var(--c-on-inverse-rgb) / 0.06);
+    color: var(--c-on-inverse-soft);
     font-size: var(--fs-caption);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  .lp-eyebrow .status {
+    color: var(--c-on-inverse);
+  }
+
+  .lp-eyebrow .status-dot {
+    background: var(--c-inverse-accent);
+    box-shadow: 0 0 0 3px rgb(var(--c-inverse-accent-rgb) / 0.2);
+  }
+
+  .lp-eyebrow .status[data-live] .status-dot {
+    background: var(--c-inverse-cyan);
+  }
+
+  .lp-eyebrow-sep {
+    width: 1px;
+    height: 0.95em;
+    background: var(--c-inverse-hairline);
+  }
+
+  .cs-title {
+    margin-block: 1.1rem 1.1rem;
+    color: var(--c-on-inverse);
+    overflow-wrap: anywhere;
+  }
+
+  .cs-title em {
+    color: var(--c-inverse-accent);
+  }
+
+  .cs-tagline {
+    max-width: 34rem;
+    color: var(--c-on-inverse-soft);
+    font-size: clamp(1.1rem, 1rem + 0.45vw, 1.3rem);
+    line-height: 1.6;
+  }
+
+  .cs-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: clamp(1.5rem, 1.25rem + 1vw, 2rem);
+  }
+
+  /* botão principal claro sobre o cartão escuro, com um halo nas cores do projeto */
+  .lp-btn-light {
+    --btn-bg: var(--c-on-inverse);
+    --btn-fg: var(--c-inverse);
+    --btn-border: transparent;
+    font-weight: 600;
+  }
+
+  .lp-btn-light:is(:hover, :focus-visible) {
+    --btn-bg: #fff;
+    box-shadow:
+      0 0 0 4px rgb(var(--c-on-inverse-rgb) / 0.14),
+      0 1rem 2.5rem -1rem color-mix(in srgb, var(--brand-a) 75%, transparent);
+  }
+
+  .cs-links :global(.btn):focus-visible {
+    outline: 3px solid var(--c-focus);
+    outline-offset: 3px;
+  }
+
+  /* temas do projeto em pílulas de contorno */
+  .cs-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-top: clamp(1.5rem, 1.25rem + 1vw, 2rem);
+  }
+
+  .cs-tags li {
+    padding: 0.35rem 0.85rem;
+    border: 1px solid rgb(var(--c-on-inverse-rgb) / 0.2);
+    border-radius: var(--radius-pill);
+    color: var(--c-on-inverse-soft);
+    font-size: var(--fs-caption-upper);
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    transition:
+      border-color 0.3s ease,
+      color 0.3s ease,
+      background-color 0.3s ease;
   }
 
-  /* anterior à esquerda, topo no meio, próxima à direita, mesmo quando falta uma delas */
-  .cs-tabnav-prev {
-    grid-column: 1;
-    justify-self: start;
+  .cs-tags li:nth-child(3n + 1) {
+    border-color: rgb(var(--c-cyan-rgb) / 0.45);
   }
 
-  .cs-tabnav-top {
-    grid-column: 2;
-  }
-
-  .cs-tabnav-next {
-    grid-column: 3;
-    justify-self: end;
-  }
-
-  .cs-tabnav-next .cs-tabnav-text {
-    text-align: end;
+  .cs-tags li:nth-child(3n + 2) {
+    border-color: rgb(var(--c-violet-rgb) / 0.45);
   }
 
   @media (hover: hover) {
-    .cs-tabnav-prev:hover :global(.icon-back) {
-      transform: translateX(-4px);
-    }
-
-    .cs-tabnav-top:hover :global(.icon-up) {
-      transform: translateY(-3px);
+    .cs-tags li:hover {
+      background: rgb(var(--c-on-inverse-rgb) / 0.08);
+      color: var(--c-on-inverse);
     }
   }
 
-  @media (max-width: 40rem) {
-    .cs-tabnav {
-      grid-template-columns: minmax(0, 1fr);
-    }
-
-    .cs-tabnav-btn {
-      grid-column: 1;
-      justify-self: stretch;
-    }
-
-    /* empilhados: a seta fica junto do texto na anterior e na ponta na próxima */
-    .cs-tabnav-prev {
-      justify-content: flex-start;
-    }
-
-    .cs-tabnav-next {
-      justify-content: space-between;
-    }
-
-    .cs-tabnav-next .cs-tabnav-text {
-      text-align: start;
-    }
+  .cs-read {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 1.25rem;
+    color: var(--c-on-inverse-soft);
+    font-size: var(--fs-caption);
+    font-weight: 500;
   }
 
-  /* ---------- corpo e sumário ---------- */
-  .cs-layout {
+  .cs-hero-art {
+    perspective: 1400px;
+  }
+
+  /* moldura de vidro em volta da arte, como a tela de um produto em destaque */
+  .lp-art-frame {
+    position: relative;
+    padding: clamp(0.4rem, 0.3rem + 0.5vw, 0.75rem);
+    border: 1px solid rgb(var(--c-on-inverse-rgb) / 0.14);
+    border-radius: calc(var(--radius-xl) + clamp(0.4rem, 0.3rem + 0.5vw, 0.75rem));
+    background: rgb(var(--c-on-inverse-rgb) / 0.05);
+    box-shadow:
+      inset 0 1px 0 rgb(var(--c-on-inverse-rgb) / 0.12),
+      0 2.5rem 5rem -2.5rem rgb(0 0 0 / 0.7);
+  }
+
+  .cs-tilt {
+    transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+    transition: transform 0.6s var(--ease-out);
+  }
+
+  /* fichas do projeto numa faixa de vidro no pé do cartão */
+  .lp-facts-bar {
+    border-top: 1px solid var(--c-inverse-hairline);
+    background: color-mix(in srgb, var(--c-inverse) 84%, transparent);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+
+  .cs-facts {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 2rem;
-    padding-block: clamp(1.5rem, 1rem + 2vw, 3rem) var(--space-section);
+    margin-block: 0;
+  }
+
+  .cs-fact {
+    position: relative;
+    padding: 1.15rem 0 1.25rem;
+  }
+
+  .cs-fact + .cs-fact {
+    border-top: 1px solid var(--c-inverse-hairline);
+  }
+
+  /* todo projeto tem 4 fichas: 2 por linha no tablet, as 4 lado a lado no computador */
+  @media (min-width: 34rem) {
+    .cs-facts {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .cs-fact {
+      padding-inline: 1.25rem;
+    }
+
+    .cs-fact:nth-child(odd) {
+      padding-inline-start: 0;
+    }
+
+    .cs-fact + .cs-fact {
+      border-top: 0;
+    }
+
+    .cs-fact:nth-child(even) {
+      border-inline-start: 1px solid var(--c-inverse-hairline);
+    }
+
+    .cs-fact:nth-child(n + 3) {
+      border-top: 1px solid var(--c-inverse-hairline);
+    }
   }
 
   @media (min-width: 64rem) {
-    .cs-layout {
-      grid-template-columns: 13.5rem minmax(0, 1fr);
-      gap: clamp(3rem, 1rem + 4vw, 5rem);
+    .cs-facts {
+      grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
     }
 
-    .cs-aside {
-      position: sticky;
-      top: calc(var(--nav-h) + var(--tabs-h) + 1.5rem);
-      align-self: start;
+    .cs-fact,
+    .cs-fact:nth-child(n + 3) {
+      padding: 1.4rem 1.5rem 1.6rem;
+      border-top: 0;
+    }
+
+    .cs-fact:first-child {
+      padding-inline-start: 0;
+    }
+
+    .cs-fact + .cs-fact {
+      border-inline-start: 1px solid var(--c-inverse-hairline);
     }
   }
 
-  /* o "relative" fica só no sumário (é a âncora da barrinha); no <aside> ele anulava o sticky */
-  .cs-aside {
-    min-width: 0;
+  /* um fio colorido corre pelo alto de cada ficha no hover */
+  .cs-fact::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 0;
+    width: 2.25rem;
+    height: 2px;
+    background: linear-gradient(90deg, var(--brand-a), var(--brand-b));
+    transition: width 0.7s var(--ease-out);
   }
 
-  .cs-toc {
-    position: relative;
-    min-width: 0;
+  @media (min-width: 34rem) {
+    .cs-fact:nth-child(even)::before {
+      left: 1.25rem;
+    }
   }
 
-  .cs-toc-title {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.6rem;
-    color: var(--c-ink);
+  @media (min-width: 64rem) {
+    .cs-fact::before,
+    .cs-fact:nth-child(even)::before {
+      left: 1.5rem;
+    }
+
+    .cs-fact:first-child::before {
+      left: 0;
+    }
+  }
+
+  @media (hover: hover) {
+    .cs-fact:hover::before {
+      width: calc(100% - 1.5rem);
+    }
+  }
+
+  .cs-fact dt {
+    margin-bottom: 0.35rem;
+    color: var(--c-inverse-accent);
     font-size: var(--fs-caption-upper);
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
   }
 
-  /* celular: as seções viram uma faixa de atalhos que rola para o lado */
-  .cs-toc ol {
-    display: flex;
-    gap: 0.4rem;
-    overflow-x: auto;
-    padding-bottom: 0.5rem;
-    scrollbar-width: none;
+  .cs-fact dd {
+    margin: 0;
+    color: var(--c-on-inverse);
+    font-weight: 500;
+    line-height: 1.45;
+    text-wrap: pretty;
   }
 
-  .cs-toc ol::-webkit-scrollbar {
+  /* ================= faixa das ferramentas (letreiro) ================= */
+  .lp-ticker {
+    padding-block: clamp(1.5rem, 1.25rem + 1vw, 2.25rem) 0;
+  }
+
+  .lp-ticker-inner {
+    display: flex;
+    align-items: center;
+    gap: clamp(1rem, 0.5rem + 2vw, 2rem);
+  }
+
+  .lp-ticker-label {
+    flex: none;
+    color: var(--c-muted);
+    font-size: var(--fs-caption-upper);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .lp-ticker-viewport {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+  }
+
+  .lp-ticker-track {
+    display: flex;
+    width: max-content;
+  }
+
+  /* cada item leva o espaço depois dele, então as duas metades da faixa medem o mesmo */
+  .lp-ticker-track li {
+    display: inline-flex;
+    align-items: center;
+    gap: clamp(1.25rem, 1rem + 1vw, 2rem);
+    padding-inline-end: clamp(1.25rem, 1rem + 1vw, 2rem);
+    color: var(--c-body-strong);
+    font-family: var(--font-display);
+    font-size: clamp(1.2rem, 1.05rem + 0.5vw, 1.5rem);
+    font-style: italic;
+    white-space: nowrap;
+  }
+
+  .lp-ticker-track li::after {
+    content: '';
+    width: 0.85rem;
+    height: 0.85rem;
+    background: linear-gradient(135deg, var(--c-cyan), var(--c-violet));
+    -webkit-mask: var(--glyph-asterisk) center / contain no-repeat;
+    mask: var(--glyph-asterisk) center / contain no-repeat;
+  }
+
+  :global(:root[data-motion='full']) .lp-ticker-track {
+    animation: marquee 48s linear infinite;
+  }
+
+  @media (hover: hover) {
+    .lp-ticker:hover .lp-ticker-track {
+      animation-play-state: paused;
+    }
+  }
+
+  /* ================= índice das seções (trilho na borda direita) ================= */
+  .cs-aside {
     display: none;
+  }
+
+  @media (min-width: 86rem) {
+    .cs-aside {
+      position: fixed;
+      top: 50%;
+      right: 0.75rem;
+      z-index: 25;
+      display: block;
+      translate: 0 -50%;
+      transition:
+        opacity 0.4s ease,
+        translate 0.5s var(--ease-out);
+    }
+
+    /* fora das seções (no topo e no fim), o trilho sai de cena; com o foco do teclado, volta */
+    .cs-aside.is-away:not(:focus-within) {
+      opacity: 0;
+      translate: 1.25rem -50%;
+      pointer-events: none;
+    }
+  }
+
+  .cs-toc {
+    position: relative;
+    padding: 0.5rem 0.4rem;
+    border: 1px solid var(--c-hairline);
+    border-radius: 1rem;
+    background: rgb(var(--c-canvas-rgb) / 0.86);
+    -webkit-backdrop-filter: saturate(1.3) blur(14px);
+    backdrop-filter: saturate(1.3) blur(14px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .cs-toc-title {
+    display: grid;
+    place-items: center;
+    padding: 0.2rem 0 0.45rem;
+    color: var(--c-muted);
+  }
+
+  .cs-toc-title span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .cs-toc li[data-first] {
+    margin-top: 0.35rem;
+    padding-top: 0.35rem;
+    border-top: 1px solid var(--c-hairline-soft);
   }
 
   .cs-toc a {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.4rem 0.8rem;
-    border: 1px solid var(--c-hairline);
-    border-radius: var(--radius-pill);
-    background: var(--c-canvas);
+    justify-content: flex-end;
+    gap: 0;
+    min-height: 1.75rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 0.6rem;
     color: var(--c-muted);
-    font-size: var(--fs-body-sm);
+    font-size: var(--fs-caption);
     text-decoration: none;
     white-space: nowrap;
     transition:
       color 0.25s ease,
-      border-color 0.25s ease,
-      background-color 0.25s ease;
-  }
-
-  .cs-toc a:hover,
-  .cs-toc a.is-active {
-    color: var(--c-ink);
-    border-color: var(--c-outline);
+      background-color 0.25s ease,
+      gap 0.4s var(--ease-out);
   }
 
   .cs-toc-n {
-    color: var(--c-accent-strong);
     font-family: var(--font-mono);
-    font-size: var(--fs-caption);
+    font-size: 0.72rem;
     font-variant-numeric: tabular-nums;
   }
 
-  @media (min-width: 64rem) {
-    .cs-toc ol {
-      display: block;
-      padding: 0 0 0 1rem;
-      overflow: visible;
-      border-inline-start: 1px solid var(--c-hairline);
-    }
-
-    .cs-toc a {
-      padding: 0.4rem 0;
-      border: 0;
-      background: none;
-      white-space: normal;
-    }
-
-    .cs-toc a.is-active {
-      font-weight: 600;
-    }
-
-    /* barra que desliza até a seção ativa */
-    .cs-toc::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 2px;
-      height: var(--toc-h, 0);
-      background: var(--c-accent-strong);
-      transform: translateY(var(--toc-y, 0));
-      opacity: 0;
-      transition:
-        transform 0.5s var(--ease-out),
-        height 0.5s var(--ease-out),
-        opacity 0.3s ease;
-    }
-
-    .cs-toc.has-active::before {
-      opacity: 1;
-    }
+  /* o nome da seção abre ao passar o ponteiro, com o foco do teclado e na seção atual */
+  .cs-toc-label {
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition:
+      max-width 0.45s var(--ease-out),
+      opacity 0.3s ease;
   }
 
-  .cs-body {
-    min-width: 0;
+  .cs-toc:is(:hover, :focus-within) a,
+  .cs-toc a.is-active {
+    gap: 0.6rem;
   }
 
-  .cs-section {
-    padding-block: clamp(2.5rem, 2rem + 2.5vw, 4rem);
-    border-top: 1px solid var(--c-hairline);
-    /* o html já desconta o menu (scroll-padding-top); aqui entra só a barra de abas */
-    scroll-margin-top: calc(var(--tabs-h) + 1rem);
+  .cs-toc:is(:hover, :focus-within) .cs-toc-label,
+  .cs-toc a.is-active .cs-toc-label {
+    max-width: 14rem;
+    opacity: 1;
   }
 
-  .cs-section:first-child {
-    padding-top: 0;
-    border-top: 0;
+  .cs-toc a:hover {
+    color: var(--c-ink);
+    background: var(--c-surface-soft);
   }
 
-  .cs-section :global(.section-head) {
-    margin-bottom: clamp(1.5rem, 1.2rem + 1vw, 2.25rem);
+  .cs-toc a.is-active {
+    background: var(--c-primary);
+    color: var(--c-on-primary);
+    font-weight: 600;
   }
 
-  .cs-prose {
-    display: grid;
-    gap: 1rem;
-    max-width: 44rem;
-    color: var(--c-body);
-    font-size: var(--fs-body-lg);
-    line-height: 1.7;
+  .cs-toc a:focus-visible {
+    outline: 3px solid var(--c-focus);
+    outline-offset: 1px;
   }
 
-  .cs-lead {
-    color: var(--c-body-strong);
+  /* ================= faixas (seções) ================= */
+  .cs-main :global(strong) {
+    color: var(--lp-ink);
+    font-weight: 600;
   }
 
-  .cs-prose :global(code),
-  .cs-body :global(p code),
-  .cs-body :global(h3 code),
-  .cs-body :global(span code) {
+  .cs-main :is(p, h3, span, li) :global(code) {
     padding: 0.05em 0.35em;
     border-radius: var(--radius-xs);
     background: var(--c-surface-card);
@@ -1366,59 +1681,417 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
     font-size: 0.86em;
   }
 
-  .cs-body :global(strong) {
-    color: var(--c-ink);
+  .lp-band {
+    --lp-card: var(--c-surface-soft);
+    --lp-card-hover: var(--c-surface-card);
+    --lp-line: var(--c-hairline);
+    --lp-ink: var(--c-ink);
+    --lp-body: var(--c-body);
+    --lp-muted: var(--c-muted);
+    --lp-label: var(--c-accent-strong);
+    position: relative;
+    padding-block: clamp(3.75rem, 2.75rem + 4vw, 6.75rem);
+    background: var(--c-canvas);
+    /* o html já desconta o menu (scroll-padding-top); a faixa encosta logo abaixo da barra */
+    scroll-margin-top: calc(var(--tabs-h) - 1.5rem);
+  }
+
+  .lp-band[data-tone='soft'] {
+    --lp-card: var(--c-canvas);
+    --lp-card-hover: var(--c-surface-raised);
+    background: var(--c-surface-soft);
+  }
+
+  .lp-band[data-tone='inverse'] {
+    --lp-card: rgb(var(--c-on-inverse-rgb) / 0.045);
+    --lp-card-hover: rgb(var(--c-on-inverse-rgb) / 0.08);
+    --lp-line: var(--c-inverse-hairline);
+    --lp-ink: var(--c-on-inverse);
+    --lp-body: var(--c-on-inverse-soft);
+    --lp-muted: var(--c-on-inverse-soft);
+    --lp-label: var(--c-inverse-accent);
+    background: var(--c-inverse);
+  }
+
+  .lp-band[data-tone='inverse'] :is(p, h3, span, li) :global(code) {
+    background: var(--c-inverse-elevated);
+    color: var(--c-on-inverse);
+  }
+
+  .cs-panel {
+    scroll-margin-top: calc(var(--tabs-h) - 1.5rem);
+  }
+
+  .lp-band :global(.section-head) {
+    margin-bottom: clamp(2rem, 1.5rem + 2vw, 3.5rem);
+  }
+
+  .lp-band :global(.section-head.lp-head-center) {
+    margin-inline: auto;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .lp-band :global(.section-head.lp-head-center > p:last-child:not(.kicker)) {
+    margin-inline: auto;
+  }
+
+  /* abertura de cada tópico: o nome numa pílula, um fio e a posição (01 / 05) */
+  .lp-chapter {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: clamp(2rem, 1.5rem + 2vw, 3.25rem);
+  }
+
+  .cs-area {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 1rem;
+    border: 1px solid var(--lp-line);
+    border-radius: var(--radius-pill);
+    background: var(--lp-card);
+    color: var(--lp-ink);
+    font-size: var(--fs-caption-upper);
     font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .cs-area :global(svg) {
+    color: var(--lp-label);
+  }
+
+  .lp-chapter-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--lp-line), transparent);
+  }
+
+  .lp-chapter-n {
+    flex: none;
+    color: var(--lp-muted);
+    font-family: var(--font-mono);
+    font-size: var(--fs-caption);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* no celular estreito, sai o fio: a pílula e a posição dividem a linha */
+  @media (max-width: 29.99rem) {
+    .lp-chapter {
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .lp-chapter-line {
+      display: none;
+    }
+
+    .cs-area {
+      flex: 0 1 auto;
+      min-width: 0;
+      letter-spacing: 0.06em;
+    }
+  }
+
+  /* o último bloco de cada tópico encosta na navegação do fim do tópico */
+  .cs-panel > .cs-section:nth-last-child(2) {
+    padding-bottom: clamp(2.5rem, 2rem + 2vw, 4rem);
+  }
+
+  .cs-prose {
+    display: grid;
+    gap: 1rem;
+    max-width: 44rem;
+    color: var(--lp-body);
+    font-size: var(--fs-body-lg);
+    line-height: 1.7;
   }
 
   .cs-wide {
-    margin-top: 2rem;
+    margin-top: clamp(2rem, 1.5rem + 2vw, 3rem);
   }
 
   .cs-sub {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin: 0 0 1rem;
-    color: var(--c-ink);
+    gap: 0.6rem;
+    margin: 0 0 1.25rem;
+    color: var(--lp-ink);
     font-family: var(--font-sans);
-    font-size: var(--fs-title-md);
+    font-size: var(--fs-title-lg);
     font-weight: 600;
-  }
-
-  .cs-block + .cs-block {
-    margin-top: clamp(2rem, 1.5rem + 2vw, 3rem);
   }
 
   .cs-label {
     display: block;
     margin-bottom: 0.2rem;
-    color: var(--c-accent-strong);
+    color: var(--lp-label);
     font-size: var(--fs-caption-upper);
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
   }
 
-  /* ---------- desafio ---------- */
+  /* ---------- duas colunas: título à esquerda (preso na rolagem) e texto à direita ---------- */
+  .lp-split {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  @media (min-width: 60rem) {
+    .lp-split {
+      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+      gap: clamp(3rem, 1rem + 4vw, 6rem);
+      align-items: start;
+    }
+
+    .lp-split-head {
+      position: sticky;
+      top: calc(var(--nav-h) + var(--tabs-h) + 2rem);
+    }
+
+    .lp-split :global(.section-head) {
+      margin-bottom: 0;
+    }
+  }
+
+  /* o primeiro parágrafo do contexto vira a frase de abertura, grande, em serifa */
+  .cs-lead {
+    color: var(--lp-ink);
+    font-family: var(--font-display);
+    font-size: clamp(1.45rem, 1.2rem + 1vw, 1.95rem);
+    font-weight: 500;
+    line-height: 1.32;
+    letter-spacing: -0.01em;
+    text-wrap: pretty;
+  }
+
+  .cs-lead + p {
+    margin-top: 0.5rem;
+  }
+
+  /* ---------- funções: mosaico (bento) ---------- */
+  .cs-features {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+  }
+
+  @media (min-width: 52rem) {
+    .cs-features {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    /* o cartão grande: ícone no alto, título e texto no pé */
+    .cs-feature:first-child {
+      grid-column: span 2;
+      grid-row: span 2;
+      grid-template-rows: 1fr auto auto;
+      align-content: stretch;
+      min-height: 22rem;
+    }
+
+    .cs-feature:first-child .cs-feature-icon {
+      align-self: start;
+    }
+
+    .cs-feature:first-child .cs-feature-title {
+      font-family: var(--font-display);
+      font-size: var(--fs-display-sm);
+      font-weight: 500;
+    }
+
+    .cs-feature:first-child p {
+      max-width: 34rem;
+      font-size: var(--fs-body-md);
+    }
+
+    /*
+     * Com a primeira ocupando 2 x 2, as outras enchem linhas de 3. A última linha sempre
+     * fecha: sobrando uma função, ela ocupa a linha toda; sobrando duas, a penúltima ocupa 2.
+     */
+    .cs-feature:last-child:nth-child(3n + 1) {
+      grid-column: 1 / -1;
+    }
+
+    .cs-features:has(> .cs-feature:nth-child(3n + 2):last-child) > .cs-feature:nth-last-child(2):not(:first-child) {
+      grid-column: span 2;
+    }
+  }
+
+  .cs-feature {
+    position: relative;
+    display: grid;
+    align-content: start;
+    gap: 0.65rem;
+    overflow: hidden;
+    padding: clamp(1.4rem, 1.1rem + 1vw, 2rem);
+    border: 1px solid var(--lp-line);
+    border-radius: var(--lp-card-radius);
+    background: var(--lp-card);
+  }
+
+  .cs-feature > :not(.cs-feature-n) {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* o cartão grande ganha anéis concêntricos atrás, como uma onda saindo do ícone */
+  .cs-feature:first-child {
+    background:
+      radial-gradient(80% 90% at 100% 0%, rgb(var(--c-cyan-rgb) / 0.14), transparent 60%),
+      radial-gradient(70% 80% at 0% 100%, rgb(var(--c-violet-rgb) / 0.1), transparent 60%),
+      var(--lp-card);
+  }
+
+  /* os anéis saem do ícone, no canto de cima */
+  .cs-feature:first-child::after {
+    content: '';
+    position: absolute;
+    top: -11rem;
+    left: -11rem;
+    z-index: 0;
+    width: 30rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: repeating-radial-gradient(circle, transparent 0 1.9rem, rgb(var(--c-ink-rgb) / 0.08) 1.9rem calc(1.9rem + 1px));
+    mask-image: radial-gradient(closest-side, #000 30%, transparent);
+    pointer-events: none;
+  }
+
+  :global(:root[data-motion='full']) .cs-feature:first-child::after {
+    animation: spin 90s linear infinite;
+  }
+
+  .cs-feature-n {
+    position: absolute;
+    z-index: 1;
+    top: 1.1rem;
+    right: 1.35rem;
+    color: var(--lp-muted);
+    font-family: var(--font-mono);
+    font-size: var(--fs-caption);
+  }
+
+  .cs-feature-icon {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    margin-bottom: 0.35rem;
+    border-radius: 0.95rem;
+    background: linear-gradient(135deg, var(--c-cyan-soft), var(--c-violet-soft));
+    box-shadow: inset 0 0 0 1px var(--lp-line);
+    color: var(--c-cyan-strong);
+    transition:
+      transform 0.5s var(--ease-spring),
+      background-color 0.3s ease,
+      color 0.3s ease;
+  }
+
+  .cs-feature:nth-child(even) .cs-feature-icon {
+    color: var(--c-violet-strong);
+  }
+
+  .cs-feature:first-child .cs-feature-icon {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 1.2rem;
+  }
+
+  .cs-feature:hover .cs-feature-icon {
+    transform: rotate(-8deg) scale(1.08);
+    background: var(--c-primary);
+    color: var(--c-on-primary);
+  }
+
+  .cs-feature-title {
+    color: var(--lp-ink);
+    font-family: var(--font-sans);
+    font-size: var(--fs-title-md);
+    font-weight: 600;
+  }
+
+  .cs-feature p {
+    color: var(--lp-body);
+    font-size: var(--fs-body-sm);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .cs-feature.card-lift:hover {
+      border-color: var(--c-outline);
+      box-shadow: var(--shadow-md);
+    }
+  }
+
+  /* ---------- palco: a demonstração e o vídeo num fundo de vitrine ---------- */
+  .lp-stage {
+    position: relative;
+    isolation: isolate;
+    padding: clamp(0.75rem, 0.25rem + 2.2vw, 2.5rem);
+    border: 1px solid var(--lp-line);
+    border-radius: calc(var(--lp-radius) + 0.25rem);
+    background:
+      radial-gradient(70% 60% at 0% 0%, rgb(var(--c-cyan-rgb) / 0.1), transparent 65%),
+      radial-gradient(70% 60% at 100% 100%, rgb(var(--c-violet-rgb) / 0.1), transparent 65%),
+      var(--lp-card);
+    box-shadow: var(--shadow-md);
+  }
+
+  .lp-stage-video {
+    max-width: 62rem;
+    margin-inline: auto;
+  }
+
+  /* ---------- desafio: o problema num cartão escuro e os objetivos ao lado ---------- */
+  .lp-problem-grid {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  @media (min-width: 60rem) {
+    .lp-problem-grid.has-goals {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: clamp(1.5rem, 1rem + 2vw, 3rem);
+      align-items: start;
+    }
+
+    .lp-problem-grid.has-goals .cs-problem {
+      position: sticky;
+      top: calc(var(--nav-h) + var(--tabs-h) + 2rem);
+    }
+  }
+
   .cs-problem {
     position: relative;
+    isolation: isolate;
+    overflow: hidden;
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     gap: 1rem;
     margin: 0;
-    padding: clamp(1.25rem, 1rem + 1.5vw, 2rem);
-    border-radius: var(--radius-xl);
-    background: var(--c-inverse);
+    padding: clamp(1.5rem, 1.1rem + 2vw, 2.75rem);
+    border: 1px solid var(--c-inverse-hairline);
+    border-radius: var(--lp-radius);
+    background:
+      radial-gradient(90% 80% at 100% 0%, color-mix(in srgb, var(--brand-a) 22%, transparent), transparent 60%),
+      var(--c-inverse);
     color: var(--c-on-inverse);
     font-family: var(--font-display);
-    font-size: clamp(1.2rem, 1.05rem + 0.7vw, 1.55rem);
-    line-height: 1.4;
+    font-size: clamp(1.25rem, 1.05rem + 0.8vw, 1.7rem);
+    line-height: 1.38;
   }
 
   .cs-problem :global(.icon) {
-    color: var(--c-inverse-accent);
     margin-top: 0.3rem;
+    color: var(--c-inverse-accent);
+  }
+
+  .cs-problem :global(strong) {
+    color: var(--c-on-inverse);
   }
 
   .cs-problem :global(code) {
@@ -1426,31 +2099,47 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
     color: var(--c-on-inverse) !important;
   }
 
+  .lp-goals .cs-sub {
+    margin-bottom: 1rem;
+  }
+
   .cs-goals {
     display: grid;
-    gap: 0.6rem;
-    counter-reset: goal;
+    gap: 0.75rem;
   }
 
   .cs-goals li {
     display: flex;
     gap: 1rem;
-    align-items: baseline;
-    padding: 0.85rem 1rem;
-    border: 1px solid var(--c-hairline);
-    border-radius: var(--radius-md);
-    background: var(--c-canvas);
-    color: var(--c-body);
+    align-items: flex-start;
+    padding: 1.05rem 1.2rem;
+    border: 1px solid var(--lp-line);
+    border-radius: var(--lp-card-radius);
+    background: var(--lp-card);
+    color: var(--lp-body);
+    transition:
+      border-color 0.3s ease,
+      translate 0.5s var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .cs-goals li:hover {
+      translate: 0.35rem 0;
+      border-color: var(--c-outline);
+    }
   }
 
   .cs-goal-n {
-    color: var(--c-accent-strong);
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--c-primary);
+    color: var(--c-on-primary);
     font-family: var(--font-mono);
     font-size: var(--fs-caption);
-  }
-
-  .cs-problem + .cs-sub {
-    margin-top: 2rem;
   }
 
   /* ---------- processo (linha do tempo) ---------- */
@@ -1468,7 +2157,7 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
     bottom: 0.4rem;
     left: 0.45rem;
     width: 2px;
-    background: var(--c-hairline);
+    background: var(--lp-line);
   }
 
   /* a linha se preenche conforme a leitura avança */
@@ -1513,14 +2202,14 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
   }
 
   .cs-step-date {
-    color: var(--c-accent-strong);
+    color: var(--lp-label);
     font-family: var(--font-mono);
     font-size: var(--fs-caption);
   }
 
   .cs-step-title {
     margin: 0.2rem 0 0.4rem;
-    color: var(--c-ink);
+    color: var(--lp-ink);
     font-family: var(--font-display);
     font-size: var(--fs-title-lg);
     font-weight: 500;
@@ -1528,13 +2217,10 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
 
   .cs-step-text {
     max-width: 42rem;
-    color: var(--c-body);
+    color: var(--lp-body);
   }
 
-  /*
-   * Telas largas: o processo vira um caminho tracejado no meio, com as etapas em caixas
-   * alternando dos dois lados (como as anotações ligadas por linhas da referência).
-   */
+  /* telas largas: o caminho tracejado no meio, com as etapas em cartões dos dois lados */
   @media (min-width: 52rem) {
     .cs-timeline {
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -1548,7 +2234,7 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
       width: 0;
       translate: -1px 0;
       background: none;
-      border-left: 2px dashed var(--c-hairline);
+      border-left: 2px dashed var(--lp-line);
     }
 
     .cs-timeline::after {
@@ -1561,10 +2247,10 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
       grid-column: 1;
       align-self: start;
       margin-bottom: 1.25rem;
-      padding: 1.15rem 1.35rem 1.25rem;
-      border: 1px dashed rgb(var(--c-cyan-rgb) / 0.5);
-      border-radius: var(--radius-lg);
-      background: var(--c-canvas);
+      padding: 1.25rem 1.45rem 1.35rem;
+      border: 1px solid var(--lp-line);
+      border-radius: var(--lp-card-radius);
+      background: var(--lp-card);
       transition:
         border-color 0.3s ease,
         box-shadow 0.5s var(--ease-out),
@@ -1574,14 +2260,13 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
     .cs-step:nth-child(even) {
       grid-column: 2;
       margin-top: 4.5rem;
-      border-color: rgb(var(--c-violet-rgb) / 0.5);
     }
 
-    /* ponto no caminho e um traço até a caixa */
+    /* ponto no caminho e um traço até o cartão */
     .cs-step-dot {
       left: auto;
       right: calc(-2.25rem - 0.475rem);
-      top: 1.35rem;
+      top: 1.4rem;
     }
 
     .cs-step:nth-child(even) .cs-step-dot {
@@ -1592,7 +2277,7 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
     .cs-step::before {
       content: '';
       position: absolute;
-      top: calc(1.35rem + 0.475rem);
+      top: calc(1.4rem + 0.475rem);
       right: -2.25rem;
       width: 2.25rem;
       border-top: 1px dashed var(--c-outline);
@@ -1610,144 +2295,63 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
 
   @media (min-width: 52rem) and (hover: hover) and (pointer: fine) {
     .cs-step:hover {
-      border-style: solid;
       translate: 0 -3px;
+      border-color: var(--c-outline);
       box-shadow: var(--shadow-md);
     }
   }
 
-  /* ---------- funções ---------- */
-  /* mosaico: a primeira função ocupa duas colunas e ganha mais destaque */
-  .cs-features {
-    display: grid;
-    gap: 1rem;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+  /*
+   * ---------- coleções de cartões ----------
+   * Linhas de cartões da mesma altura; a última linha, quando sobra, fica centralizada e com
+   * a mesma largura das outras (--per-row vem da página, conforme a quantidade).
+   */
+  .lp-flow {
+    --gap: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--gap);
   }
 
-  @media (min-width: 52rem) {
-    .cs-features {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
+  .lp-flow > :global(*) {
+    flex: 0 1 100%;
+    min-width: 0;
+  }
 
-    .cs-feature:first-child {
-      grid-column: span 2;
-      align-content: end;
-      min-height: 15rem;
-      background:
-        radial-gradient(90% 120% at 100% 0%, rgb(var(--c-cyan-rgb) / 0.12), transparent 60%),
-        radial-gradient(70% 90% at 0% 100%, rgb(var(--c-violet-rgb) / 0.08), transparent 60%),
-        var(--c-canvas);
-    }
-
-    .cs-feature:first-child .cs-feature-title {
-      font-family: var(--font-display);
-      font-size: var(--fs-display-sm);
-      font-weight: 500;
-    }
-
-    .cs-feature:first-child p {
-      max-width: 34rem;
-      font-size: var(--fs-body-md);
-    }
-
-    /* a última linha do mosaico sempre fecha, com 3, 4, 6 ou 7 funções */
-    .cs-feature:last-child:nth-child(3n) {
-      grid-column: 1 / -1;
-    }
-
-    .cs-feature:last-child:nth-child(3n + 1) {
-      grid-column: span 2;
+  @media (min-width: 40rem) {
+    .lp-flow > :global(*) {
+      flex-basis: calc((100% - var(--gap)) / 2);
     }
   }
 
-  .cs-feature {
-    position: relative;
-    display: grid;
-    align-content: start;
-    gap: 0.6rem;
-    overflow: hidden;
-  }
-
-  .cs-feature-n {
-    position: absolute;
-    top: 1rem;
-    right: 1.25rem;
-    color: var(--c-muted);
-    font-family: var(--font-mono);
-    font-size: var(--fs-caption);
-  }
-
-  .cs-feature-icon {
-    display: grid;
-    place-items: center;
-    width: 2.75rem;
-    height: 2.75rem;
-    border-radius: var(--radius-md);
-    background: var(--c-cyan-soft);
-    color: var(--c-cyan-strong);
-    transition:
-      transform 0.5s var(--ease-spring),
-      background-color 0.3s ease,
-      color 0.3s ease;
-  }
-
-  .cs-feature:nth-child(even) .cs-feature-icon {
-    background: var(--c-violet-soft);
-    color: var(--c-violet-strong);
-  }
-
-  .cs-feature:hover .cs-feature-icon {
-    transform: rotate(-8deg) scale(1.08);
-    background: var(--c-primary);
-    color: var(--c-on-primary);
-  }
-
-  .cs-feature-title {
-    color: var(--c-ink);
-    font-family: var(--font-sans);
-    font-size: var(--fs-title-md);
-    font-weight: 600;
-  }
-
-  .cs-feature p {
-    color: var(--c-body);
-    font-size: var(--fs-body-sm);
+  @media (min-width: 64rem) {
+    .lp-flow > :global(*) {
+      flex-basis: calc((100% - (var(--per-row, 3) - 1) * var(--gap)) / var(--per-row, 3));
+    }
   }
 
   /* ---------- decisões ---------- */
-  .cs-decisions {
-    display: grid;
-    gap: 1rem;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
-  }
-
-  /* em duas colunas, a da direita desce: as decisões ficam em escada */
-  @media (min-width: 52rem) {
-    .cs-decisions {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      align-items: start;
-    }
-
-    .cs-decision:nth-child(even) {
-      translate: 0 2.5rem;
-    }
-
-    /* o respiro só entra quando a última decisão é da coluna que desce */
-    .cs-decisions:has(> .cs-decision:nth-child(even):last-child) {
-      padding-bottom: 2.5rem;
-    }
-  }
-
   .cs-decision {
     position: relative;
     display: grid;
     align-content: start;
     gap: 0.75rem;
-    padding: clamp(1.25rem, 1rem + 1vw, 1.75rem);
-    border: 1px solid var(--c-hairline);
-    border-radius: var(--radius-lg);
-    background: var(--c-surface-soft);
     overflow: hidden;
+    padding: clamp(1.4rem, 1.1rem + 1vw, 2rem);
+    border: 1px solid var(--lp-line);
+    border-radius: var(--lp-card-radius);
+    background: var(--lp-card);
+    transition:
+      border-color 0.3s ease,
+      box-shadow 0.5s var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .cs-decision:hover {
+      border-color: var(--c-outline);
+      box-shadow: var(--shadow-md);
+    }
   }
 
   .cs-decision-n::after {
@@ -1758,9 +2362,9 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
     position: absolute;
     top: -0.6rem;
     right: 0.6rem;
-    color: rgb(var(--c-accent-rgb) / 0.18);
+    color: rgb(var(--c-accent-rgb) / 0.2);
     font-family: var(--font-display);
-    font-size: 4.5rem;
+    font-size: 4.75rem;
     font-style: italic;
     line-height: 1;
     pointer-events: none;
@@ -1773,7 +2377,7 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
 
   .cs-decision-title {
     padding-inline-end: 3rem;
-    color: var(--c-ink);
+    color: var(--lp-ink);
     font-family: var(--font-sans);
     font-size: var(--fs-title-md);
     font-weight: 600;
@@ -1781,27 +2385,70 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
 
   .cs-decision-why,
   .cs-decision-cost {
-    color: var(--c-body);
+    color: var(--lp-body);
     font-size: var(--fs-body-sm);
   }
 
   .cs-decision-cost {
     padding-top: 0.75rem;
-    border-top: 1px dashed var(--c-hairline);
+    border-top: 1px dashed var(--lp-line);
   }
 
-  /* ---------- marca ---------- */
+  /* ---------- visual: um quadro da marca em painéis ---------- */
+  .lp-board {
+    display: grid;
+    gap: clamp(1rem, 0.75rem + 1vw, 1.5rem);
+  }
+
+  .lp-panel {
+    min-width: 0;
+    padding: clamp(1.25rem, 0.75rem + 2vw, 2.5rem);
+    border: 1px solid var(--lp-line);
+    border-radius: var(--lp-radius);
+    background: var(--lp-card);
+  }
+
+  /* no celular, painéis e palco vão de ponta a ponta: o conteúdo ganha a largura toda */
+  @media (max-width: 39.99rem) {
+    .lp-panel,
+    .lp-stage {
+      margin-inline: calc(var(--gutter) * -1);
+      padding-inline: var(--gutter);
+      border-inline: 0;
+      border-radius: 0;
+    }
+  }
+
+  .lp-screens {
+    min-width: 0;
+    margin-top: clamp(1rem, 0.5rem + 2vw, 2.5rem);
+  }
+
+  .cs-sub :global(.icon) {
+    flex: none;
+    box-sizing: content-box;
+    padding: 0.45rem;
+    border-radius: 0.7rem;
+    background: linear-gradient(135deg, var(--c-cyan-soft), var(--c-violet-soft));
+    color: var(--c-cyan-strong);
+  }
+
   .cs-mark {
     display: grid;
     gap: 1.5rem;
     align-items: center;
-    padding: clamp(1.25rem, 1rem + 1.5vw, 2rem);
-    border-radius: var(--radius-xl);
+    padding: clamp(1.5rem, 1rem + 2vw, 2.75rem);
+    border-radius: var(--lp-radius);
     background: var(--mark-bg, linear-gradient(135deg, #2a0048, #800080 45%, #d50048));
     color: #f3f1ea;
   }
 
   .cs-mark .cs-sub {
+    color: #fff;
+  }
+
+  .cs-mark .cs-sub :global(.icon) {
+    background: rgb(255 255 255 / 0.12);
     color: #fff;
   }
 
@@ -1817,19 +2464,19 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
   /* a coluna do desenho só existe quando o projeto tem um desenho da marca */
   @media (min-width: 40rem) {
     .cs-mark-art-on {
-      grid-template-columns: 9rem minmax(0, 1fr);
+      grid-template-columns: 10rem minmax(0, 1fr);
     }
   }
 
   .cs-mark-art {
-    width: 9rem;
+    width: 10rem;
     justify-self: center;
   }
 
   .cs-block-text {
     max-width: 44rem;
     margin-bottom: 1.25rem;
-    color: var(--c-body);
+    color: var(--lp-body);
   }
 
   .cs-gallery-note {
@@ -1838,8 +2485,12 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
     align-items: flex-start;
     max-width: 44rem;
     margin-top: 1rem;
-    color: var(--c-muted);
+    color: var(--lp-muted);
     font-size: var(--fs-caption);
+  }
+
+  .lp-campo .cs-gallery-note {
+    margin-inline: auto;
   }
 
   .cs-gallery-note :global(svg) {
@@ -1847,23 +2498,44 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
     margin-top: 0.2em;
   }
 
-  /* ---------- tecnologias ---------- */
-  .cs-tech {
-    display: grid;
-    gap: 1.25rem;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+  /* rótulos do passo a passo e da galeria completa, dentro do bloco de telas */
+  .cs-story-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.25rem 0 1rem;
+    color: var(--lp-muted);
+    font-family: var(--font-sans);
+    font-size: var(--fs-caption-upper);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
   }
 
+  .cs-story-label :global(.icon) {
+    color: var(--c-cyan-strong);
+  }
+
+  /* ---------- tecnologias (faixa escura) ---------- */
   .cs-tech-group {
-    padding: 1.25rem;
-    border: 1px solid var(--c-hairline);
-    border-radius: var(--radius-lg);
-    background: var(--c-canvas);
+    padding: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+    border: 1px solid var(--lp-line);
+    border-radius: var(--lp-card-radius);
+    background: var(--lp-card);
+    transition:
+      background-color 0.3s ease,
+      border-color 0.3s ease;
   }
 
-  .cs-tech-title {
-    margin-bottom: 0.75rem;
-    color: var(--c-muted);
+  @media (hover: hover) {
+    .cs-tech-group:hover {
+      background: var(--lp-card-hover);
+    }
+  }
+
+  .lp-band .cs-tech-title {
+    margin-bottom: 0.85rem;
+    color: var(--lp-label);
     font-family: var(--font-sans);
     font-size: var(--fs-caption-upper);
     font-weight: 600;
@@ -1882,227 +2554,151 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
     border-color: var(--c-outline);
   }
 
-  /* ---------- habilidades ---------- */
-  .cs-skills {
-    display: grid;
-    gap: 0.25rem 2rem;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+  .band-inverse .cs-tech .chip:hover {
+    border-color: var(--c-on-inverse-soft);
   }
 
+  /* ---------- habilidades ---------- */
   .cs-skill {
     display: flex;
-    gap: 0.85rem;
-    padding: 1rem 0;
-    border-bottom: 1px solid var(--c-hairline-soft);
+    gap: 0.9rem;
+    padding: 1.25rem 1.35rem;
+    border: 1px solid var(--lp-line);
+    border-radius: var(--lp-card-radius);
+    background: var(--lp-card);
   }
 
   .cs-skill > :global(.icon) {
     flex: none;
-    margin-top: 0.15rem;
-    padding: 0.2rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-top: 0.1rem;
+    padding: 0.22rem;
     border-radius: 50%;
     background: var(--c-primary);
     color: var(--c-on-primary);
-    width: 1.4rem;
-    height: 1.4rem;
   }
 
   .cs-skill-title {
-    color: var(--c-ink);
+    margin-bottom: 0.25rem;
+    color: var(--lp-ink);
     font-family: var(--font-sans);
     font-size: var(--fs-title-sm);
     font-weight: 600;
   }
 
   .cs-skill p {
-    color: var(--c-body);
+    color: var(--lp-body);
     font-size: var(--fs-body-sm);
   }
 
-  /* ---------- resultados ---------- */
-  /*
-   * Números em fichas de vidro, levemente inclinadas, sobre um anel que se desenha
-   * quando a seção aparece (como os cartões de 30% e 70% da referência).
-   */
+  /* ---------- resultados: os números numa faixa escura ---------- */
   .cs-metrics-wrap {
     container-type: inline-size;
-    position: relative;
-    isolation: isolate;
-    margin-bottom: 1.75rem;
-    padding: clamp(1.25rem, 0.5rem + 3vw, 3rem) clamp(0.5rem, 0rem + 2vw, 2rem);
+    margin-bottom: clamp(1.75rem, 1.25rem + 2vw, 3rem);
   }
 
-  /* o anel cabe na altura do bloco dos números, para não invadir o texto de baixo */
-  .cs-ring {
-    position: absolute;
-    z-index: -1;
-    left: 50%;
-    top: 50%;
-    height: calc(100% - 0.5rem);
-    max-height: 24rem;
-    width: auto;
-    aspect-ratio: 1;
-    translate: -50% -50%;
-    fill: none;
-    stroke-width: 9;
-    pointer-events: none;
-  }
-
-  .cs-ring-track {
-    stroke: var(--c-surface-card);
-  }
-
-  .cs-ring-arc {
-    stroke: rgb(var(--c-cyan-rgb) / 0.42);
-    stroke-linecap: round;
-    stroke-dasharray: 72 100;
-    transform: rotate(-90deg);
-    transform-origin: 50% 50%;
-  }
-
-  /* o arco só começa vazio quando o script de revelação está rodando (reveal-ready) */
-  :global(:root[data-motion='full'].reveal-ready) .cs-ring-arc {
-    stroke-dashoffset: 72;
-    transition: stroke-dashoffset 1.8s var(--ease-out) 0.2s;
-  }
-
-  :global(:root[data-motion='full'].reveal-ready) .cs-metrics-wrap:has(:global(.cs-metrics.is-visible)) .cs-ring-arc {
-    stroke-dashoffset: 0;
-  }
-
-  :global(:root[data-motion='full']) .cs-ring {
-    animation: spin 60s linear infinite;
-  }
-
+  /* fios entre os números: a grade tem 1px de vão sobre o fundo da linha */
   .cs-metrics {
     display: grid;
-    gap: 1rem;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+    gap: 1px;
+    grid-template-columns: minmax(0, 1fr);
+    overflow: hidden;
+    border: 1px solid var(--lp-line);
+    border-radius: var(--lp-radius);
+    background: var(--lp-line);
   }
 
-  /* com 4 números: 2 por linha onde não cabem os 4, e nunca 3 em cima e 1 embaixo */
-  @container (min-width: 26rem) {
-    .cs-metrics:has(> :nth-child(4):last-child) {
+  @container (min-width: 30rem) {
+    .cs-metrics {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .cs-metrics:has(> :nth-child(3):last-child) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
 
   @container (min-width: 50rem) {
-    .cs-metrics:has(> :nth-child(4):last-child) {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+    .cs-metrics {
+      grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr));
     }
   }
 
   .cs-metric {
-    --tilt: 0deg;
-    --drop: 0rem;
-    --lift: 0rem;
     position: relative;
     display: grid;
     align-content: start;
-    gap: 0.5rem;
-    padding: 1.4rem 1.35rem 1.25rem;
-    border: 1px solid var(--c-hairline);
-    border-radius: var(--radius-lg);
-    background: rgb(var(--c-canvas-rgb) / 0.7);
-    -webkit-backdrop-filter: blur(14px) saturate(1.2);
-    backdrop-filter: blur(14px) saturate(1.2);
-    box-shadow: 0 1.5rem 2.5rem -1.75rem rgb(var(--c-shadow-rgb) / 0.45);
-    color: var(--c-body);
-    rotate: var(--tilt);
-    /* o degrau da escada e a subida do hover se somam, sem um apagar o outro */
-    translate: 0 calc(var(--drop) + var(--lift));
-    transition:
-      rotate 0.6s var(--ease-out),
-      translate 0.6s var(--ease-out),
-      box-shadow 0.6s var(--ease-out);
+    justify-items: center;
+    gap: 0.6rem;
+    padding: clamp(1.75rem, 1.25rem + 2vw, 2.75rem) clamp(1rem, 0.5rem + 1.5vw, 1.75rem);
+    background: var(--c-inverse);
+    text-align: center;
+    transition: background-color 0.4s ease;
   }
 
-  /* inclinações alternadas, só onde há espaço */
-  @media (min-width: 40rem) {
-    .cs-metric:nth-child(4n + 1) {
-      --tilt: -2.5deg;
-    }
+  .lp-band:not([data-tone='inverse']) .cs-metric {
+    background: var(--lp-card);
+  }
 
-    .cs-metric:nth-child(4n + 2) {
-      --tilt: 2deg;
-      --drop: 1.25rem;
-    }
-
-    .cs-metric:nth-child(4n + 3) {
-      --tilt: -1.5deg;
-    }
-
-    .cs-metric:nth-child(4n + 4) {
-      --tilt: 2.5deg;
-      --drop: 1.25rem;
+  @media (hover: hover) {
+    .lp-band[data-tone='inverse'] .cs-metric:hover {
+      background: color-mix(in srgb, var(--c-inverse) 88%, var(--c-on-inverse));
     }
   }
 
-  @media (hover: hover) and (pointer: fine) {
-    .cs-metric:hover {
-      --tilt: 0deg;
-      --lift: -0.35rem;
-      box-shadow: var(--shadow-lg);
-    }
-  }
-
-  /* bolinha com ícone presa na borda, como os marcadores da referência */
   .cs-metric-badge {
-    position: absolute;
-    top: -0.85rem;
-    right: 1rem;
     display: grid;
     place-items: center;
-    width: 2.1rem;
-    height: 2.1rem;
-    border: 1px solid var(--c-hairline);
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 1px solid var(--lp-line);
     border-radius: 50%;
-    background: var(--c-surface-raised);
-    color: var(--c-cyan-strong);
-    box-shadow: var(--shadow-sm);
+    color: var(--c-cyan);
   }
 
   .cs-metric:nth-child(even) .cs-metric-badge {
-    color: var(--c-violet-strong);
+    color: var(--c-violet);
   }
 
   .cs-metric-value {
-    color: var(--c-ink);
+    color: var(--lp-ink);
     font-family: var(--font-display);
-    font-size: var(--fs-display-lg);
+    font-size: clamp(2.75rem, 2rem + 3vw, 4.5rem);
+    font-weight: 500;
     line-height: 1;
-    font-variant-numeric: lining-nums;
+    letter-spacing: -0.02em;
   }
 
   .cs-metric-value em {
+    font-size: 0.6em;
     font-style: italic;
-    font-size: 0.62em;
     /* o tom forte do destaque: no celular a unidade fica abaixo de 24px e precisa de 4,5:1 */
-    color: var(--c-accent-strong);
+    color: var(--lp-label);
   }
 
   .cs-metric-label {
-    color: var(--c-muted);
+    max-width: 16rem;
+    color: var(--lp-muted);
     font-size: var(--fs-body-sm);
+    text-wrap: pretty;
   }
 
-  /* rótulos do passo a passo e da galeria completa, dentro do bloco de telas */
-  .cs-story-label {
+  .cs-highlights li {
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin: 0.25rem 0 1rem;
-    color: var(--c-muted);
-    font-family: var(--font-sans);
-    font-size: var(--fs-caption-upper);
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+    gap: 0.85rem;
+    align-items: flex-start;
+    padding: 1.1rem 1.25rem;
+    border: 1px solid var(--lp-line);
+    border-radius: var(--lp-card-radius);
+    background: var(--lp-card);
+    color: var(--lp-body);
   }
 
-  .cs-story-label :global(.icon) {
-    color: var(--c-cyan-strong);
+  .cs-highlights :global(.icon) {
+    flex: none;
+    margin-top: 0.2rem;
+    color: var(--lp-label);
   }
 
   /* ---------- depoimentos do projeto ---------- */
@@ -2110,82 +2706,94 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
     display: grid;
     gap: 1rem;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 34rem));
+    justify-content: center;
   }
 
   .cs-quote-long {
     grid-column: 1 / -1;
+    justify-self: center;
     max-width: 46rem;
   }
 
-  .cs-highlights,
-  .cs-next-steps {
-    display: grid;
-    gap: 0.75rem;
-  }
-
-  .cs-highlights li,
-  .cs-next-steps li {
-    display: flex;
-    gap: 0.75rem;
-    align-items: flex-start;
-    color: var(--c-body);
-  }
-
-  .cs-highlights :global(.icon),
-  .cs-next-steps :global(.icon) {
-    flex: none;
-    margin-top: 0.2rem;
-    color: var(--c-accent-strong);
-  }
-
   /* ---------- aprendizados ---------- */
-  .cs-lessons {
-    display: grid;
-    gap: 1rem;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
-  }
-
   .cs-lesson {
     display: grid;
     align-content: start;
-    gap: 0.6rem;
+    gap: 0.65rem;
+    padding: clamp(1.4rem, 1.1rem + 1vw, 2rem);
+    border: 1px solid var(--lp-line);
+    border-radius: var(--lp-card-radius);
+    background: var(--lp-card);
   }
 
   .cs-lesson > :global(.icon) {
+    box-sizing: content-box;
+    padding: 0.5rem;
+    border-radius: 0.75rem;
+    background: linear-gradient(135deg, var(--c-cyan-soft), var(--c-violet-soft));
     color: var(--c-accent-strong);
   }
 
   .cs-lesson-title {
-    color: var(--c-ink);
+    color: var(--lp-ink);
     font-family: var(--font-sans);
     font-size: var(--fs-title-md);
     font-weight: 600;
   }
 
   .cs-lesson p {
-    color: var(--c-body);
+    color: var(--lp-body);
     font-size: var(--fs-body-sm);
   }
 
-  /* ---------- créditos ---------- */
-  .cs-credits {
+  /* ---------- próximos passos: um roteiro em cartões ---------- */
+  .cs-next-steps li {
     display: grid;
+    align-content: start;
     gap: 0.75rem;
+    padding: 1.3rem 1.4rem 1.4rem;
+    border: 1px dashed var(--c-outline);
+    border-radius: var(--lp-card-radius);
+    background: var(--lp-card);
+    color: var(--lp-body);
+    transition:
+      border-style 0.3s ease,
+      translate 0.5s var(--ease-out);
   }
 
+  @media (hover: hover) and (pointer: fine) {
+    .cs-next-steps li:hover {
+      translate: 0 -3px;
+      border-style: solid;
+    }
+  }
+
+  .cs-next-steps :global(.icon) {
+    color: var(--lp-label);
+  }
+
+  /* ---------- créditos: a equipe em cartões ---------- */
   .cs-credit {
     display: flex;
     align-items: center;
     gap: 1rem;
+    padding: 1rem 1.15rem;
+    border: 1px solid var(--lp-line);
+    border-radius: var(--lp-card-radius);
+    background: var(--lp-card);
   }
 
   .cs-credit-avatar {
     display: grid;
+    flex: none;
     place-items: center;
     width: 3rem;
     height: 3rem;
     border-radius: 50%;
-    background: var(--c-surface-strong);
+    background:
+      linear-gradient(var(--c-surface-strong), var(--c-surface-strong)) padding-box,
+      linear-gradient(135deg, var(--brand-a), var(--brand-b)) border-box;
+    border: 2px solid transparent;
     color: var(--c-ink);
     font-family: var(--font-display);
     font-size: 1.25rem;
@@ -2193,49 +2801,187 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
 
   .cs-credit-role {
     display: block;
-    color: var(--c-muted);
+    color: var(--lp-muted);
     font-size: var(--fs-body-sm);
   }
 
-  .cs-sources {
-    margin-top: 2.5rem;
-    padding-top: 1.25rem;
+  /* ---------- fim de cada tópico: anterior, topo e próximo ---------- */
+  .lp-tabnav-band {
+    padding-block: 0 clamp(2.75rem, 2rem + 2.5vw, 4.25rem);
+  }
+
+  .cs-tabnav {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding-top: clamp(1.5rem, 1rem + 1.5vw, 2rem);
+    border-top: 1px solid var(--lp-line);
+  }
+
+  .cs-tabnav-btn {
+    min-height: 3.5rem;
+  }
+
+  .cs-tabnav-text {
+    display: grid;
+    gap: 0.15rem;
+    text-align: start;
+  }
+
+  .cs-tabnav-small {
+    font-size: var(--fs-caption);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* anterior à esquerda, topo no meio, próxima à direita, mesmo quando falta uma delas */
+  .cs-tabnav-prev {
+    grid-column: 1;
+    justify-self: start;
+  }
+
+  .cs-tabnav-top {
+    grid-column: 2;
+  }
+
+  .cs-tabnav-next {
+    grid-column: 3;
+    justify-self: end;
+  }
+
+  .cs-tabnav-next .cs-tabnav-text {
+    text-align: end;
+  }
+
+  /* na faixa escura, os botões trocam para as versões de fundo escuro */
+  .band-inverse .cs-tabnav .btn-secondary {
+    --btn-fg: var(--c-on-inverse);
+    --btn-border: var(--c-inverse-hairline);
+  }
+
+  .band-inverse .cs-tabnav .btn-secondary:is(:hover, :focus-visible) {
+    --btn-bg: var(--c-inverse-elevated);
+    --btn-border: var(--c-on-inverse-soft);
+  }
+
+  .band-inverse .cs-tabnav .btn-primary {
+    --btn-bg: var(--c-on-inverse);
+    --btn-fg: var(--c-inverse);
+  }
+
+  .band-inverse .cs-tabnav .btn-primary:is(:hover, :focus-visible) {
+    --btn-bg: #fff;
+  }
+
+  @media (hover: hover) {
+    .cs-tabnav-prev:hover :global(.icon-back) {
+      transform: translateX(-4px);
+    }
+
+    .cs-tabnav-top:hover :global(.icon-up) {
+      transform: translateY(-3px);
+    }
+  }
+
+  @media (max-width: 40rem) {
+    .cs-tabnav {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .cs-tabnav-btn {
+      grid-column: 1;
+      justify-self: stretch;
+    }
+
+    /* empilhados: a seta fica junto do texto na anterior e na ponta na próxima */
+    .cs-tabnav-prev {
+      justify-content: flex-start;
+    }
+
+    .cs-tabnav-next {
+      justify-content: space-between;
+    }
+
+    .cs-tabnav-next .cs-tabnav-text {
+      text-align: start;
+    }
+  }
+
+  .lp-sources {
+    padding-block: clamp(1.75rem, 1.5rem + 1vw, 2.5rem);
     border-top: 1px solid var(--c-hairline);
+  }
+
+  .cs-sources {
+    max-width: 52rem;
     color: var(--c-muted-soft);
     font-size: var(--fs-caption);
   }
 
-  /* ---------- próximo projeto ---------- */
+  /* ================= fecho: o próximo projeto, num cartão escuro com as cores dele ================= */
   .cs-next {
-    border-bottom: 1px solid var(--c-inverse-hairline);
+    padding-block: clamp(1.5rem, 1rem + 2vw, 3rem) clamp(2rem, 1.5rem + 2vw, 3.5rem);
   }
 
   .cs-next-link {
+    position: relative;
+    isolation: isolate;
     display: block;
-    color: inherit;
+    overflow: clip;
+    width: min(100% - 2 * var(--lp-edge), 92rem);
+    margin-inline: auto;
+    border: 1px solid var(--c-inverse-hairline);
+    border-radius: var(--lp-radius);
+    background: var(--c-inverse);
+    color: var(--c-on-inverse-soft);
     text-decoration: none;
+    box-shadow: var(--shadow-lg);
+    --c-cyan: var(--c-inverse-cyan);
+    --c-violet: var(--c-inverse-violet);
+  }
+
+  /* aqui os dois brilhos ficam do lado da arte, longe do texto */
+  .cs-next-link .lp-glow-a {
+    top: -45%;
+    right: -14%;
+  }
+
+  .cs-next-link .lp-glow-b {
+    right: 18%;
+    bottom: -70%;
+    left: auto;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--brand-b) 26%, transparent), transparent);
   }
 
   .cs-next-inner {
     display: grid;
     gap: 2rem;
     align-items: center;
-    padding-block: clamp(3rem, 2rem + 4vw, 5rem);
+    padding-block: clamp(2.5rem, 2rem + 4vw, 5rem);
   }
 
   @media (min-width: 52rem) {
     .cs-next-inner {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 24rem);
+      grid-template-columns: minmax(0, 1fr) minmax(0, 26rem);
     }
   }
 
   .cs-next-text {
     display: grid;
-    gap: 0.6rem;
+    gap: 0.7rem;
   }
 
   .cs-next-kicker {
-    color: var(--c-on-inverse-soft);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: fit-content;
+    padding: 0.35rem 0.9rem;
+    border: 1px solid var(--c-inverse-hairline);
+    border-radius: var(--radius-pill);
+    color: var(--c-inverse-accent);
     font-size: var(--fs-caption-upper);
     font-weight: 600;
     letter-spacing: 0.14em;
@@ -2243,28 +2989,35 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
   }
 
   .cs-next-title {
+    width: fit-content;
     color: var(--c-on-inverse);
     font-family: var(--font-display);
-    font-size: var(--fs-display-lg);
+    font-size: var(--fs-display-xl);
     font-weight: 500;
-    line-height: 1.05;
+    line-height: 0.98;
+    letter-spacing: -0.025em;
     background: linear-gradient(currentColor, currentColor) 0 100% / 0 2px no-repeat;
-    width: fit-content;
     transition: background-size 0.6s var(--ease-out);
   }
 
   .cs-next-tagline {
-    max-width: 32rem;
+    max-width: 34rem;
     color: var(--c-on-inverse-soft);
+    font-size: var(--fs-body-lg);
   }
 
   .cs-next-go {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    margin-top: 0.5rem;
-    color: var(--c-inverse-accent);
+    width: fit-content;
+    margin-top: 0.75rem;
+    padding: 0.8rem 1.35rem;
+    border-radius: var(--radius-md);
+    background: var(--c-on-inverse);
+    color: var(--c-inverse);
     font-weight: 600;
+    transition: box-shadow 0.4s var(--ease-out);
   }
 
   .cs-next-go :global(.icon) {
@@ -2273,15 +3026,20 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
 
   .cs-next-art {
     overflow: hidden;
-    border-radius: var(--radius-xl);
     border: 1px solid var(--c-inverse-hairline);
-    transform: rotate(1.5deg);
+    border-radius: var(--radius-xl);
+    transform: rotate(2deg);
+    box-shadow: 0 2rem 4rem -2rem rgb(0 0 0 / 0.7);
     transition: transform 0.7s var(--ease-out);
   }
 
   .cs-next-link:hover .cs-next-title,
   .cs-next-link:focus-visible .cs-next-title {
     background-size: 100% 2px;
+  }
+
+  .cs-next-link:hover .cs-next-go {
+    box-shadow: 0 1rem 2.5rem -1rem color-mix(in srgb, var(--brand-a) 80%, transparent);
   }
 
   .cs-next-link:hover .cs-next-go :global(.icon) {
@@ -2293,7 +3051,7 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
   }
 
   .cs-next-link:focus-visible {
-    outline: 2px solid var(--c-focus);
-    outline-offset: -6px;
+    outline: 3px solid var(--c-focus);
+    outline-offset: 4px;
   }
 </style>

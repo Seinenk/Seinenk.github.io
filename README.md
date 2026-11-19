@@ -49,8 +49,30 @@ como funciona por dentro, decisões com os porquês, uma demonstração, constru
 (cores, tipografia, design system e telas), tecnologias, habilidades, resultados, aprendizados
 e o próximo projeto. Só aparecem as seções que o projeto preenche.
 
+Cada página é montada como a landing page de um produto (a página de apresentação de um app
+ou site), com referências pesquisadas no Dribbble e no Behance. O conteúdo vem todo dos
+dados; o modelo só muda a forma de mostrar:
+
+- **Barra do produto**, presa no alto: o nome do projeto com um selo nas cores dele (leva de
+  volta ao topo), os tópicos no meio e, em telas largas, o primeiro link do projeto como botão.
+- **Topo**: um cartão escuro com dois brilhos nas cores do projeto e um quadriculado fino. Traz
+  a situação, o tipo e o período num selo, o título, a frase de apresentação, os links como
+  botões, os temas e o tempo de leitura. A ilustração fica numa moldura de vidro, e as quatro
+  fichas do resumo correm numa faixa no pé do cartão.
+- **Letreiro**: logo abaixo do topo, as ferramentas da seção Tecnologias passam devagar, como
+  a faixa de logos das landing pages. Ele repete o que a seção mostra, por isso fica escondido
+  dos leitores de tela.
+- **Faixas**: cada seção ocupa a largura toda, e o fundo alterna entre claro e areia. Os
+  resultados e as tecnologias ganham a faixa escura, e duas faixas escuras nunca ficam coladas.
+  Cada tópico abre com o nome numa pílula, um fio e a posição (como "02 / 05").
+- **Fecho**: o convite para o próximo projeto, num cartão escuro com as cores dele.
+
+As cores de cada projeto ficam no mapa `brandTint`, no topo de `src/pages/projeto/[slug].astro`,
+e só pintam detalhes decorativos (nenhum texto depende delas). Um projeto fora do mapa usa o
+ciano e o violeta do site.
+
 As seções ficam numa página só, uma abaixo da outra, organizadas em tópicos por área de
-atuação. Uma barra de abas fixa no alto leva direto ao começo de cada tópico:
+atuação. A barra do produto leva direto ao começo de cada tópico:
 
 | Aba (tópico) | Seções |
 | --- | --- |
@@ -63,9 +85,12 @@ atuação. Uma barra de abas fixa no alto leva direto ao começo de cada tópico
 Um tópico só aparece se o projeto tem alguma seção dele, e cada um começa com o próprio nome.
 As abas são links (`#aba-ux-ui`) e funcionam sem JavaScript; com ele, a barra acompanha a
 leitura e marca o tópico que está na tela. No fim de cada tópico há os botões de voltar ao
-topo, ir à próxima aba (com o nome dela) e, a partir da segunda, voltar à anterior. O sumário
-lateral lista todas as seções; no celular, a barra de abas faz esse papel. O
-agrupamento fica no topo de `src/pages/projeto/[slug].astro` (`groups`).
+topo, ir à próxima aba (com o nome dela) e, a partir da segunda, voltar à anterior. Em telas
+a partir de 1376 pixels, um índice na borda direita lista todas as seções pelo número e abre o
+nome ao passar o ponteiro, com o foco do teclado e na seção que está sendo lida. Ele sai de
+cena no topo e no fim da página, para não encostar nos cartões largos; nas telas menores, a
+barra do produto faz esse papel. O agrupamento fica no topo de
+`src/pages/projeto/[slug].astro` (`groups`).
 
 Para incluir um projeto:
 
@@ -128,19 +153,28 @@ da página. Se mudar as amostras, gere de novo:
 pyftsubset lexend-latin-600-normal.woff2 --text="AaProteção Integral: O que é?" --flavor=woff2 --layout-features='*' --output-file=src/assets/fonts/trilha/lexend.woff2
 ```
 
-Efeitos das páginas: transição do cartão para o topo da página (View Transitions), barra de
-abas com uma pílula que desliza até o tópico que está sendo lido, sumário que acompanha a leitura, linha do tempo que se preenche ao rolar, cores que se copiam com um clique,
-amostras de fonte variável, galeria com caixa de luz, comparação antes/depois, o Dino Runner
-jogável e a miniatura de temas do EFIPLA. Tudo funciona com teclado e fica parado quando o
-movimento está desligado.
+Efeitos das páginas: transição do cartão para o topo da página (View Transitions), brilhos que
+se movem devagar atrás do topo e do fecho, o letreiro das ferramentas, a barra com uma pílula
+que desliza até o tópico que está sendo lido, o índice que acompanha a leitura, linha do tempo
+que se preenche ao rolar, cores que se copiam com um clique, amostras de fonte variável,
+galeria com caixa de luz, comparação antes/depois, o Dino Runner jogável e a miniatura de temas
+do EFIPLA. Tudo funciona com teclado e fica parado quando o movimento está desligado.
 
-Partes mais visuais, inspiradas em apresentações de portfólio:
+Partes mais visuais, inspiradas em landing pages de produto:
 
-- **Topo**: os temas do projeto (`tags`) em pílulas de contorno e o resumo rápido em fichas.
-- **Funções**: mosaico em que a primeira função ocupa duas colunas.
-- **Resultados**: os números em fichas de vidro levemente inclinadas, sobre um anel que se
-  desenha quando a seção aparece.
-- **Decisões** e **cores**: cartões em escada; as cores ganham um número num círculo.
+- **Funções**: um mosaico (bento) em que a primeira função ocupa um bloco de 2 por 2, com o
+  ícone no alto e anéis saindo dele. As outras enchem linhas de 3, e a última linha sempre fecha.
+- **Contexto** e **Por dentro**: título à esquerda, preso na rolagem, e o texto à direita. O
+  primeiro parágrafo do contexto vira a frase de abertura, grande e em serifa.
+- **Desafio**: o problema num cartão escuro e os objetivos numerados ao lado.
+- **Resultados**: os números grandes numa faixa escura, separados por fios, e os destaques em
+  cartões logo abaixo.
+- **Demonstração e vídeo**: num palco com fundo de vitrine.
+- **Visual**: cores, paletas, tipografia e design system em painéis, como um quadro da marca.
+- **Coleções de cartões** (decisões, habilidades, aprendizados, próximos passos, créditos,
+  tecnologias e destaques): linhas de cartões da mesma altura; quando sobra cartão na última
+  linha, ele fica centralizado e com a mesma largura dos outros.
+- **Cores**: cada cor ganha um número num círculo.
 - **Tipografia**: atrás de cada "Aa", uma cópia só de contorno tracejado.
 - **Processo**: em telas largas, um caminho tracejado no meio com as etapas em caixas
   alternando dos dois lados.
