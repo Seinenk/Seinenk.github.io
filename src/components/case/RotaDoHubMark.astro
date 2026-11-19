@@ -1,0 +1,26 @@
+---
+import RotaDoHubFace from './RotaDoHubFace.astro';
+
+/*
+ * Marca da Rota do Hub: o rosto de Dolores, a gata guia, com a borda branca de adesivo, como no
+ * ícone do site. O desenho fica em RotaDoHubFace.astro.
+ */
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<svg class:list={['rhm', className]} viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+  <RotaDoHubFace />
+</svg>
+
+<style>
+  .rhm {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+</style>

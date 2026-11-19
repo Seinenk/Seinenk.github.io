@@ -13,6 +13,9 @@ import EfiplaMark from '../../components/case/EfiplaMark.astro';
 import BeeSenseMark from '../../components/case/BeeSenseMark.astro';
 import CrohneaseMark from '../../components/case/CrohneaseMark.astro';
 import VanmedMark from '../../components/case/VanmedMark.astro';
+import RotaDoHubMark from '../../components/case/RotaDoHubMark.astro';
+import PaletteWall from '../../components/case/PaletteWall.astro';
+import PaletteSwap from '../../components/case/PaletteSwap.astro';
 import ThemePlayground from '../../components/case/ThemePlayground.astro';
 import DinoGame from '../../components/case/DinoGame.astro';
 import BeforeAfter from '../../components/case/BeforeAfter.astro';
@@ -50,9 +53,18 @@ const emphasizeLast = (title: string) => {
   return words.length > 1 ? `${words.slice(0, -1).join(' ')} *${words.at(-1)}*` : `*${title}*`;
 };
 /* desenho da marca, por projeto (o texto vem dos dados) */
-const marks = { extractorys: ExtractorysMark, efipla: EfiplaMark, 'bee-sense': BeeSenseMark, crohnease: CrohneaseMark, vanmed: VanmedMark } as const;
+const marks = {
+  extractorys: ExtractorysMark,
+  efipla: EfiplaMark,
+  'bee-sense': BeeSenseMark,
+  crohnease: CrohneaseMark,
+  vanmed: VanmedMark,
+  'rota-do-hub': RotaDoHubMark,
+} as const;
 const Mark = p.art in marks ? marks[p.art as keyof typeof marks] : null;
-const hasVisual = Boolean(p.visual && (p.visual.palette || p.visual.appThemes || p.visual.typography || p.visual.tokens || p.visual.gallery || p.visual.mark));
+const hasVisual = Boolean(
+  p.visual && (p.visual.palette || p.visual.paletteWall || p.visual.appThemes || p.visual.typography || p.visual.tokens || p.visual.gallery || p.visual.mark),
+);
 type TabId = 'resumo' | 'pesquisa' | 'ux-ui' | 'construcao' | 'aprendizado';
 /* Os tópicos (abas), por área de atuação. Um tópico só aparece se o projeto tem alguma seção dele. */
 const tabDefs: { id: TabId; label: string; icon: IconName }[] = [
@@ -406,6 +418,7 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
                           {p.demo.kind === 'before-after' && p.demo.compare && <BeforeAfter compare={p.demo.compare} />}
                           {p.demo.kind === 'layout-boxes' && <LayoutBoxes />}
                           {p.demo.kind === 'pytest-run' && <PytestRun />}
+                          {p.demo.kind === 'palette-swap' && <PaletteSwap />}
                         </div>
                       </section>
                     )
@@ -420,6 +433,15 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
                               <Icon name="palette" size={18} /> Cores
                             </h3>
                             <Palette swatches={p.visual.palette} gradient={p.visual.gradient} note={p.visual.paletteNote} />
+                          </div>
+                        )}
+                        {p.visual.paletteWall && (
+                          <div class="cs-block">
+                            <h3 class="cs-sub" data-reveal>
+                              <Icon name="swatch-book" size={18} /> {p.visual.paletteWall.title}
+                            </h3>
+                            {p.visual.paletteWall.text && <p class="cs-block-text" data-reveal set:html={rich(p.visual.paletteWall.text)} />}
+                            <PaletteWall palettes={p.visual.paletteWall.palettes} label={p.visual.paletteWall.title} />
                           </div>
                         )}
                         {p.visual.appThemes && (
@@ -2056,7 +2078,8 @@ const metricIcons: IconName[] = ['trending-up', 'target', 'sparkles', 'zap'];
   .cs-metric-value em {
     font-style: italic;
     font-size: 0.62em;
-    color: var(--c-accent);
+    /* o tom forte do destaque: no celular a unidade fica abaixo de 24px e precisa de 4,5:1 */
+    color: var(--c-accent-strong);
   }
 
   .cs-metric-label {

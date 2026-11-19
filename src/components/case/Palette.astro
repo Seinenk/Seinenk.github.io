@@ -31,16 +31,20 @@ const onColor = (hex: string) => {
     {
       swatches.map((s, i) => (
         <li class="swatch" data-reveal="scale" style={`--i:${i % 6};--sw:${s.hex};--on:${onColor(s.hex)}`}>
-          <button class="swatch-color" type="button" data-copy={s.hex} aria-label={`Copiar ${s.hex} (${s.name})`}>
+          {/* o número fica fora do botão: o nome do botão para leitor de tela e comando de voz
+              começa pelo que está escrito nele (o código da cor), sem o número */}
+          <div class="swatch-card">
             <span class="swatch-n" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-            <span class="swatch-bottom">
-              <span class="swatch-hex">{s.hex}</span>
-              <span class="swatch-copy" aria-hidden="true">
-                <Icon name="copy" size={15} />
-                <span data-copy-label>Copiar</span>
+            <button class="swatch-color" type="button" data-copy={s.hex} aria-label={`Copiar ${s.hex} (${s.name})`}>
+              <span class="swatch-bottom">
+                <span class="swatch-hex">{s.hex}</span>
+                <span class="swatch-copy" aria-hidden="true">
+                  <Icon name="copy" size={15} />
+                  <span data-copy-label>Copiar</span>
+                </span>
               </span>
-            </span>
-          </button>
+            </button>
+          </div>
           <p class="swatch-name">{s.name}</p>
           <p class="swatch-role">{s.role}</p>
         </li>
@@ -88,7 +92,24 @@ const onColor = (hex: string) => {
     }
   }
 
+  /* o cartão leva o número e o botão juntos quando sobe */
+  .swatch-card {
+    position: relative;
+    border-radius: var(--radius-lg);
+    transition: transform 0.5s var(--ease-spring);
+  }
+
+  .swatch-card:hover,
+  .swatch-card:has(.swatch-color:focus-visible) {
+    transform: translateY(-6px) rotate(-1.5deg);
+  }
+
   .swatch-n {
+    position: absolute;
+    top: 0.8rem;
+    left: 0.8rem;
+    z-index: 1;
+    pointer-events: none;
     display: grid;
     place-items: center;
     width: 2.1rem;
@@ -102,7 +123,7 @@ const onColor = (hex: string) => {
     transition: transform 0.6s var(--ease-spring);
   }
 
-  .swatch-color:hover .swatch-n {
+  .swatch-card:hover .swatch-n {
     transform: rotate(-12deg) scale(1.08);
   }
 
@@ -117,7 +138,7 @@ const onColor = (hex: string) => {
     position: relative;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-end;
     width: 100%;
     aspect-ratio: 1 / 1.08;
     padding: 0.8rem;
@@ -128,14 +149,11 @@ const onColor = (hex: string) => {
     color: var(--on);
     text-align: start;
     cursor: copy;
-    transition:
-      transform 0.5s var(--ease-spring),
-      box-shadow 0.5s var(--ease-out);
+    transition: box-shadow 0.5s var(--ease-out);
   }
 
   .swatch-color:hover,
   .swatch-color:focus-visible {
-    transform: translateY(-6px) rotate(-1.5deg);
     box-shadow: var(--shadow-md);
   }
 

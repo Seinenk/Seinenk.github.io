@@ -5,6 +5,7 @@ import ExtractorysMark from './case/ExtractorysMark.astro';
 import EfiplaMark from './case/EfiplaMark.astro';
 import CrohneaseMark from './case/CrohneaseMark.astro';
 import VanmedMark from './case/VanmedMark.astro';
+import RotaDoHubFace from './case/RotaDoHubFace.astro';
 import efiplaCombate from '../assets/images/projetos/efipla/combate-depois.webp';
 import efiplaLoja from '../assets/images/projetos/efipla/loja.webp';
 import beeEntrada from '../assets/images/projetos/bee-sense/app-entrada.webp';
@@ -53,6 +54,24 @@ const hero = size === 'hero';
 // que nesse tamanho não se distingue da padrão e pesa bem menos
 const phoneWidths = [200, 260, 320, 480, 640];
 const phoneSizes = hero ? '(min-width: 60rem) 12rem, 32vw' : '6.5rem';
+
+/* ---------- Rota do Hub: a rota dos doze destinos, a gata guia e as cores que trocam ---------- */
+// as doze paradas, da Praça Central à Chegada, entre x 22 e 138 (no topo da página, que é mais
+// estreito, o desenho é cortado nas laterais e essa faixa continua inteira)
+const rhStops: [number, number][] = [
+  [24, 84], [33, 70], [28, 56], [39, 45], [54, 48], [63, 60],
+  [77, 63], [89, 52], [92, 38], [104, 29], [118, 32], [130, 22],
+];
+// curva suave passando pelas paradas (Catmull-Rom convertida em Bézier cúbica)
+const rhPath = rhStops.reduce((d, [x, y], i, pts) => {
+  if (i === 0) return `M${x} ${y}`;
+  const [x0, y0] = pts[Math.max(i - 2, 0)];
+  const [x1, y1] = pts[i - 1];
+  const [x3, y3] = pts[Math.min(i + 1, pts.length - 1)];
+  const c1 = [x1 + (x - x0) / 6, y1 + (y - y0) / 6];
+  const c2 = [x - (x3 - x1) / 6, y - (y3 - y1) / 6];
+  return `${d}C${c1[0].toFixed(1)} ${c1[1].toFixed(1)} ${c2[0].toFixed(1)} ${c2[1].toFixed(1)} ${x} ${y}`;
+}, '');
 
 /* ---------- Trilha da Proteção: as cinco paradas do site e as pegadas entre elas ---------- */
 // cores dos cartões das paradas no site; a quarta (Como agir) é a de destaque, maior
@@ -267,6 +286,55 @@ const cells = Array.from({ length: 15 }, (_, i) => ({ x: 26 + (i % 5) * 17, y: 3
           </div>
         </div>
       </>
+    )
+  }
+
+  {
+    kind === 'rota-do-hub' && (
+      <svg class="svg" viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <clipPath id={`${uid}-rh-st`}>
+            <circle r="10.4" />
+          </clipPath>
+        </defs>
+
+        {/* um adesivo redondo, como os do site: céu, serra, sol e campo nas cores da paleta */}
+        <g class="rh-sticker" transform="translate(46 21) rotate(-8)">
+          <circle class="rh-st-sombra" cx="0.8" cy="1.6" r="12.6" />
+          <circle class="rh-st-borda" r="12.6" />
+          <g clip-path={`url(#${uid}-rh-st)`}>
+            <rect class="rh-c1" x="-12" y="-12" width="24" height="24" />
+            <circle class="rh-c4 rh-luz" cx="4" cy="-3.6" r="3.4" />
+            <path class="rh-c2 rh-traco" d="M-12 6-5-2-1 3 4-3 12 6V12H-12Z" />
+            <path class="rh-c3 rh-traco" d="M-12 5Q-4 2 2 5T12 4V12H-12Z" />
+          </g>
+          <circle class="rh-st-fio" r="10.4" />
+        </g>
+        {/* uma estrela de conquista, como os adesivos do álbum */}
+        <g class="rh-star" transform="translate(74 16) rotate(10)">
+          <path class="rh-st-borda" d="M0-8.6 2.6-3 8.6-2.5 4-1.4 5.4 6.6 0 3.6-5.4 6.6-4 1.4-8.6-2.5-2.6-3Z" stroke-width="3" />
+          <path class="rh-c5 rh-traco" d="M0-8.6 2.6-3 8.6-2.5 4-1.4 5.4 6.6 0 3.6-5.4 6.6-4 1.4-8.6-2.5-2.6-3Z" />
+        </g>
+
+        {/* a rota tracejada e as doze paradas */}
+        <path class="rh-route-bg" d={rhPath} />
+        <path class="rh-route" d={rhPath} />
+        {rhStops.map(([x, y], i) => (
+          <g class="rh-stop" style={`--i:${i}`}>
+            <circle class="rh-stop-ring" cx={x} cy={y} r="4.4" />
+            <circle class={`rh-stop-dot rh-c${(i % 5) + 1}`} cx={x} cy={y} r="3.4" />
+          </g>
+        ))}
+        <g class="rh-flag" transform="translate(130 22)">
+          <path class="rh-mastro" d="M0-1V-12" />
+          <path class="rh-c5 rh-traco" d="M0-12 8.5-9.5 0-7Z" />
+        </g>
+
+        {/* Dolores, a gata guia, num canto, como no site */}
+        <g class="rh-cat" transform="translate(100 52) scale(0.6)">
+          <RotaDoHubFace />
+        </g>
+      </svg>
     )
   }
 
@@ -956,6 +1024,213 @@ const cells = Array.from({ length: 15 }, (_, i) => ({ x: 26 + (i % 5) * 17, y: 3
   }
 
   /* ---------- Vanmed: o índigo elétrico do ícone do app, com o símbolo nas cores dele ---------- */
+  /* ---------- Rota do Hub: as cores passeiam por cinco das 51 paletas do site ---------- */
+  @property --rh-c1 {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #d90452;
+  }
+
+  @property --rh-c2 {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #2e0259;
+  }
+
+  @property --rh-c3 {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #0abfbf;
+  }
+
+  @property --rh-c4 {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #f2b807;
+  }
+
+  @property --rh-c5 {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #f26849;
+  }
+
+  .art-rota-do-hub {
+    /* Baile de máscaras, a paleta com que o site abre */
+    --rh-c1: #d90452;
+    --rh-c2: #2e0259;
+    --rh-c3: #0abfbf;
+    --rh-c4: #f2b807;
+    --rh-c5: #f26849;
+    background:
+      linear-gradient(90deg, rgb(20 20 19 / 0.05) 1px, transparent 1px) 0 0 / 5cqw 5cqw,
+      linear-gradient(rgb(20 20 19 / 0.05) 1px, transparent 1px) 0 0 / 5cqw 5cqw,
+      radial-gradient(45% 60% at 8% 0%, color-mix(in srgb, var(--rh-c1) 24%, transparent), transparent 70%),
+      radial-gradient(50% 60% at 100% 100%, color-mix(in srgb, var(--rh-c3) 22%, transparent), transparent 70%),
+      #faf9f5;
+  }
+
+  /* com movimento: a paleta troca de tempos em tempos (Baile de máscaras, Pipa ao vento, Jade e
+     tangerina, Pavão misterioso e Verão retrô), a rota anda e as paradas pulam em sequência */
+  :global(:root[data-motion='full']) .art-rota-do-hub {
+    animation: rh-paletas 30s ease-in-out infinite;
+  }
+
+  @keyframes rh-paletas {
+    0%,
+    16%,
+    100% {
+      --rh-c1: #d90452;
+      --rh-c2: #2e0259;
+      --rh-c3: #0abfbf;
+      --rh-c4: #f2b807;
+      --rh-c5: #f26849;
+    }
+    20%,
+    36% {
+      --rh-c1: #1d79f2;
+      --rh-c2: #033f73;
+      --rh-c3: #f2b705;
+      --rh-c4: #f27405;
+      --rh-c5: #d92b04;
+    }
+    40%,
+    56% {
+      --rh-c1: #01402e;
+      --rh-c2: #21bf92;
+      --rh-c3: #f29f05;
+      --rh-c4: #f26835;
+      --rh-c5: #d93814;
+    }
+    60%,
+    76% {
+      --rh-c1: #d90452;
+      --rh-c2: #230740;
+      --rh-c3: #04d9d9;
+      --rh-c4: #317302;
+      --rh-c5: #f2b807;
+    }
+    80%,
+    96% {
+      --rh-c1: #024059;
+      --rh-c2: #56acbf;
+      --rh-c3: #f2a007;
+      --rh-c4: #f2e5d5;
+      --rh-c5: #bf2a2a;
+    }
+  }
+
+  .rh-c1 {
+    fill: var(--rh-c1);
+  }
+
+  .rh-c2 {
+    fill: var(--rh-c2);
+  }
+
+  .rh-c3 {
+    fill: var(--rh-c3);
+  }
+
+  .rh-c4 {
+    fill: var(--rh-c4);
+  }
+
+  .rh-c5 {
+    fill: var(--rh-c5);
+  }
+
+  .rh-traco {
+    stroke: #141413;
+    stroke-width: 0.6;
+    stroke-linejoin: round;
+  }
+
+  .rh-luz {
+    stroke: #fff;
+    stroke-width: 0.6;
+  }
+
+  .rh-st-sombra {
+    fill: #141413;
+    opacity: 0.18;
+  }
+
+  .rh-st-borda {
+    fill: #fff;
+    stroke: #fff;
+    stroke-linejoin: round;
+  }
+
+  .rh-st-fio {
+    fill: none;
+    stroke: #141413;
+    stroke-width: 0.6;
+  }
+
+  .rh-route-bg {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 3.6;
+    stroke-linecap: round;
+    opacity: 0.9;
+  }
+
+  .rh-route {
+    fill: none;
+    stroke: #141413;
+    stroke-width: 0.9;
+    stroke-dasharray: 2.2 2;
+    stroke-linecap: round;
+  }
+
+  .rh-stop-ring {
+    fill: #141413;
+  }
+
+  .rh-stop-dot {
+    stroke: #fff;
+    stroke-width: 1.1;
+  }
+
+  .rh-stop {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  .rh-mastro {
+    fill: none;
+    stroke: #141413;
+    stroke-width: 0.9;
+    stroke-linecap: round;
+  }
+
+  :global(:root[data-motion='full']) .rh-route {
+    animation: rh-andar 7s linear infinite;
+  }
+
+  :global(:root[data-motion='full']) .rh-stop {
+    animation: rh-passo 6s ease-in-out infinite;
+    animation-delay: calc(var(--i) * 0.4s);
+  }
+
+  @keyframes rh-andar {
+    to {
+      stroke-dashoffset: -42;
+    }
+  }
+
+  @keyframes rh-passo {
+    0%,
+    9%,
+    100% {
+      scale: 1;
+    }
+    4% {
+      scale: 1.35;
+    }
+  }
+
   /* ---------- Trilha da Proteção ---------- */
   .art-trilha-da-protecao {
     background:

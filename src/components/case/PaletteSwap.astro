@@ -1,0 +1,503 @@
+---
+import Icon from '../Icon.astro';
+import RotaDoHubMark from './RotaDoHubMark.astro';
+import { paletasRota, type PaletaRota } from '../../data/rota-do-hub-paletas';
+
+/*
+ * Demonstração "Trocar cores" da Rota do Hub: uma miniatura do topo do site que troca de paleta
+ * como o site de verdade, com a revelação em círculo a partir do botão. As 51 paletas e os
+ * papéis de cor (botão, superfície escura, acentos, contrastes) vêm de rota-do-hub-paletas.ts.
+ * A miniatura é decorativa; o botão e o anúncio da paleta são o que o leitor de tela usa. Com o
+ * movimento desligado, a troca acontece sem animação.
+ */
+
+const inicial = paletasRota.find((p) => p.id === 'p27') ?? paletasRota[0];
+const numero = (p: PaletaRota) => paletasRota.indexOf(p) + 1;
+const razao = (n: number) => `${n.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}:1`;
+const estilo = (p: PaletaRota) =>
+  [
+    `--ps-primaria:${p.primaria}`,
+    `--ps-sobre-primaria:${p.sobrePrimaria}`,
+    `--ps-primaria-texto:${p.primariaTexto}`,
+    `--ps-escura:${p.escura}`,
+    `--ps-escura-elevada:${p.escuraElevada}`,
+    `--ps-sobre-escura-suave:${p.sobreEscuraSuave}`,
+    `--ps-acento1:${p.acento1}`,
+    `--ps-acento1-escuro:${p.acento1NoEscuro}`,
+    `--ps-acento2:${p.acento2}`,
+    `--ps-acento3:${p.acento3}`,
+    `--ps-tinta:${p.tintaPrimaria}`,
+    `--ps-tinta1:${p.tintaAcento1}`,
+    ...p.cores.map((c, i) => `--ps-c${i + 1}:${c}`),
+  ].join(';');
+// nomes das variáveis uma vez só, e os valores de cada paleta em lista (o script monta o estilo)
+const nomesDasVariaveis = estilo(inicial)
+  .split(';')
+  .map((par) => par.split(':')[0]);
+const dados = {
+  variaveis: nomesDasVariaveis,
+  paletas: paletasRota.map((p) => [numero(p), p.nome, razao(p.contrasteBotao), razao(p.contrasteEscura), ...estilo(p).split(';').map((par) => par.split(':')[1])]),
+};
+---
+
+<div class="ps" data-palette-swap>
+  <div class="ps-frame">
+    <div class="ps-stage" style={estilo(inicial)} aria-hidden="true">
+      <div class="ps-bar">
+        <span class="ps-logo"><RotaDoHubMark /></span>
+        <span class="ps-brand">Rota do Hub</span>
+        <span class="ps-nav"><i /><i /><i /><i /></span>
+        <span class="ps-pill">Trocar cores</span>
+        <span class="ps-xp"><b>4</b><i /></span>
+      </div>
+      <div class="ps-hero">
+        <div class="ps-copy">
+          <span class="ps-kicker">Boas-vindas a bordo</span>
+          <span class="ps-title">Aprenda a criar seu hub de conteúdo</span>
+          <span class="ps-lines"><i /><i /><i /></span>
+          <span class="ps-actions">
+            <span class="ps-btn-main">Quero estudar</span>
+            <span class="ps-btn-ghost">Quero construir</span>
+          </span>
+        </div>
+        <svg class="ps-sticker" viewBox="0 0 100 100" focusable="false">
+          <circle class="ps-st-sombra" cx="51" cy="53" r="44" />
+          <circle class="ps-st-borda" cx="50" cy="50" r="44" />
+          <clipPath id="ps-st-recorte">
+            <circle cx="50" cy="50" r="38" />
+          </clipPath>
+          <g clip-path="url(#ps-st-recorte)">
+            <rect class="ps-st-ceu" x="0" y="0" width="100" height="100" />
+            <circle class="ps-st-sol" cx="66" cy="34" r="11" />
+            <path class="ps-st-serra" d="M4 74 30 40 46 60 62 38 98 76V100H4Z" />
+            <path class="ps-st-campo" d="M0 70Q30 60 52 70T100 66V100H0Z" />
+            <path class="ps-st-trilha" d="M30 100Q44 84 50 76T66 68" />
+            <circle class="ps-st-ponto" cx="66" cy="68" r="3.4" />
+          </g>
+          <circle class="ps-st-fio" cx="50" cy="50" r="38" />
+        </svg>
+      </div>
+      <div class="ps-band">
+        <span class="ps-band-kicker">Destino 4 de 12</span>
+        <span class="ps-band-title">Vale das Cores</span>
+        <span class="ps-band-bar"><i /></span>
+      </div>
+      <div class="ps-strip"><i /><i /><i /><i /><i /></div>
+    </div>
+  </div>
+
+  <div class="ps-controls">
+    <button class="btn btn-primary" type="button" data-ps-trocar>
+      <Icon name="palette" size={18} />
+      Trocar cores
+    </button>
+    <p class="ps-status" data-ps-status aria-live="polite">
+      Paleta {numero(inicial)} de {paletasRota.length}: {inicial.nome}
+    </p>
+    <p class="ps-contrast">
+      <span>Texto no botão <strong data-ps-botao>{razao(inicial.contrasteBotao)}</strong></span>
+      <span>Texto no escuro <strong data-ps-escura>{razao(inicial.contrasteEscura)}</strong></span>
+    </p>
+  </div>
+
+  <script type="application/json" is:inline data-ps-dados set:html={JSON.stringify(dados)} />
+</div>
+
+<script>
+  type Dado = { n: number; nome: string; estilo: string; botao: string; escura: string };
+  type Bruto = { variaveis: string[]; paletas: (string | number)[][] };
+
+  function iniciar(raiz: HTMLElement) {
+    const bruto: Bruto = JSON.parse(raiz.querySelector('[data-ps-dados]')?.textContent ?? '{"variaveis":[],"paletas":[]}');
+    const dados: Dado[] = bruto.paletas.map(([n, nome, botao, escura, ...valores]) => ({
+      n: Number(n),
+      nome: String(nome),
+      botao: String(botao),
+      escura: String(escura),
+      estilo: bruto.variaveis.map((v, i) => `${v}:${valores[i]}`).join(';'),
+    }));
+    const palco = raiz.querySelector<HTMLElement>('.ps-stage');
+    const moldura = raiz.querySelector<HTMLElement>('.ps-frame');
+    const botao = raiz.querySelector<HTMLButtonElement>('[data-ps-trocar]');
+    const status = raiz.querySelector<HTMLElement>('[data-ps-status]');
+    const contrasteBotao = raiz.querySelector<HTMLElement>('[data-ps-botao]');
+    const contrasteEscura = raiz.querySelector<HTMLElement>('[data-ps-escura]');
+    if (!palco || !moldura || !botao || !status || !dados.length) return;
+
+    // como no site: um "saco" com as paletas que ainda não saíram, para não repetir tão cedo
+    let atual = dados.findIndex((d) => palco.getAttribute('style') === d.estilo);
+    let saco: number[] = [];
+    const sortear = () => {
+      if (!saco.length) saco = dados.map((_, i) => i).filter((i) => i !== atual).sort(() => Math.random() - 0.5);
+      return saco.pop() as number;
+    };
+
+    botao.addEventListener('click', () => {
+      const i = sortear();
+      const d = dados[i];
+      atual = i;
+      status.textContent = `Paleta ${d.n} de ${dados.length}: ${d.nome}`;
+      if (contrasteBotao) contrasteBotao.textContent = d.botao;
+      if (contrasteEscura) contrasteEscura.textContent = d.escura;
+
+      const animar = document.documentElement.dataset.motion === 'full' && typeof palco.animate === 'function';
+      if (!animar) {
+        palco.setAttribute('style', d.estilo);
+        return;
+      }
+      // a paleta nova chega por cima, num círculo que cresce a partir do botão
+      moldura.querySelectorAll('.ps-clone').forEach((c) => c.remove());
+      const copia = palco.cloneNode(true) as HTMLElement;
+      copia.classList.add('ps-clone');
+      copia.setAttribute('style', d.estilo);
+      moldura.append(copia);
+      const r = moldura.getBoundingClientRect();
+      const b = botao.getBoundingClientRect();
+      const x = Math.min(Math.max(b.left + b.width / 2 - r.left, 0), r.width);
+      const y = Math.min(Math.max(b.top - r.top, 0), r.height);
+      const raio = Math.hypot(Math.max(x, r.width - x), Math.max(y, r.height - y));
+      const anim = copia.animate(
+        [{ clipPath: `circle(0px at ${x}px ${y}px)` }, { clipPath: `circle(${raio}px at ${x}px ${y}px)` }],
+        { duration: 750, easing: 'cubic-bezier(0.22, 0.7, 0.2, 1)' },
+      );
+      anim.onfinish = () => {
+        palco.setAttribute('style', d.estilo);
+        copia.remove();
+      };
+    });
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-palette-swap]').forEach(iniciar);
+</script>
+
+<style>
+  .ps {
+    display: grid;
+    gap: 1.1rem;
+  }
+
+  .ps-frame {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--c-hairline);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+  }
+
+  /* a miniatura usa as cores fixas do site (creme e tintas de texto) e os papéis da paleta */
+  .ps-stage {
+    --ps-creme: #faf9f5;
+    --ps-tinta-texto: #141413;
+    --ps-texto: #3d3d3a;
+    container-type: inline-size;
+    display: grid;
+    gap: 4cqw;
+    padding: 3.2cqw 3.6cqw 0;
+    background:
+      linear-gradient(90deg, rgb(20 20 19 / 0.035) 1px, transparent 1px) 0 0 / 4cqw 4cqw,
+      linear-gradient(rgb(20 20 19 / 0.035) 1px, transparent 1px) 0 0 / 4cqw 4cqw,
+      var(--ps-creme);
+    color: var(--ps-texto);
+    transition: background-color 0.3s ease;
+  }
+
+  .ps-clone {
+    position: absolute;
+    inset: 0;
+  }
+
+  .ps-bar {
+    display: flex;
+    align-items: center;
+    gap: 1.6cqw;
+    font-size: 1.9cqw;
+  }
+
+  .ps-logo {
+    width: 3.6cqw;
+  }
+
+  .ps-brand {
+    color: var(--ps-tinta-texto);
+    font-family: var(--font-display);
+    font-size: 2.6cqw;
+    font-weight: 500;
+  }
+
+  .ps-nav {
+    display: flex;
+    gap: 1.4cqw;
+    margin-inline-end: auto;
+  }
+
+  .ps-nav i {
+    width: 5cqw;
+    height: 0.9cqw;
+    border-radius: 1cqw;
+    background: rgb(20 20 19 / 0.16);
+  }
+
+  .ps-pill {
+    padding: 0.6cqw 1.6cqw;
+    border: 1px solid rgb(20 20 19 / 0.25);
+    border-radius: 99cqw;
+    color: var(--ps-tinta-texto);
+  }
+
+  .ps-xp {
+    display: flex;
+    align-items: center;
+    gap: 1cqw;
+    padding: 0.5cqw 1.4cqw 0.5cqw 0.5cqw;
+    border: 1px solid rgb(20 20 19 / 0.25);
+    border-radius: 99cqw;
+  }
+
+  .ps-xp b {
+    display: grid;
+    place-items: center;
+    width: 3cqw;
+    height: 3cqw;
+    border: 0.45cqw solid var(--ps-primaria);
+    border-radius: 50%;
+    color: var(--ps-tinta-texto);
+    font-weight: 700;
+  }
+
+  .ps-xp i {
+    width: 7cqw;
+    height: 0.9cqw;
+    border-radius: 1cqw;
+    background: linear-gradient(90deg, var(--ps-primaria) 62%, rgb(20 20 19 / 0.14) 62%);
+  }
+
+  .ps-hero {
+    display: grid;
+    grid-template-columns: 1.25fr 1fr;
+    align-items: center;
+    gap: 3cqw;
+  }
+
+  .ps-copy {
+    display: grid;
+    justify-items: start;
+    gap: 1.6cqw;
+  }
+
+  .ps-kicker {
+    color: var(--ps-primaria-texto);
+    font-size: 1.7cqw;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .ps-title {
+    color: var(--ps-tinta-texto);
+    font-family: var(--font-display);
+    font-size: 5.6cqw;
+    font-weight: 500;
+    line-height: 1.02;
+    text-decoration: underline;
+    text-decoration-color: var(--ps-primaria);
+    text-decoration-thickness: 0.35cqw;
+    text-underline-offset: 0.9cqw;
+  }
+
+  .ps-lines {
+    display: grid;
+    gap: 0.9cqw;
+    width: 92%;
+  }
+
+  .ps-lines i {
+    height: 1cqw;
+    border-radius: 1cqw;
+    background: rgb(20 20 19 / 0.13);
+  }
+
+  .ps-lines i:last-child {
+    width: 64%;
+  }
+
+  .ps-actions {
+    display: flex;
+    gap: 1.4cqw;
+    margin-top: 0.6cqw;
+    font-size: 1.9cqw;
+    font-weight: 600;
+  }
+
+  .ps-btn-main,
+  .ps-btn-ghost {
+    padding: 1.1cqw 2.2cqw;
+    border-radius: 1cqw;
+  }
+
+  .ps-btn-main {
+    background: var(--ps-primaria);
+    color: var(--ps-sobre-primaria);
+  }
+
+  .ps-btn-ghost {
+    border: 1px solid rgb(20 20 19 / 0.3);
+    color: var(--ps-tinta-texto);
+  }
+
+  .ps-sticker {
+    width: 100%;
+    max-width: 30cqw;
+    justify-self: center;
+    overflow: visible;
+    rotate: 4deg;
+  }
+
+  .ps-st-sombra {
+    fill: var(--ps-c1);
+    opacity: 0.28;
+  }
+
+  .ps-st-borda {
+    fill: #fff;
+  }
+
+  .ps-st-ceu {
+    fill: var(--ps-c1);
+  }
+
+  .ps-st-sol {
+    fill: var(--ps-c4);
+    stroke: #fff;
+    stroke-width: 1.5;
+  }
+
+  .ps-st-serra {
+    fill: var(--ps-c2);
+    stroke: #141413;
+    stroke-width: 1.6;
+    stroke-linejoin: round;
+  }
+
+  .ps-st-campo {
+    fill: var(--ps-c3);
+    stroke: #141413;
+    stroke-width: 1.6;
+  }
+
+  .ps-st-trilha {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2.2;
+    stroke-dasharray: 3 3;
+    stroke-linecap: round;
+  }
+
+  .ps-st-ponto {
+    fill: var(--ps-c5);
+    stroke: #fff;
+    stroke-width: 1.4;
+  }
+
+  .ps-st-fio {
+    fill: none;
+    stroke: #141413;
+    stroke-width: 1.2;
+  }
+
+  .ps-band {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 0.6cqw 3cqw;
+    margin-inline: -3.6cqw;
+    padding: 2.6cqw 3.6cqw;
+    background: var(--ps-escura);
+    color: #faf9f5;
+  }
+
+  .ps-band-kicker {
+    grid-column: 1 / -1;
+    color: var(--ps-sobre-escura-suave);
+    font-size: 1.6cqw;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .ps-band-title {
+    font-family: var(--font-display);
+    font-size: 3.8cqw;
+    font-weight: 500;
+  }
+
+  .ps-band-bar {
+    height: 1.2cqw;
+    border-radius: 1cqw;
+    background: var(--ps-escura-elevada);
+    overflow: hidden;
+  }
+
+  .ps-band-bar i {
+    display: block;
+    width: 38%;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--ps-acento1-escuro);
+  }
+
+  .ps-strip {
+    display: flex;
+    height: 2.4cqw;
+    margin-inline: -3.6cqw;
+  }
+
+  .ps-strip i {
+    flex: 1;
+  }
+
+  .ps-strip i:nth-child(1) {
+    background: var(--ps-c1);
+  }
+
+  .ps-strip i:nth-child(2) {
+    background: var(--ps-c2);
+  }
+
+  .ps-strip i:nth-child(3) {
+    background: var(--ps-c3);
+  }
+
+  .ps-strip i:nth-child(4) {
+    background: var(--ps-c4);
+  }
+
+  .ps-strip i:nth-child(5) {
+    background: var(--ps-c5);
+  }
+
+  .ps-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 1.2rem;
+  }
+
+  .ps-status {
+    color: var(--c-ink);
+    font-weight: 600;
+  }
+
+  .ps-contrast {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1rem;
+    color: var(--c-muted);
+    font-size: var(--fs-caption);
+  }
+
+  .ps-contrast strong {
+    color: var(--c-ink);
+    font-family: var(--font-mono);
+    font-weight: 500;
+  }
+</style>

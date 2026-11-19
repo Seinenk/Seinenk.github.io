@@ -88,11 +88,17 @@ Para incluir um projeto:
    `demo.compare` (`frame: 'phone'` para prints de celular, `'browser'` para telas largas).
    A divisória começa no meio; se o meio cortar um rosto ou o título, mude com `start`
    (em porcentagem, como `start: 40`).
+6. Para a demonstração "Trocar cores" da Rota do Hub, use `demo.kind: 'palette-swap'`
+   (`PaletteSwap.astro`): uma miniatura do topo do site que troca entre as 51 paletas de
+   `src/data/rota-do-hub-paletas.ts`, com a revelação em círculo a partir do botão (sem
+   animação quando o movimento está desligado) e o anúncio da paleta para leitores de tela.
 
 Recursos opcionais da construção visual:
 
 - `visual.appThemes`: as cores de destaque de um app, com os papéis do Material 3. Liga a
   miniatura interativa (`ThemePlayground.astro`), que hoje reproduz a aba Combate do EFIPLA.
+- `visual.paletteWall`: todas as paletas de um projeto lado a lado, cada uma numa faixa com o
+  nome embaixo (`PaletteWall.astro`). A Rota do Hub usa para as 51 paletas que o site alterna.
 - `visual.markBackground` (fundo do bloco da marca), `visual.galleryTitle` (título da galeria,
   "Telas" por padrão) e `visual.galleryNote` (observação sobre as telas da galeria).
 - `fieldwork`: testes fora do laboratório, com texto e fotos. Vira a seção "Em campo", na aba
@@ -156,14 +162,21 @@ Partes mais visuais, inspiradas em apresentações de portfólio:
 
 Ficam em `src/data/testimonials.ts`. Cada depoimento tem foto (opcional), nome, o que a pessoa
 faz hoje, a formação (opcional), uma forma de contato, uma nota de 0 a 10 (aceita meio ponto) e
-o projeto a que se refere (`project`, o nome do arquivo em `src/data/projects/`). Eles aparecem
-na página inicial e na página do projeto correspondente. Com três depoimentos ou mais, a página
-inicial mostra uma faixa que corre sozinha e para quando o ponteiro ou o foco do teclado chega
-nela; com menos, os cartões ficam lado a lado, parados. A nota média aparece a partir de dois.
+o projeto a que se refere (`project`, o nome do arquivo em `src/data/projects/`). Cada
+depoimento aparece no fim do Resumo da página do projeto correspondente.
+
+**A seção de depoimentos está oculta da página inicial** (desde 19/11/2026). O componente
+continua em `src/components/home/Testimonials.astro`. Para mostrar a seção de novo, importe o
+componente em `src/pages/index.astro`, ponha `<Testimonials />` depois de `<FeaturedProjects />`
+e volte a numeração dos sobretítulos seguintes (Conquistas 06, Competências 07 e Contato 08).
+Lá, com três depoimentos ou mais, os cartões correm numa faixa que para quando o ponteiro ou o
+foco do teclado chega nela; com menos, ficam lado a lado, parados. A nota média aparece a partir
+de dois.
 
 Depoimento longo: o texto inteiro vai em `full`, um parágrafo por item, e `quote` guarda um
-trecho dele, com as palavras exatas da pessoa. A página inicial mostra o trecho e o link "Ler o
-depoimento completo"; a página do projeto mostra o texto inteiro, com a pessoa em cima.
+trecho dele, com as palavras exatas da pessoa. A página do projeto mostra o texto inteiro, com a
+pessoa em cima; onde aparece só o trecho (a seção da página inicial), vem junto o link "Ler o
+depoimento completo".
 
 O primeiro depoimento real é o de Sabrina Bortoli Roman, sobre a Trilha da Proteção. Os seis
 itens com `sample: true` são **exemplos**: só aparecem enquanto nenhum depoimento real existe, e

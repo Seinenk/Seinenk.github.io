@@ -1,0 +1,153 @@
+---
+/*
+ * O rosto de Dolores, a gata guia da Rota do Hub, como grupos SVG (sem o <svg> de fora), para
+ * entrar na marca (RotaDoHubMark.astro, quadro de 64 por 64) e na ilustração do cartão. É o
+ * desenho do ícone do site (public/favicon.svg do repositório rota-do-hub), com as cores fixas
+ * da gata. Com movimento ligado, ela pisca de vez em quando e mexe uma orelha.
+ */
+---
+  <g class="rhm-recorte">
+    <path d="M12 31L9 7.5Q9 4 12.5 5.5L29 16.5ZM52 31L55 7.5Q55 4 51.5 5.5L35 16.5Z" />
+    <path
+      d="M32 14.5C47 14.5 57.5 23.5 57.5 37C57.5 42 56 46 53.5 49.5L58 52.5L52 54C47.5 57.5 40.5 59.5 32 59.5C23.5 59.5 16.5 57.5 12 54L6 52.5L10.5 49.5C8 46 6.5 42 6.5 37C6.5 23.5 17 14.5 32 14.5Z"
+    />
+  </g>
+  <g class="rhm-traco">
+    <g class="rhm-orelhas">
+      <path class="rhm-pelo" d="M12 31L9 7.5Q9 4 12.5 5.5L29 16.5Z" />
+      <path class="rhm-pelo rhm-orelha-mexe" d="M52 31L55 7.5Q55 4 51.5 5.5L35 16.5Z" />
+      <path class="rhm-rosa" d="M14.5 24L13 11.5L22.5 17.5ZM49.5 24L51 11.5L41.5 17.5Z" />
+    </g>
+    <path
+      class="rhm-pelo"
+      d="M32 14.5C47 14.5 57.5 23.5 57.5 37C57.5 42 56 46 53.5 49.5L58 52.5L52 54C47.5 57.5 40.5 59.5 32 59.5C23.5 59.5 16.5 57.5 12 54L6 52.5L10.5 49.5C8 46 6.5 42 6.5 37C6.5 23.5 17 14.5 32 14.5Z"
+    />
+    <path class="rhm-mancha" d="M24.5 16.6C28 15.6 36 15.6 39.5 16.6L32 22.5Z" />
+    <path
+      class="rhm-branco"
+      d="M32 38C38.5 35.5 46 38.5 46 45C46 51.5 39.5 56 32 56C24.5 56 18 51.5 18 45C18 38.5 25.5 35.5 32 38ZM30.2 39C30.6 32 31 27 32 22.5C33 27 33.4 32 33.8 39Z"
+    />
+    <g class="rhm-olhos">
+      <ellipse class="rhm-iris" cx="21.5" cy="34" rx="6.2" ry="7" />
+      <ellipse class="rhm-iris" cx="42.5" cy="34" rx="6.2" ry="7" />
+      <path
+        class="rhm-pupila"
+        d="M22 29C23.6 29 24.6 31.2 24.6 34.4S23.6 39.8 22 39.8 19.4 37.6 19.4 34.4 20.4 29 22 29ZM42 29C43.6 29 44.6 31.2 44.6 34.4S43.6 39.8 42 39.8 39.4 37.6 39.4 34.4 40.4 29 42 29Z"
+      />
+      <path class="rhm-brilho" d="M23.6 31.4a1.4 1.4 0 1 0 .01 0ZM43.6 31.4a1.4 1.4 0 1 0 .01 0Z" />
+    </g>
+    <path class="rhm-nariz" d="M28.6 43.2Q32 41.6 35.4 43.2Q34.3 46.4 32 47.4Q29.7 46.4 28.6 43.2Z" />
+    <path class="rhm-boca" d="M32 47.4V49.4M32 49.4Q29.6 52.8 27 50.8M32 49.4Q34.4 52.8 37 50.8" />
+  </g>
+
+<style>
+  .rhm-recorte {
+    fill: #fff;
+    stroke: #fff;
+    stroke-width: 7;
+    stroke-linejoin: round;
+  }
+
+  .rhm-traco {
+    stroke: #2b2a28;
+    stroke-width: 2.5;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+
+  .rhm-pelo {
+    fill: #8d9099;
+  }
+
+  .rhm-rosa,
+  .rhm-mancha,
+  .rhm-branco,
+  .rhm-pupila,
+  .rhm-brilho {
+    stroke: none;
+  }
+
+  .rhm-rosa {
+    fill: #e98b9c;
+  }
+
+  .rhm-mancha {
+    fill: #6d707a;
+  }
+
+  .rhm-branco {
+    fill: #fff;
+  }
+
+  .rhm-iris {
+    fill: #f6c81e;
+    stroke-width: 2;
+  }
+
+  .rhm-pupila {
+    fill: #1d1c1a;
+  }
+
+  .rhm-brilho {
+    fill: #fff;
+  }
+
+  .rhm-nariz {
+    fill: #e98b9c;
+    stroke-width: 1.4;
+  }
+
+  .rhm-boca {
+    fill: none;
+    stroke-width: 1.8;
+  }
+
+  .rhm-olhos,
+  .rhm-orelha-mexe {
+    transform-box: fill-box;
+  }
+
+  .rhm-olhos {
+    transform-origin: 50% 55%;
+  }
+
+  .rhm-orelha-mexe {
+    transform-origin: 20% 100%;
+  }
+
+  /* com movimento: pisca a cada pouco e, de vez em quando, mexe a orelha da direita */
+  :global(:root[data-motion='full']) .rhm-olhos {
+    animation: rhm-piscar 5.2s ease-in-out infinite;
+  }
+
+  :global(:root[data-motion='full']) .rhm-orelha-mexe {
+    animation: rhm-orelha 7.4s ease-in-out infinite;
+  }
+
+  @keyframes rhm-piscar {
+    0%,
+    44%,
+    50%,
+    100% {
+      scale: 1 1;
+    }
+    47% {
+      scale: 1 0.1;
+    }
+  }
+
+  @keyframes rhm-orelha {
+    0%,
+    80%,
+    90%,
+    100% {
+      rotate: 0deg;
+    }
+    84% {
+      rotate: -9deg;
+    }
+    87% {
+      rotate: 4deg;
+    }
+  }
+</style>

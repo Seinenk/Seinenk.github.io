@@ -7,11 +7,15 @@ import Stats from '../components/home/Stats.astro';
 import Journey from '../components/home/Journey.astro';
 import Education from '../components/home/Education.astro';
 import FeaturedProjects from '../components/home/FeaturedProjects.astro';
-import Testimonials from '../components/home/Testimonials.astro';
 import Achievements from '../components/home/Achievements.astro';
 import Skills from '../components/home/Skills.astro';
 import Contact from '../components/home/Contact.astro';
 import { profile } from '../data/profile';
+
+// A seção de depoimentos (components/home/Testimonials.astro) está oculta da página inicial. Os
+// depoimentos continuam na página de cada projeto. Para mostrar a seção de novo, importe o
+// componente, ponha <Testimonials /> depois de <FeaturedProjects /> e volte a numeração dos
+// sobretítulos seguintes (Conquistas 06, Competências 07 e Contato 08).
 ---
 
 <BaseLayout
@@ -27,7 +31,6 @@ import { profile } from '../data/profile';
   <Journey />
   <Education />
   <FeaturedProjects />
-  <Testimonials />
   <Achievements />
   <Skills />
   <Contact />

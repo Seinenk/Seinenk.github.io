@@ -25,7 +25,8 @@ export type ArtKind =
   | 'efipla'
   | 'crohnease'
   | 'vanmed'
-  | 'trilha-da-protecao';
+  | 'trilha-da-protecao'
+  | 'rota-do-hub';
 
 /** Diagrama de "Por dentro", desenhado em ProjectDiagram.astro. */
 export type DiagramKind =
@@ -37,10 +38,11 @@ export type DiagramKind =
   | 'pytest'
   | 'crohnease'
   | 'vanmed'
-  | 'trilha-da-protecao';
+  | 'trilha-da-protecao'
+  | 'rota-do-hub';
 
 /** Demonstração interativa na página. */
-export type DemoKind = 'dino-game' | 'before-after' | 'layout-boxes' | 'pytest-run';
+export type DemoKind = 'dino-game' | 'before-after' | 'layout-boxes' | 'pytest-run' | 'palette-swap';
 
 export interface Fact {
   label: string;
@@ -161,6 +163,11 @@ export interface Visual {
   galleryTitle?: string;
   /** Observação sobre as telas da galeria (de quando são, por exemplo). */
   galleryNote?: string;
+  /**
+   * Todas as paletas do projeto lado a lado (PaletteWall.astro), para projetos com muitas,
+   * como a Rota do Hub, que alterna entre 51.
+   */
+  paletteWall?: { title: string; text?: string; palettes: { name: string; colors: string[] }[] };
 }
 
 /**
