@@ -84,9 +84,8 @@ atuação. A barra do produto leva direto ao começo de cada tópico:
 
 Um tópico só aparece se o projeto tem alguma seção dele, e cada um começa com o próprio nome.
 As abas são links (`#aba-ux-ui`) e funcionam sem JavaScript; com ele, a barra acompanha a
-leitura e marca o tópico que está na tela. No fim de cada tópico há os botões de voltar ao
-topo, ir à próxima aba (com o nome dela) e, a partir da segunda, voltar à anterior. Em telas
-a partir de 1376 pixels, um índice na borda direita lista todas as seções pelo número e abre o
+leitura e marca o tópico que está na tela. Entre um tópico e outro não há botões: a próxima
+faixa começa logo depois da anterior. Em telas a partir de 1376 pixels, um índice na borda direita lista todas as seções pelo número e abre o
 nome ao passar o ponteiro, com o foco do teclado e na seção que está sendo lida. Ele sai de
 cena no topo e no fim da página, para não encostar nos cartões largos; nas telas menores, a
 barra do produto faz esse papel. O agrupamento fica no topo de

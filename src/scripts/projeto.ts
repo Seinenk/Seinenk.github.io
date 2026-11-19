@@ -146,13 +146,9 @@ if (tablist) {
     targetUntil = performance.now() + 2000;
   };
   tabs.forEach((a) => a.addEventListener('click', () => goTo(a.dataset.tabLink ?? '')));
-  // anterior e próximo, no fim de cada tópico, também são links; a barra acompanha
-  document.querySelectorAll<HTMLAnchorElement>('[data-tab-go]').forEach((link) =>
-    link.addEventListener('click', () => goTo(link.dataset.tabGo ?? '')),
-  );
 }
 
-// "Voltar ao topo" sobe a página e leva o foco ao título
+// o nome do projeto na barra sobe a página e leva o foco ao título
 document.querySelectorAll<HTMLAnchorElement>('[data-to-top]').forEach((link) =>
   link.addEventListener('click', (event) => {
     event.preventDefault();

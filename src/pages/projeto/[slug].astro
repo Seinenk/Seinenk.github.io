@@ -380,10 +380,7 @@ const flow = (n: number, max = 3) => `--per-row:${perRow(n, max)}`;
     <div class="cs-main">
       {
         tabs.map((t, ti) => {
-          const prev = tabs[ti - 1];
-          const after = tabs[ti + 1];
           const list = sectionsOf(t.id);
-          const lastTone = tones[list[list.length - 1].id];
           return (
             <div class="cs-panel" id={`aba-${t.id}`} data-panel={t.id}>
               {list.map((s, si) => (
@@ -798,34 +795,6 @@ const flow = (n: number, max = 3) => `--per-row:${perRow(n, max)}`;
                   </div>
                 </section>
               ))}
-              <div class:list={['lp-band', 'lp-tabnav-band', { 'band-inverse': lastTone === 'inverse' }]} data-tone={lastTone}>
-                <div class="container">
-                  <nav class="cs-tabnav" aria-label={`Fim da aba ${t.label}`} data-reveal>
-                    {prev && (
-                      <a class="btn btn-secondary cs-tabnav-btn cs-tabnav-prev" href={`#aba-${prev.id}`} data-tab-go={prev.id}>
-                        <Icon name="arrow-left" size={18} class="icon-back" />
-                        <span class="cs-tabnav-text">
-                          <span class="cs-tabnav-small">Aba anterior</span>
-                          {prev.label}
-                        </span>
-                      </a>
-                    )}
-                    <a class="btn btn-secondary cs-tabnav-btn cs-tabnav-top" href="#topo" data-to-top>
-                      <Icon name="arrow-up" size={18} class="icon-up" />
-                      Voltar ao topo
-                    </a>
-                    {after && (
-                      <a class="btn btn-primary cs-tabnav-btn cs-tabnav-next" href={`#aba-${after.id}`} data-tab-go={after.id}>
-                        <span class="cs-tabnav-text">
-                          <span class="cs-tabnav-small">Próxima aba</span>
-                          {after.label}
-                        </span>
-                        <Icon name="arrow-right" size={18} class="icon-trail" />
-                      </a>
-                    )}
-                  </nav>
-                </div>
-              </div>
             </div>
           );
         })
@@ -1794,11 +1763,6 @@ const flow = (n: number, max = 3) => `--per-row:${perRow(n, max)}`;
       min-width: 0;
       letter-spacing: 0.06em;
     }
-  }
-
-  /* o último bloco de cada tópico encosta na navegação do fim do tópico */
-  .cs-panel > .cs-section:nth-last-child(2) {
-    padding-bottom: clamp(2.5rem, 2rem + 2vw, 4rem);
   }
 
   .cs-prose {
@@ -2803,110 +2767,6 @@ const flow = (n: number, max = 3) => `--per-row:${perRow(n, max)}`;
     display: block;
     color: var(--lp-muted);
     font-size: var(--fs-body-sm);
-  }
-
-  /* ---------- fim de cada tópico: anterior, topo e próximo ---------- */
-  .lp-tabnav-band {
-    padding-block: 0 clamp(2.75rem, 2rem + 2.5vw, 4.25rem);
-  }
-
-  .cs-tabnav {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: stretch;
-    gap: 0.75rem;
-    padding-top: clamp(1.5rem, 1rem + 1.5vw, 2rem);
-    border-top: 1px solid var(--lp-line);
-  }
-
-  .cs-tabnav-btn {
-    min-height: 3.5rem;
-  }
-
-  .cs-tabnav-text {
-    display: grid;
-    gap: 0.15rem;
-    text-align: start;
-  }
-
-  .cs-tabnav-small {
-    font-size: var(--fs-caption);
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  /* anterior à esquerda, topo no meio, próxima à direita, mesmo quando falta uma delas */
-  .cs-tabnav-prev {
-    grid-column: 1;
-    justify-self: start;
-  }
-
-  .cs-tabnav-top {
-    grid-column: 2;
-  }
-
-  .cs-tabnav-next {
-    grid-column: 3;
-    justify-self: end;
-  }
-
-  .cs-tabnav-next .cs-tabnav-text {
-    text-align: end;
-  }
-
-  /* na faixa escura, os botões trocam para as versões de fundo escuro */
-  .band-inverse .cs-tabnav .btn-secondary {
-    --btn-fg: var(--c-on-inverse);
-    --btn-border: var(--c-inverse-hairline);
-  }
-
-  .band-inverse .cs-tabnav .btn-secondary:is(:hover, :focus-visible) {
-    --btn-bg: var(--c-inverse-elevated);
-    --btn-border: var(--c-on-inverse-soft);
-  }
-
-  .band-inverse .cs-tabnav .btn-primary {
-    --btn-bg: var(--c-on-inverse);
-    --btn-fg: var(--c-inverse);
-  }
-
-  .band-inverse .cs-tabnav .btn-primary:is(:hover, :focus-visible) {
-    --btn-bg: #fff;
-  }
-
-  @media (hover: hover) {
-    .cs-tabnav-prev:hover :global(.icon-back) {
-      transform: translateX(-4px);
-    }
-
-    .cs-tabnav-top:hover :global(.icon-up) {
-      transform: translateY(-3px);
-    }
-  }
-
-  @media (max-width: 40rem) {
-    .cs-tabnav {
-      grid-template-columns: minmax(0, 1fr);
-    }
-
-    .cs-tabnav-btn {
-      grid-column: 1;
-      justify-self: stretch;
-    }
-
-    /* empilhados: a seta fica junto do texto na anterior e na ponta na próxima */
-    .cs-tabnav-prev {
-      justify-content: flex-start;
-    }
-
-    .cs-tabnav-next {
-      justify-content: space-between;
-    }
-
-    .cs-tabnav-next .cs-tabnav-text {
-      text-align: start;
-    }
   }
 
   .lp-sources {
